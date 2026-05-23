@@ -1,0 +1,36 @@
+{
+  "version": "0.2",
+  "language": "en-US",
+  "words": [
+    "arpeggio",
+    "arpeggios",
+    "beforeunload",
+    "contenteditable",
+    "cooldown",
+    "Customizer",
+    "customizer",
+    "exponentials",
+    "flappy",
+    "hacklm",
+    "hitbox",
+    "lede",
+    "musicVolume",
+    "nums",
+    "Playfield",
+    "playfield",
+    "scalings",
+    "sfxVolume",
+    "symplectic",
+    "topbar",
+    "unmute",
+    "visibilitychange",
+    "vite"
+  ],
+  "ignorePaths": [
+    "LICENSE*",
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    ".git/**"
+  ]
+}

@@ -1,0 +1,2 @@
+# Ignore official legal license documents from markdown linting.
+LICENSE*
