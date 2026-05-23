@@ -2322,10 +2322,7 @@ window.addEventListener("keydown", (e) => {
   if (e.code === "Space" || e.code === "ArrowUp") handleAction(e);
 
   if (state.phase !== "play" || state.paused) return;
-  if (e.code === "ArrowDown") {
-    bird.isDiving = true;
-    if (!bird.isDiving) state.diveUseCount++;
-  }
+  if (e.code === "ArrowDown") bird.isDiving = true;
   if (e.code === "ShiftLeft" || e.code === "ShiftRight") bird.isBraking = true;
 });
 
