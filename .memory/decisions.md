@@ -16,7 +16,6 @@ The engine is one file (~2400 lines) by design. Splitting into modules would req
 
 `service-worker.js` is the only extra JavaScript file. It is not engine code. It only caches the static app shell for installed PWA use on localhost or HTTPS.
 
-
 ## Canvas over DOM for game world
 
 The bird, pipes, particles, and ground are canvas-rendered for performance. UI chrome (buttons, status text) is DOM-based for accessibility. Canvas elements are invisible to screen readers.
@@ -32,7 +31,6 @@ The bird's visual state is derived from an emotion enum, not direct properties. 
 ## localStorage for persistence
 
 Best score and settings are stored in `localStorage`. No backend, no cloud sync. The `try/catch` handles private mode and quota exceeded. No encryption by design — score hacking is fully accepted as this is an open-source, hackable, and transparent browser game.
-
 
 ## Accessibility as a feature
 

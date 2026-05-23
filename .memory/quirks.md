@@ -18,7 +18,6 @@ The entire game engine lives in one ~2400-line file. This is fully intentional f
 
 `service-worker.js` caches only the app shell. If a phone install looks stale, reload once while online. Bump `CACHE_NAME` whenever the shell changes.
 
-
 ## AudioContext unlocking
 
 Browsers block AudioContext until a user gesture. The `ensureAudio()` call is scattered across input handlers. If audio stops working, check that `ensureAudio()` is being called on the relevant interaction.

@@ -17,7 +17,6 @@ How Copilot should behave in this project.
 - Test assumptions with `read_file` before editing.
 - Optimize for AI-native pairing. Keep the complete engine monolithic and single-file (~2400 lines). This enables full context processing in modern LLMs.
 
-
 ## Game-specific rules
 
 - All physics values must respect delta-time (`state.dt`).
