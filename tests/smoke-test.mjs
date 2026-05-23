@@ -88,6 +88,7 @@ assert.match(textFiles.js, /drawer\.contains\(document\.activeElement\)/,
   "drawer focus trap must recover focus from outside the drawer");
 assert.match(textFiles.js, /function toggleFullscreen\(/,           "fullscreen toggle missing");
 assert.match(textFiles.js, /function circleHitsRect\(/,             "circle hitbox missing");
+assert.match(textFiles.js, /if\s*\(\s*e\.code === ["']ArrowDown["']\s*\)\s*bird\.isDiving = true;/, "cleaned ArrowDown handler missing");
 
 // Canvas sizing must not upscale the 420px logical game into an oversized desktop billboard.
 assert.match(textFiles.css, /\.canvas-wrap\s*\{[\s\S]*width:\s*min\(100%,\s*420px\)/,

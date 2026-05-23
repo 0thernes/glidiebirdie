@@ -583,7 +583,7 @@ This document contains a highly rigorous, hyper-strict, line-by-line technical i
 
 ## §8 — Interactive A11Y Landmarks, Focus Traps & Motion Reduction (Points 176–200)
 
-176. **Universal Keyboard Accessibility:** The game is fully playable using standard keyboard keys, making it accessible to players who cannot use a mouse.
+176. **Universal Keyboard Accessibility:** The game is fully playable using standard keyboard keys, making it accessible to players who cannot use a mouse. The keyboard listener bindings for controls like `ArrowDown` are kept clean and streamlined, avoiding duplicate or redundant variable increments since all state changes are updated deterministically in the core physics loop.
 177. **Accessible Screen Reader Status Region:** Screen reader announcements use a dedicated status tag, keeping announcements organized:
     ```javascript
     function announce(message) { ... dom.srStatus.textContent = message; }

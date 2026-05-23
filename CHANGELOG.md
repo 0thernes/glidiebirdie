@@ -12,6 +12,7 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
+- Cleaned up redundant and unreachable keyboard `ArrowDown` dive increment logic in `game.js` since coordinates and counts are already safely updated in `updateBird()`.
 - Removed stale tracked duplicate memory stubs under `.github/.memory/`; `.memory/` remains the canonical AI/project context.
 - Aligned `game.js` section numbering and version comments with the current release.
 - Updated PWA/offline documentation so it describes the real service-worker behavior.
