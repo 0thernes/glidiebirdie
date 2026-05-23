@@ -10,8 +10,9 @@
 Calm Edition keeps the instant arcade loop people love, then smooths the rough edges:
 gentler physics, readable timing, cozy themes, procedural audio + reverb, accessibility, stats,
 12 achievements, a one-hit Feather Shield, a daily-seed mode, and a full on-screen control bar
-for phones (Brake / Flap / Dive). Installable as a PWA on iOS and Android. No build step. No
-external assets. Just open the game and glide.
+for phones (Brake / Flap / Dive). Installable as a PWA on iOS and Android, with a small service
+worker that caches the app shell after the first localhost/HTTPS visit. No build step. No external
+runtime assets. Just open the game and glide.
 
 [![Flappy Bird Calm Edition preview showing the polished hero and playfield.](docs/assets/flappy-calm-edition-preview.png)](https://0thernes.github.io/flappy-bird-calm-edition/)
 
@@ -31,12 +32,12 @@ external assets. Just open the game and glide.
 | Less punishment        | Feather Shield absorbs one collision and gives the bird a graceful recovery moment.            |
 | Better reliability     | Delta-time physics + DPR-sharp canvas across 60Hz, 144Hz, 240Hz displays and Retina/4K phones. |
 | Better inclusion       | Keyboard + skip-link, ARIA live updates, reduced-motion, reduced-transparency, forced-colors.  |
-| PWA-ready              | Installable via Add-to-Home-Screen on iOS and Android. Works offline (static files).           |
+| PWA-ready              | Installable via Add-to-Home-Screen on iOS and Android. Offline app shell after first visit.    |
 
 ## Features
 
 - **Mobile control bar** — On-screen Brake / Flap / Dive on coarse-pointer devices.
-- **PWA install** — Add to Home Screen on iOS and Android via a real manifest.
+- **PWA install + offline shell** — Add to Home Screen on iOS and Android via a real manifest and service worker.
 - **DPR-sharp canvas** — Crisp on Retina, 2× / 3× phones, and 4K monitors.
 - **Calm physics presets** — Tune gravity and speed from gentle to lively.
 - **Daily Seed mode** — Deterministic pipe pattern by UTC date for friendly comparison.
@@ -48,7 +49,7 @@ external assets. Just open the game and glide.
 - **Procedural audio with reverb** — Web Audio creates every tone; convolution reverb gives real ambient space.
 - **12 achievements** — From First Flight to Long Haul, each with live progress display.
 - **Persistent stats** — Zen minutes, shields saved, runs, near misses, longest survival, current streak.
-- **Tutorial overlay** — Shown once on first run; dismissable.
+- **Tutorial overlay** — Shown once on first run; the dismiss button starts the first glide.
 - **Fullscreen toggle** — `F` key or button.
 - **Zero dependencies** — Pure HTML, CSS, and JavaScript. No bundler, package install, CDN, or assets.
 
@@ -106,7 +107,7 @@ Calm Edition treats accessibility as part of the game design, not a side quest.
 | Physics      | Normalized delta time (`dt`), capped lag spikes, semi-implicit Euler. True circle hitbox. |
 | Performance  | Pre-allocated particle / weather pools. Nearest-pipe cache. Frame-error rate limiting.    |
 | Persistence  | Guarded `localStorage` helpers, throttled save on `visibilitychange` and `beforeunload`.  |
-| PWA          | `manifest.webmanifest`, `apple-touch-icon`, `theme-color`. Installable on iOS / Android.  |
+| PWA          | `manifest.webmanifest`, `service-worker.js`, `apple-touch-icon`, `theme-color`. Installable on iOS / Android with an offline shell after first visit. |
 | Distribution | Static files only. The game works from disk, localhost, GitHub Pages, or any static host. |
 
 ## Browser Support
@@ -125,12 +126,14 @@ Calm Edition treats accessibility as part of the game design, not a side quest.
 | `style.css`               | Responsive dark UI, layered cascade, themes, accessibility media queries, mobile controls. |
 | `game.js`                 | Game engine: physics, rendering, audio (with reverb), input, persistence, achievements.    |
 | `manifest.webmanifest`    | PWA install metadata.                                                                      |
+| `service-worker.js`       | Offline app-shell cache for localhost / HTTPS installs.                                    |
 | `tests/smoke-test.mjs`    | Lightweight repo smoke checks (validates the public surface).                              |
 | `AUDIT-250.md`            | 250-point solo web-game quality audit and closure ledger.                                  |
 | `CHANGELOG.md`            | Version history.                                                                           |
 | `CLAUDE.md`               | Project context for AI coding assistants.                                                  |
 | `docs/assets/`            | README and repository presentation assets.                                                 |
 | `.github/ISSUE_TEMPLATE/` | Friendly issue forms for bugs, ideas, and accessibility feedback.                          |
+| `.github/workflows/ci.yml` | GitHub Actions smoke check for pushes and pull requests.                                  |
 | `.memory/`                | Project context notes for future maintainers and AI assistants.                            |
 | `LICENSE.txt`             | AGPL-3.0-or-later license text.                                                            |
 

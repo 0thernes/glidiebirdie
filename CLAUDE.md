@@ -6,7 +6,8 @@ Read this first when you start a session in this repo.
 ## What this is
 
 A **solo, vibe-coded, browser-first MVP** of a calm Flappy Bird variant. Single HTML, single
-CSS, single JavaScript file. No build step. No bundler. No runtime dependencies.
+CSS, single game-engine JavaScript file, plus a tiny service worker for the offline app shell.
+No build step. No bundler. No runtime dependencies.
 
 The game runs on desktop browsers and phone browsers. It is intended to be installable as
 a PWA on Android and iOS.
@@ -17,9 +18,10 @@ a PWA on Android and iOS.
 - **No runtime dependencies.** Never add `npm install <runtime-package>`.
 - **No remote assets.** No CDN imports, no Google Fonts, no analytics scripts.
 - **No backend.** All state lives in `localStorage`.
-- **Single `game.js` file** is intentional. Do not split into modules.
+- **Single `game.js` game-engine file** is intentional. Do not split it into modules.
 - **Single `style.css` file** is intentional.
 - **Vanilla DOM + Canvas 2D + Web Audio** only.
+- **Service worker stays tiny.** It only caches the static app shell; no analytics, push, background sync, or remote dependencies.
 
 ## Soft preferences
 
@@ -38,6 +40,7 @@ a PWA on Android and iOS.
 - `index.html` — semantic shell, ARIA, mobile controls, PWA tags.
 - `style.css` — layered (base/layout/components/utilities), themed, reduced-motion aware.
 - `manifest.webmanifest` — PWA install metadata.
+- `service-worker.js` — offline app-shell cache for localhost / HTTPS installs.
 - `tests/smoke-test.mjs` — regex + syntax smoke check.
 - `.memory/` — the canonical AI context (decisions, preferences, security, quirks, instructions).
 - `docs/assets/` — README screenshots.

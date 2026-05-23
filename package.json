@@ -1,11 +1,11 @@
 {
   "name": "flappy-bird-calm-edition",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "private": true,
   "description": "A calm, accessible, dependency-free Flappy Bird canvas game for browser and mobile.",
   "type": "module",
   "scripts": {
-    "check": "node --check game.js && node tests/smoke-test.mjs",
+    "check": "node --check game.js && node --check service-worker.js && node tests/smoke-test.mjs",
     "serve": "python -m http.server 8000 --bind 127.0.0.1"
   },
   "engines": {

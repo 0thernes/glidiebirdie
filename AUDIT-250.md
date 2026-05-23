@@ -12,7 +12,7 @@ Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free 
 - 006. [PASS] No login, accounts, payments, or regulated data are in scope.
 - 007. [PASS] Dependency-free delivery supports the MVP goal.
 - 008. [PASS] Static hosting is the right distribution model.
-- 009. [PASS] PWA support is useful but not overbuilt.
+- 009. [PASS] PWA support is useful but not overbuilt; the service worker only caches the app shell.
 - 010. [PASS] Feature set is richer than a toy demo.
 - 011. [PASS] Calm difficulty is differentiated from stock Flappy Bird.
 - 012. [PASS] Feather Shield gives a readable forgiving mechanic.
@@ -45,7 +45,7 @@ Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free 
 - 036. [PASS] Skip link helps keyboard users reach the game.
 - 037. [PASS] Viewport meta uses mobile-safe settings.
 - 038. [PASS] Safe-area padding is considered for phones.
-- 039. [PASS] PWA manifest supports add-to-home-screen workflows.
+- 039. [PASS] PWA manifest and service worker support add-to-home-screen and offline app-shell workflows.
 - 040. [PASS] Portrait orientation is appropriate for Flappy Bird.
 - 041. [PASS] Mobile controls use large hit targets.
 - 042. [PASS] Mobile controls use labels, not icon-only mystery buttons.
@@ -234,7 +234,7 @@ Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free 
 - 204. [PASS] Smoke test validates ARIA live region.
 - 205. [PASS] Smoke test validates drawer surface.
 - 206. [PASS] Smoke test validates mobile controls.
-- 207. [PASS] Smoke test validates PWA manifest.
+- 207. [PASS] Smoke test validates PWA manifest and service-worker registration.
 - 208. [PASS] Smoke test validates fullscreen surface.
 - 209. [PASS] Smoke test validates daily seed surface.
 - 210. [PASS] Smoke test validates reset stats surface.

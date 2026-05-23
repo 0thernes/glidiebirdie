@@ -12,7 +12,11 @@ This repo once had 50+ lines of live credentials inside `.gitignore`. The develo
 
 ## Monolithic `game.js`
 
-The entire game engine lives in one ~2100-line file. This is fully intentional for zero-dependency deployment, easy hacking, and optimization for modern AI coding tools. Use `grep_search` to find functions quickly.
+The entire game engine lives in one ~2400-line file. This is fully intentional for zero-dependency deployment, easy hacking, and optimization for modern AI coding tools. Use `grep_search` to find functions quickly.
+
+## Service worker cache
+
+`service-worker.js` caches only the app shell. If a phone install looks stale, reload once while online. Bump `CACHE_NAME` whenever the shell changes.
 
 
 ## AudioContext unlocking
@@ -25,7 +29,7 @@ The best score is stored as a raw number with no schema version. If the key form
 
 ## Canvas hardcoded size
 
-The canvas is `420×640` pixels. CSS scales it via `width: 100%` and `aspect-ratio: 420/640`. All physics and rendering coordinates assume this size. Changing it requires updating both HTML and all coordinate math.
+The logical canvas is `420×640` pixels. CSS scales it via `width: 100%` and `aspect-ratio: 420/640`, while `game.js` sets the DPR-scaled backing store. All physics and rendering coordinates assume this size. Changing it requires updating `CONFIG.CANVAS_W`, `CONFIG.CANVAS_H`, CSS aspect math, and coordinate math.
 
 ## Emotion timer
 

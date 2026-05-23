@@ -2,7 +2,7 @@
 "use strict";
 
 // ═══════════════════════════════════════════════════════════════════
-// FLAPPY BIRD — CALM EDITION (v2.0)
+// FLAPPY BIRD — CALM EDITION (v2.0.2)
 // Single-file engine. Zero dependencies. Mobile-first browser game.
 //
 // Section index:
@@ -25,8 +25,10 @@
 //   15. LIFECYCLE       — reset, start, restart, pause, mute, gameover
 //   16. INPUT           — keyboard, pointer, mobile bar, gestures
 //   17. LIFECYCLE EVENTS— resize, orientationchange, visibility, blur
-//   18. LOOP            — main animation loop with error rate-limit
-//   19. BOOT            — initial setup
+//   18. OFFLINE SHELL   — service-worker registration
+//   19. CUSTOMIZER      — drawer controls and settings
+//   20. LOOP            — main animation loop with error rate-limit
+//   21. BOOT            — initial setup
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── 1. CONFIG ────────────────────────────────────────────────────
@@ -2415,7 +2417,19 @@ if (reducedTransparencyQuery && typeof reducedTransparencyQuery.addEventListener
   reducedTransparencyQuery.addEventListener("change", (e) => { state.reducedTransparency = e.matches; });
 }
 
-// ─── 18. CUSTOMIZER & DRAWER BINDINGS ──────────────────────────────
+// ─── 18. OFFLINE APP SHELL ─────────────────────────────────────────
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+  const register = () => {
+    navigator.serviceWorker
+      .register("./service-worker.js", { scope: "./" })
+      .catch(() => {});
+  };
+  if (document.readyState === "complete") register();
+  else window.addEventListener("load", register, { once: true });
+}
+
+// ─── 19. CUSTOMIZER & DRAWER BINDINGS ──────────────────────────────
 function bindDrawerControls() {
   if (dom.gravitySlider) {
     dom.gravitySlider.value = String(state.gravitySetting);
@@ -2547,15 +2561,16 @@ function bindTutorial() {
     dom.tutorialOverlay.classList.remove("show");
     dom.tutorialOverlay.setAttribute("aria-hidden", "true");
   }
-  dom.tutorialDismiss?.addEventListener("click", () => {
+  dom.tutorialDismiss?.addEventListener("click", (e) => {
     dom.tutorialOverlay?.classList.remove("show");
     dom.tutorialOverlay?.setAttribute("aria-hidden", "true");
     writeStoredValue("flappy-tutorial-seen", true);
-    canvas.focus({ preventScroll: true });
+    focusElement(canvas);
+    handleAction(e);
   });
 }
 
-// ─── 19. MAIN LOOP ─────────────────────────────────────────────────
+// ─── 20. MAIN LOOP ─────────────────────────────────────────────────
 let frameErrorCount = 0;
 let frameErrorCooldownAt = 0;
 
@@ -2630,13 +2645,14 @@ function loop(timestamp = performance.now()) {
   requestAnimationFrame(loop);
 }
 
-// ─── 20. BOOT ──────────────────────────────────────────────────────
+// ─── 21. BOOT ──────────────────────────────────────────────────────
 configureCanvasForDPR();
 updateDerivedPhysics();
 resetGame();
 bindDrawerControls();
 bindMobileControls();
 bindTutorial();
+registerServiceWorker();
 syncUiState();
 
 dom.pauseToggle?.addEventListener("click", () => togglePause());

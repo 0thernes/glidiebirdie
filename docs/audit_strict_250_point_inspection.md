@@ -3,7 +3,7 @@
 
 This document contains a highly rigorous, hyper-strict, line-by-line technical inspection and code-level audit of the **Flappy Bird — Calm Edition** codebase. Each of the **250 evaluation points** is unique, actionable, and grounded in the actual codebase configuration and implementation, keeping in mind the single-developer scope, the hackable open-source nature of the project, and its deployment on GitHub Pages.
 
-**Verification note:** This audit targets the current `v2.0.1` implementation. Source references are tied to the named files and UI/code surfaces; exact line numbers may drift as documentation and metadata evolve.
+**Verification note:** This audit targets the current `v2.0.2` implementation. Source references are tied to the named files and UI/code surfaces; exact line numbers may drift as documentation and metadata evolve.
 
 ---
 
@@ -790,7 +790,7 @@ This document contains a highly rigorous, hyper-strict, line-by-line technical i
     ```
 236. **Clean Package Configuration:** The project configuration is kept clean and lightweight, with current project metadata, zero dependencies, and a small script surface:
     ```json
-    "name": "flappy-bird-calm-edition", "version": "2.0.1", "private": true
+    "name": "flappy-bird-calm-edition", "version": "2.0.2", "private": true
     ```
 237. **Standard Script Definitions:** The configuration defines standard scripts for validation and local hosting:
     ```json

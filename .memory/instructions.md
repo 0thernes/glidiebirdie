@@ -15,7 +15,7 @@ How Copilot should behave in this project.
 - Use `// ...existing code...` comments to skip unchanged regions.
 - Never repeat existing code in edits.
 - Test assumptions with `read_file` before editing.
-- Optimize for AI-native pairing. Keep the complete engine monolithic and single-file (~2000 lines). This enables full context processing in modern LLMs.
+- Optimize for AI-native pairing. Keep the complete engine monolithic and single-file (~2400 lines). This enables full context processing in modern LLMs.
 
 
 ## Game-specific rules
@@ -27,6 +27,7 @@ How Copilot should behave in this project.
 - New features need ARIA attributes and keyboard shortcuts.
 - The customizer drawer (`customizerDrawer`) must use `inert` when closed and trap focus when open.
 - Theme changes must update `document.body.classList` and persist to `localStorage`.
+- The service worker must stay tiny and cache only the static app shell.
 
 ## Security
 

@@ -37,7 +37,10 @@ Thumbs.db
 Desktop.ini
 
 # Local editor state
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
 .idea/
 *.code-workspace
 
@@ -70,3 +73,7 @@ recovery-codes/
 ```
 
 Nothing else belongs in `.gitignore`.
+
+## Service worker scope
+
+The service worker may cache only same-origin static app-shell files. Do not add analytics, push notifications, background sync, remote scripts, or credential-bearing requests.

@@ -17,6 +17,7 @@ Then visit `http://localhost:8000`.
 - Reload the page.
 - Try a current version of Chrome, Edge, Firefox, or Safari.
 - Check whether browser audio is blocked until your first click or key press.
+- If the installed PWA seems stale, reload once while online so the service worker can refresh its cache.
 - Try `npm run check` if you have Node.js available.
 
 ## Where To Get Help

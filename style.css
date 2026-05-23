@@ -38,6 +38,10 @@
     box-sizing: border-box;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     margin: 0;
     min-height: 100dvh;
@@ -622,6 +626,12 @@
   .customizer-drawer.open {
     transform: translateX(0);
     visibility: visible;
+  }
+  .customizer-drawer:not(.open) {
+    width: 0;
+    padding-inline: 0;
+    border-left: 0;
+    overflow: hidden;
   }
   .customizer-drawer[inert] { pointer-events: none; }
 

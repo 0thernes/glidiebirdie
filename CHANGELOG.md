@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## [2.0.2] — Full Polish Audit
+
+### Added
+
+- Added a lightweight `service-worker.js` app-shell cache so PWA installs can reopen after the first localhost / HTTPS visit.
+- Added GitHub Actions CI to run `npm run check` on pushes and pull requests.
+- Extended smoke checks to validate service-worker registration, cache contents, service-worker syntax, and CI coverage.
+
+### Fixed
+
+- Removed stale tracked duplicate memory stubs under `.github/.memory/`; `.memory/` remains the canonical AI/project context.
+- Aligned `game.js` section numbering and version comments with the current release.
+- Updated PWA/offline documentation so it describes the real service-worker behavior.
+- Made the first-run tutorial dismiss button start the first glide so the first phone tap feels responsive.
+
 ## [2.0.1] — 250-Point Audit Closure
 
 ### Fixed

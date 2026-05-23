@@ -18,7 +18,8 @@ player-friendly changes.
 2. Open `index.html` or serve the repo locally.
 3. Test keyboard controls.
 4. Test the customizer drawer.
-5. Note any browser or accessibility checks you performed.
+5. If you changed PWA behavior, serve locally and verify the service worker registers.
+6. Note any browser or accessibility checks you performed.
 
 ## Good Contributions
 
@@ -45,3 +46,5 @@ Keep the description short and useful:
 - How did you test it?
 
 Small, reviewed changes are easier to trust and easier to merge.
+
+GitHub Actions runs the same `npm run check` smoke test on pushes and pull requests.

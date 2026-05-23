@@ -4,15 +4,17 @@ Architectural commitments made in this project.
 
 ## Zero dependencies
 
-No npm packages, no CDN links, no build step. The entire game is three files: HTML, CSS, JS. This keeps deployment trivial and eliminates supply-chain risk.
+No npm packages, no CDN links, no build step. The playable app shell is HTML, CSS, one game-engine JS file, the web manifest, and a tiny service worker. This keeps deployment trivial and eliminates supply-chain risk.
 
 ## Procedural everything
 
-All audio is synthesized via Web Audio API oscillators. All visuals are drawn via Canvas 2D. No image files, no audio files, no font files. The game is entirely self-contained.
+All runtime audio is synthesized via Web Audio API oscillators. All runtime game visuals are drawn via Canvas 2D. No runtime image files, audio files, or font files are needed. The game is entirely self-contained.
 
 ## Monolithic game.js
 
-The engine is one file (~2100 lines) by design. Splitting into modules would require a bundler or ES module imports, violating the zero-dependency commitment. Large monolithic files are fully accepted because a single file fits completely inside modern LLM context sizes, enabling clean, AI-native pairing.
+The engine is one file (~2400 lines) by design. Splitting into modules would require a bundler or ES module imports, violating the zero-dependency commitment. Large monolithic files are fully accepted because a single file fits completely inside modern LLM context sizes, enabling clean, AI-native pairing.
+
+`service-worker.js` is the only extra JavaScript file. It is not engine code. It only caches the static app shell for installed PWA use on localhost or HTTPS.
 
 
 ## Canvas over DOM for game world
@@ -75,3 +77,7 @@ Web Audio routes: oscillator → master gain → [lowpass biquad → destination
 ## AGPL-3.0-or-later license
 
 The project uses a copyleft license. If a modified version is run on a public server, the source must be offered to users. This is a deliberate choice for a browser-based game that users interact with remotely.
+
+## GitHub Actions CI
+
+CI is intentionally small. It checks out the repo, installs Node.js, and runs `npm run check`. No package install is needed because the game has zero dependencies.
