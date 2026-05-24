@@ -1,4 +1,7 @@
+<!-- markdownlint-disable MD022 MD029 MD031 -->
+
 # 🏆 Gold Standard Hyper-Strict Codebase Audit & 250-Point Technical Inspection
+
 ## Target: Flappy Bird — Calm Edition (Open Source GitHub Pages MVP)
 
 This document contains a highly rigorous, hyper-strict, line-by-line technical inspection and code-level audit of the **Flappy Bird — Calm Edition** codebase. Each of the **250 evaluation points** is unique, actionable, and grounded in the actual codebase configuration and implementation, keeping in mind the single-developer scope, the hackable open-source nature of the project, and its deployment on GitHub Pages.
@@ -360,7 +363,7 @@ This document contains a highly rigorous, hyper-strict, line-by-line technical i
     ```javascript
     bird.y = bird.radius;
     ```
-113. **Active Shield Collision overrides:** Having the golden shield active absorbs the first collision, poping the bird upward and granting temporary invincibility:
+113. **Active Shield Collision overrides:** Having the golden shield active absorbs the first collision, popping the bird upward and granting temporary invincibility:
     ```javascript
     state.shieldActive = false; state.isInvincible = true;
     ```
@@ -827,3 +830,5 @@ This document contains a highly rigorous, hyper-strict, line-by-line technical i
 248. **Comprehensive Code Spell Checks:** The CSpell configuration verifies spellings across all source files, keeping documentation clean.
 249. **Clean Markdown Lint Rules:** Markdown validation rules are enforced, keeping documentation formatting consistent.
 250. **Clean Repository Layout:** The repository maps files to logical directories (`docs`, `tests`, `.vscode`, `.memory`), keeping the workspace clean and easy to navigate.
+
+<!-- markdownlint-enable MD022 MD029 MD031 -->

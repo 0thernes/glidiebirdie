@@ -778,19 +778,80 @@
     background: var(--accent-2);
   }
 
-  .toggle-row {
+  /* shadcn field-switch pattern (vanilla): label + description left, switch right */
+  .field-switch {
     display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    font-size: 0.92rem;
-    color: var(--text-2);
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .field-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .field-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-1);
     cursor: pointer;
   }
-  .toggle-row input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
-    accent-color: var(--accent-1);
+  .field-description {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--text-3);
+  }
+  .field-status {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-2);
+  }
+
+  .switch {
+    -webkit-appearance: none;
+    appearance: none;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 1.5rem;
+    margin-top: 0.15rem;
+    border-radius: 999px;
+    border: 1px solid rgba(238, 247, 255, 0.18);
+    background: rgba(255, 255, 255, 0.12);
     cursor: pointer;
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .switch::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 50%;
+    background: var(--text-1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .switch:checked {
+    background: var(--accent-1);
+    border-color: var(--accent-1);
+  }
+  .switch:checked::before {
+    transform: translateX(1.25rem);
+    background: var(--surface-1);
+  }
+  .switch:focus-visible {
+    outline: 2px solid var(--accent-1);
+    outline-offset: 2px;
+  }
+  .switch:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .stats-grid {

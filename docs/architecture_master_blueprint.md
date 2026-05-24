@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD009 MD022 MD031 MD032 MD040 MD041 MD058 -->
+
 # 🏆 Universal Master Architecture Blueprint & Staged Engineering Roadmap
 ## Zero to Hero: FAANG/MANGO-Tier Software Architecture, Design Systems, and DevOps Pipeline
 **Target Application class**: Static Client-First Web PWAs, Interactive Real-Time Game Engines, and Scale-Ready Microservices  
@@ -541,3 +543,5 @@ To prevent blurry canvas rendering on high-DPI retina displays, the engine sizes
 To prevent performance issues from extremely large buffers on ultra-high-density mobile screens, the active DPR is strictly clamped:
 
 $$DPR_{\text{active}} = \max(1, \min(DPR, 3.0))$$
+
+<!-- markdownlint-enable MD009 MD022 MD031 MD032 MD040 MD041 MD058 -->

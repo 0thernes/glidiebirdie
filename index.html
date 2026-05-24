@@ -195,14 +195,24 @@
 
     <div class="drawer-section">
       <h3>Daily Seed</h3>
-      <label class="toggle-row" for="dailySeedToggle">
-        <input type="checkbox" id="dailySeedToggle" />
-        <span id="dailySeedLabel">Daily Seed OFF (random)</span>
-      </label>
-      <p class="drawer-microcopy">
-        With Daily Seed on, every player on the same day gets the same pipe pattern.
-        Compare scores with friends.
-      </p>
+      <!-- Layout mirrors shadcn Field + Switch (field-switch example) -->
+      <div class="field-switch">
+        <div class="field-content">
+          <label class="field-label" id="dailySeedLabel" for="dailySeedToggle">Daily Seed</label>
+          <p class="field-description" id="dailySeedDescription">
+            When on, every player on the same day gets the same pipe pattern. Compare scores with friends.
+          </p>
+          <p class="field-status" id="dailySeedStatus" aria-live="polite">Off — random pipes each run</p>
+        </div>
+        <input
+          type="checkbox"
+          id="dailySeedToggle"
+          class="switch"
+          role="switch"
+          aria-labelledby="dailySeedLabel"
+          aria-describedby="dailySeedDescription dailySeedStatus"
+        />
+      </div>
     </div>
 
     <div class="drawer-section">

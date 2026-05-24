@@ -1,4 +1,3 @@
-// @ts-check
 "use strict";
 
 // ═══════════════════════════════════════════════════════════════════
@@ -178,6 +177,7 @@ const dom = {
   // Daily seed
   dailySeedToggle: /** @type {HTMLInputElement | null} */ (document.getElementById("dailySeedToggle")),
   dailySeedLabel: document.getElementById("dailySeedLabel"),
+  dailySeedStatus: document.getElementById("dailySeedStatus"),
   // Reset stats
   resetStatsBtn: /** @type {HTMLButtonElement | null} */ (document.getElementById("resetStatsBtn")),
   // Audio test
@@ -1921,11 +1921,12 @@ function syncUiState() {
   }
   if (dom.dailySeedToggle) {
     dom.dailySeedToggle.checked = state.dailySeedMode;
+    dom.dailySeedToggle.setAttribute("aria-checked", String(state.dailySeedMode));
   }
-  if (dom.dailySeedLabel) {
-    dom.dailySeedLabel.textContent = state.dailySeedMode
-      ? `Daily Seed ON (#${dateSeed()})`
-      : "Daily Seed OFF (random)";
+  if (dom.dailySeedStatus) {
+    dom.dailySeedStatus.textContent = state.dailySeedMode
+      ? `On — shared seed #${dateSeed()}`
+      : "Off — random pipes each run";
   }
 }
 

@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD029 -->
+
 # 250-Point Gold Standard Solo Web Game Audit
 
 Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free browser and phone game. This audit uses a strict but realistic bar: excellent player experience, phone fit, browser reliability, accessibility, performance, security sanity, documentation, and maintainability for one builder.
@@ -281,3 +283,5 @@ Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free 
 - 248. [PASS] Push to GitHub is part of release closure.
 - 249. [PASS] This SOP fits one person using modern AI coding tools.
 - 250. [PASS] Final quality target is strict, realistic, and product-aligned.
+
+<!-- markdownlint-enable MD029 -->

@@ -1,17 +1,16 @@
+# Memory-Augmented Context
 
 <!-- hacklm-memory:start -->
-# Memory-Augmented Context
 
 Read memory files on-demand — not all at once.
 
 | File | When to read |
 |------|-------------|
-| [.memory/instructions.md](../.memory/instructions.md) | How to behave |
-| [.memory/quirks.md](../.memory/quirks.md) | When something breaks unexpectedly |
-| [.memory/preferences.md](../.memory/preferences.md) | Style/design/naming choices |
-| [.memory/decisions.md](../.memory/decisions.md) | Architectural changes |
-| [.memory/security.md](../.memory/security.md) | **ALWAYS — before any code change** |
-| [../CLAUDE.md](../CLAUDE.md) | Cross-tool AI context (Claude, Cursor, Continue) |
+| [.memory/instructions.md](.memory/instructions.md) | How to behave |
+| [.memory/quirks.md](.memory/quirks.md) | When something breaks unexpectedly |
+| [.memory/preferences.md](.memory/preferences.md) | Style/design/naming choices |
+| [.memory/decisions.md](.memory/decisions.md) | Architectural changes |
+| [.memory/security.md](.memory/security.md) | **ALWAYS — before any code change** |
 
 ## Memory Tools
 
@@ -29,7 +28,9 @@ Same slug = update, not duplicate.
 ## Writing Style for Memory Entries
 
 Hemingway style. Short sentences. No jargon. No filler. Be blunt.
-Bad: "The system employs an asynchronous locking mechanism to serialize concurrent write operations."
+
+Bad: "The system employs an asynchronous locking mechanism to serialise concurrent write operations."
+
 Good: "Use a lock before writing. One write at a time."
 
 ## Categories
@@ -41,4 +42,5 @@ Good: "Use a lock before writing. One write at a time."
 | Preference | Style/design/naming |
 | Decision | Architectural commitments |
 | Security | Rules that must NEVER be broken |
+
 <!-- hacklm-memory:end -->
