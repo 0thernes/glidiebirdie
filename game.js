@@ -459,6 +459,7 @@ const musicThemes = {
   midnight: { notes: [293, 370, 440, 587, 440, 370], wave: "square", subWave: "sine",     interval: 0.44 },
   rain:     { notes: [220, 262, 330, 440, 330, 262], wave: "sine",   subWave: "triangle", interval: 0.52 },
   aurora:   { notes: [277, 311, 349, 415, 349, 311], wave: "sine",   subWave: "sine",     interval: 0.50 },
+  meadow:   { notes: [247, 294, 370, 494, 370, 330], wave: "triangle", subWave: "sine",   interval: 0.48 },
   meadow:   { notes: [262, 294, 349, 440, 392, 349], wave: "sine",   subWave: "triangle", interval: 0.48 },
 };
 
@@ -673,6 +674,14 @@ const THEME_TABLE = Object.freeze({
     scoreParticle: "#a78bfa",
   },
   meadow: {
+    bird:   { calm: "#f6e27a", happy: "#fde68a", scared: "#d7d977", determined: "#86c95a", dizzy: "#d5c460",
+              beak: "#f59e0b", hl: "#fff7c2", shadow: "#c5b14c" },
+    ground: { sand: "#b79e58", grass1: "#79c26d", grass2: "#4e8d4a", dirt: "#7e6840" },
+    sky:    { h1: 110, h2: 130, cAlpha: 0.32 },
+    pipe:   { hue: 105, cap: 72 },
+    trail:  "#fde68a",
+    flapParticle: "#fef3c7",
+    scoreParticle: "#facc15",
     bird:   { calm: "#f4d35e", happy: "#f9c74f", scared: "#e8b923", determined: "#d4a017", dizzy: "#c9a227",
               beak: "#e07a3d", hl: "#fff3b0", shadow: "#d4a017" },
     ground: { sand: "#d4a373", grass1: "#588157", grass2: "#3a5a40", dirt: "#a67c52" },
@@ -870,6 +879,7 @@ const activeParticles = [];
 const weatherPool = [];
 /** @type {Array<any>} */
 const activeWeather = [];
+const MEADOW_POLLEN_COLORS = Object.freeze(["#fde68a", "#fef3c7", "#facc15"]);
 
 function initObjectPools() {
   particlePool.length = 0; activeParticles.length = 0;
@@ -878,7 +888,7 @@ function initObjectPools() {
   }
   weatherPool.length = 0; activeWeather.length = 0;
   for (let i = 0; i < CONFIG.WEATHER_POOL; i++) {
-    weatherPool.push({ x:0, y:0, vx:0, vy:0, type:"", size:0, length:0, alpha:0, active:false });
+    weatherPool.push({ x:0, y:0, vx:0, vy:0, type:"", size:0, length:0, alpha:0, color:"", phase:0, active:false });
   }
 }
 
@@ -936,7 +946,7 @@ function drawParticles() {
 }
 
 let nextFreeWeather = 0;
-function spawnWeatherParticle(x, y, vx, vy, type, size = 0, length = 0, alpha = 1) {
+function spawnWeatherParticle(x, y, vx, vy, type, size = 0, length = 0, alpha = 1, color = "", phase = 0) {
   const start = nextFreeWeather;
   for (let scan = 0; scan < weatherPool.length; scan++) {
     const idx = (start + scan) % weatherPool.length;
@@ -944,7 +954,7 @@ function spawnWeatherParticle(x, y, vx, vy, type, size = 0, length = 0, alpha = 
     if (!p.active) {
       p.active = true;
       p.x = x; p.y = y; p.vx = vx; p.vy = vy;
-      p.type = type; p.size = size; p.length = length; p.alpha = alpha;
+      p.type = type; p.size = size; p.length = length; p.alpha = alpha; p.color = color; p.phase = phase;
       activeWeather.push(p);
       nextFreeWeather = (idx + 1) % weatherPool.length;
       return;
@@ -981,6 +991,14 @@ function spawnWeatherParticles() {
       );
     }
   } else if (state.theme === "meadow") {
+    if (rng() < Math.min(0.024 * state.dt, 0.95)) {
+      spawnWeatherParticle(
+        CONFIG.CANVAS_W + 12,
+        22 + rng() * (ground.y - 84),
+        -(0.55 + rng() * 0.55), 0.08 + rng() * 0.18,
+        "pollen", 1.4 + rng() * 1.8, 0.7 + rng() * 1.4, 0.28 + rng() * 0.28,
+        MEADOW_POLLEN_COLORS[Math.floor(rng() * MEADOW_POLLEN_COLORS.length)],
+        rng() * Math.PI * 2,
     // Gentle drifting pollen / petal flecks — calm and alive
     if (rng() < Math.min(0.07 * state.dt, 0.65)) {
       spawnWeatherParticle(
@@ -1014,6 +1032,10 @@ function updateWeatherParticles() {
         spawnParticles(p.x, ground.y, 2, "rgba(150, 220, 255, 0.4)", 1.5);
         keep = false;
       }
+    } else if (p.type === "pollen") {
+      p.x += Math.sin(state.time * 0.035 + p.phase) * 0.12 * p.length * dt;
+      p.y += Math.cos(state.time * 0.02 + p.phase) * 0.03 * dt;
+      if (p.x < -18 || p.y < -18 || p.y >= ground.y - 8) keep = false;
     } else {
       if (p.x < -10 || p.y > CONFIG.CANVAS_H + 10) keep = false;
     }
@@ -1043,6 +1065,15 @@ function drawWeatherParticles() {
       ctx.globalAlpha = p.alpha;
       ctx.fillRect(p.x, p.y, p.size, p.size);
     } else if (p.type === "pollen") {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(Math.sin(state.time * 0.025 + p.phase) * 0.5);
+      ctx.fillStyle = p.color || "#fde68a";
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, p.size, Math.max(0.8, p.size * 0.68), 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
       // Soft meadow pollen / petals — warm, organic, calm visual delight (flutter phase)
       ctx.globalAlpha = p.alpha * 0.9;
       const r = p.size * 0.52;
@@ -2193,7 +2224,7 @@ function applyTheme(theme) {
   // theme-color meta for mobile chrome
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) {
-    const palette = { sunset: "#180927", midnight: "#020206", rain: "#0a0f1d", aurora: "#030f0c" };
+    const palette = { sunset: "#180927", midnight: "#020206", rain: "#0a0f1d", aurora: "#030f0c", meadow: "#0d1710" };
     metaTheme.setAttribute("content", palette[nextTheme] || "#081120");
   }
   dom.themeBtns.forEach((btn) => {
@@ -2381,6 +2412,7 @@ const ACHIEVEMENTS = [
   { id: "FirstFlight", name: "First Flight", check: () => state.score >= 1, progress: () => `${Math.min(state.score, 1)}/1` },
   { id: "ZenMaster", name: "Zen Master", check: () => state.score >= 15, progress: () => `${Math.min(state.score, 15)}/15` },
   { id: "ShieldSavior", name: "Shield Savior", check: () => state.shieldsSavedCount >= 1, progress: () => `${Math.min(state.shieldsSavedCount, 1)}/1` },
+  { id: "ThemeExplorer", name: "Theme Explorer", check: () => state.playedThemes.size >= THEMES.length, progress: () => `${Math.min(state.playedThemes.size, THEMES.length)}/${THEMES.length}` },
   { id: "ThemeExplorer", name: "Theme Explorer", check: () => state.playedThemes.size >= 5, progress: () => `${state.playedThemes.size}/5` },
   { id: "CalmMarathon", name: "Calm Marathon", check: () => state.zenTimeSec >= 300, progress: () => `${Math.min(Math.floor(state.zenTimeSec / 60), 5)}/5 min` },
   { id: "Featherweight", name: "Featherweight", check: () => state.score >= 30, progress: () => `${Math.min(state.score, 30)}/30` },

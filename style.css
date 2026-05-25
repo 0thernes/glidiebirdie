@@ -18,6 +18,7 @@
   --accent-1: #7dd3fc;
   --accent-2: #facc15;
   --accent-3: #fb923c;
+  --accent-glow: rgba(125, 211, 252, 0.32);
   --danger: #f87171;
   --success: #10b981;
   --shadow-1: 0 18px 60px rgba(0, 0, 0, 0.32);
@@ -90,6 +91,7 @@
     --accent-1: #fda4af;
     --accent-2: #fef08a;
     --accent-3: #fdba74;
+    --accent-glow: rgba(253, 164, 175, 0.34);
     --surface-1: rgba(26, 12, 40, 0.78);
     --surface-2: rgba(40, 18, 54, 0.88);
     --surface-stroke: rgba(253, 164, 175, 0.15);
@@ -102,6 +104,7 @@
     --accent-1: #f472b6;
     --accent-2: #38bdf8;
     --accent-3: #c084fc;
+    --accent-glow: rgba(244, 114, 182, 0.32);
     --surface-1: rgba(6, 6, 20, 0.84);
     --surface-2: rgba(14, 10, 32, 0.9);
     --surface-stroke: rgba(244, 114, 182, 0.18);
@@ -114,6 +117,7 @@
     --accent-1: #cbd5e1;
     --accent-2: #38bdf8;
     --accent-3: #2dd4bf;
+    --accent-glow: rgba(148, 163, 184, 0.3);
     --surface-1: rgba(10, 15, 29, 0.82);
     --surface-2: rgba(20, 28, 47, 0.9);
     --surface-stroke: rgba(148, 163, 184, 0.16);
@@ -126,9 +130,23 @@
     --accent-1: #4ade80;
     --accent-2: #a78bfa;
     --accent-3: #2dd4bf;
+    --accent-glow: rgba(74, 222, 128, 0.3);
     --surface-1: rgba(3, 15, 12, 0.82);
     --surface-2: rgba(8, 28, 20, 0.9);
     --surface-stroke: rgba(74, 222, 128, 0.16);
+  }
+
+  body.theme-meadow {
+    --bg-1: #0d1710;
+    --bg-2: #1b3520;
+    --bg-3: #35512f;
+    --accent-1: #86efac;
+    --accent-2: #fde68a;
+    --accent-3: #facc15;
+    --accent-glow: rgba(134, 239, 172, 0.32);
+    --surface-1: rgba(15, 25, 16, 0.8);
+    --surface-2: rgba(25, 41, 24, 0.9);
+    --surface-stroke: rgba(190, 242, 100, 0.18);
   }
 
   @keyframes bgShift {
@@ -709,32 +727,43 @@
 
   .theme-cluster {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.6rem;
+    grid-template-columns: repeat(auto-fit, minmax(6.8rem, 1fr));
+    gap: 0.7rem;
   }
   .theme-btn {
     appearance: none;
     border: 1px solid rgba(238, 247, 255, 0.12);
     border-radius: 1rem;
-    padding: 0.7rem 0.6rem;
-    background: rgba(255, 255, 255, 0.03);
+    padding: 0.78rem 0.65rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
     color: var(--text-2);
     font-weight: 600;
     cursor: pointer;
     text-align: center;
     transition: all 0.2s ease;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.25;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.16);
+    transform: translateY(0);
   }
   .theme-btn:hover {
     border-color: var(--accent-1);
-    background: rgba(255, 255, 255, 0.06);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
   }
   .theme-btn.active {
     color: var(--text-1);
-    background: rgba(125, 211, 252, 0.12);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
     border-color: var(--accent-1);
-    box-shadow: 0 0 12px rgba(125, 211, 252, 0.25);
+    box-shadow:
+      0 14px 28px rgba(0, 0, 0, 0.24),
+      0 0 18px var(--accent-glow);
+    transform: translateY(-2px);
   }
 
   .slider-custom {

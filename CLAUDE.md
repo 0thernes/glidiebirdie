@@ -1,58 +1,74 @@
-# Project Context for AI Assistants
+# Project Context For AI Assistants
 
-This file is for Claude Code, Cursor, Copilot, Continue, and similar AI coding tools.
-Read this first when you start a session in this repo.
+This file is for Claude Code, Codex, Cursor, Copilot, Continue, and similar tools.
 
-## What this is
+Read this first before making changes in the repo.
 
-A **solo, vibe-coded, browser-first MVP** of a calm Flappy Bird variant. Single HTML, single
-CSS, single game-engine JavaScript file, plus a tiny service worker for the offline app shell.
-No build step. No bundler. No runtime dependencies.
+## Read Order
 
-The game runs on desktop browsers and phone browsers. It is intended to be installable as
-a PWA on Android and iOS.
+1. `README.md`
+2. `docs/architecture_master_blueprint.md`
+3. `CONTRIBUTING.md`
+4. `tests/smoke-test.mjs`
+5. `.memory/security.md` before touching storage, network, or DOM injection
+
+## What This Project Is
+
+A solo-built, browser-first Flappy Bird variant tuned for comfort and clarity.
+
+The runtime is intentionally simple:
+
+- one HTML shell
+- one CSS file
+- one game engine file
+- one small service worker
+- no build step
+- no runtime dependencies
+- no backend
 
 ## Hard rules
 
-- **No build step.** Never add Webpack, Vite, Rollup, Parcel, esbuild, or Turbopack.
-- **No runtime dependencies.** Never add `npm install <runtime-package>`.
-- **No remote assets.** No CDN imports, no Google Fonts, no analytics scripts.
-- **No backend.** All state lives in `localStorage`.
-- **Single `game.js` game-engine file** is intentional. Do not split it into modules.
-- **Single `style.css` file** is intentional.
-- **Vanilla DOM + Canvas 2D + Web Audio** only.
-- **Service worker stays tiny.** It only caches the static app shell; no analytics, push, background sync, or remote dependencies.
+- Do not add a build step.
+- Do not add runtime dependencies.
+- Do not add remote assets, hosted fonts, analytics, or CDN imports.
+- Do not add a backend or network data flow for gameplay state.
+- Do not split `game.js` into modules.
+- Do not split `style.css` into multiple files.
+- Keep the service worker tiny and app-shell-focused.
 
-## Soft preferences
+## Runtime Rules
 
-- Add features by extending the existing structure rather than refactoring it.
-- Group magic numbers in the `CONFIG` block at the top of `game.js`.
-- Keep section comment dividers (`// ─── N. SECTION ───`) intact and update the index at the top.
-- Naming: `camelCase` everywhere, action-first for functions (`doFlap`, `spawnParticles`).
-- All time math must respect `state.dt` (60-fps-normalized) or `state.dtSec` (real seconds).
-- All persistence must go through the guarded storage helpers, never `localStorage.setItem` directly.
-- All ATs (screen readers) must be considered — use `announce()` for status changes.
-- Respect `prefers-reduced-motion`, `prefers-contrast: more`, `prefers-reduced-transparency`, `forced-colors: active`.
+- Put tunable constants in `CONFIG`.
+- Respect `state.dt` or `state.dtSec` for time-based behavior.
+- Route persistence through the guarded storage helpers only.
+- Keep mobile controls functional when gameplay changes.
+- Preserve keyboard access, live announcements, and reduced-motion handling.
+- Prefer extending the current structure over inventing a parallel one.
 
-## Where things live
+## Documentation Rules
 
-- `game.js` — entire engine.
-- `index.html` — semantic shell, ARIA, mobile controls, PWA tags.
-- `style.css` — layered (base/layout/components/utilities), themed, reduced-motion aware.
-- `manifest.webmanifest` — PWA install metadata.
-- `service-worker.js` — offline app-shell cache for localhost / HTTPS installs.
-- `tests/smoke-test.mjs` — regex + syntax smoke check.
-- `.memory/` — the canonical AI context (decisions, preferences, security, quirks, instructions).
-- `docs/assets/` — README screenshots.
+If you change the public shape of the project, update the matching docs in the same change set.
 
-## When in doubt
+- `README.md` for player-facing features and workflow
+- `docs/architecture_master_blueprint.md` for runtime structure
+- `CONTRIBUTING.md` for contributor workflow
+- `SUPPORT.md` for troubleshooting changes
 
-- Read `.memory/security.md` before any change involving storage, network, or DOM injection.
-- Read `.memory/decisions.md` for architectural commitments.
-- Read `.memory/preferences.md` for style.
-- Read `.memory/quirks.md` for project-specific weirdness.
+## Important Files
 
-## Hot tip for LLMs
+| File | Purpose |
+| --- | --- |
+| `game.js` | Entire runtime engine |
+| `index.html` | Semantic shell, canvas host, controls, tutorial, PWA metadata |
+| `style.css` | Layout, components, themes, accessibility styling |
+| `service-worker.js` | Minimal offline shell caching |
+| `manifest.webmanifest` | Install metadata |
+| `tests/smoke-test.mjs` | Lightweight repo safety checks |
+| `.memory/` | Canonical project notes and constraints |
 
-The whole project fits in one context window. Read every file before making changes —
-faster than guessing, and the project is small enough that full context costs nothing.
+## When In Doubt
+
+- Prefer a smaller change.
+- Preserve the current runtime shape.
+- Check the architecture guide before refactoring.
+- Run `npm run check` before closing the task.

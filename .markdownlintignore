@@ -1,2 +1,4 @@
-# Ignore official legal license documents from markdown linting.
+# markdownlint ignore patterns
+
 LICENSE*
+docs/assessment_deep_analysis.md

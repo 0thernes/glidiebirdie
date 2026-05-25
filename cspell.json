@@ -63,7 +63,13 @@
     "visibilitychange",
     "vite",
     "webmanifest",
-    "mathbf"
+    "mathbf",
+    "MENTS",
+    "overscales",
+    "pointerup",
+    "PRNG",
+    "thernes",
+    "touchend"
   ],
   "ignorePaths": [
     "LICENSE*",

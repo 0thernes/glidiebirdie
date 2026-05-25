@@ -1,46 +1,55 @@
-# Memory-Augmented Context
+# Copilot Instructions
+
+Use this file as the fast-start guide for repository context.
+
+Read these files before making a substantial change:
+
+1. `README.md`
+2. `docs/architecture_master_blueprint.md`
+3. `CONTRIBUTING.md`
+4. `CLAUDE.md`
 
 <!-- hacklm-memory:start -->
+## Memory-Augmented Context
 
-Read memory files on-demand — not all at once.
+Read memory files on demand, not all at once.
 
 | File | When to read |
-|------|-------------|
-| [.memory/instructions.md](.memory/instructions.md) | How to behave |
-| [.memory/quirks.md](.memory/quirks.md) | When something breaks unexpectedly |
-| [.memory/preferences.md](.memory/preferences.md) | Style/design/naming choices |
-| [.memory/decisions.md](.memory/decisions.md) | Architectural changes |
-| [.memory/security.md](.memory/security.md) | **ALWAYS — before any code change** |
+| --- | --- |
+| [.memory/instructions.md](.memory/instructions.md) | Behavior rules and working style |
+| [.memory/quirks.md](.memory/quirks.md) | Repo-specific surprises and breakage patterns |
+| [.memory/preferences.md](.memory/preferences.md) | Naming, style, and design choices |
+| [.memory/decisions.md](.memory/decisions.md) | Architecture commitments and tradeoffs |
+| [.memory/security.md](.memory/security.md) | Always read before changing storage, network, or DOM injection behavior |
 
 ## Memory Tools
 
-Call `queryMemory` before answering anything about architecture, conventions, or style.
+Call `queryMemory` before answering questions about architecture, conventions, or style.
 
-Call `storeMemory` (with a kebab-case `slug`) when:
+Call `storeMemory` with a kebab-case `slug` when:
 
-1. User states a preference or rule → store as Instruction or Preference **before** acting
-2. User corrects you → store the correction
-3. A command or build fails → store root cause and fix
-4. After completing any implementation task → store each architectural decision, convention, or pattern applied that is not already in memory. Do this **before ending the turn**.
+1. The user states a new preference or rule.
+2. The user corrects a prior assumption.
+3. A command or build fails and the root cause becomes clear.
+4. You finish an implementation that introduces a new convention or architectural choice.
 
-Same slug = update, not duplicate.
+If the slug already exists, update it instead of creating a duplicate.
 
-## Writing Style for Memory Entries
+## Writing Style For Memory Entries
 
-Hemingway style. Short sentences. No jargon. No filler. Be blunt.
+Keep entries short, direct, and specific.
 
-Bad: "The system employs an asynchronous locking mechanism to serialise concurrent write operations."
-
-Good: "Use a lock before writing. One write at a time."
+- Prefer blunt summaries over abstract language.
+- Record the concrete rule, failure mode, or decision.
+- Avoid filler and repeated context from the README.
 
 ## Categories
 
 | Category | Use for |
-|----------|---------|
-| Instruction | How to behave |
-| Quirk | Project-specific weirdness |
-| Preference | Style/design/naming |
-| Decision | Architectural commitments |
-| Security | Rules that must NEVER be broken |
-
+| --- | --- |
+| Instruction | How the assistant should behave |
+| Quirk | Repo-specific weirdness |
+| Preference | Style, naming, or design choices |
+| Decision | Architecture commitments |
+| Security | Rules that must not be broken |
 <!-- hacklm-memory:end -->
