@@ -1,6 +1,7 @@
 # How to Ship v2.2.0 Parallel Elevation (from this workspace or a clean clone)
 
 The beautiful changes are **already applied** in the filesystem here:
+
 - New hero + social images in docs/assets/
 - README, game.js (crest + header), package.json, CHANGELOG, index.html, smoke test all updated for 2.2.0
 - `npm run check` passes
@@ -44,7 +45,7 @@ gh pr create \
 
 ## Commit message (ready to use)
 
-```
+```text
 chore(release): v2.2.0 Parallel Elevation — 12-build Superman polish
 
 - Cinematic new hero banner + social preview card (docs/assets)

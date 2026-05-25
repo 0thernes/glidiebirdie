@@ -13,30 +13,36 @@ All notable changes to this project are documented here.
 - Reworked the Zen Customizer theme selector into an auto-fit grid so all five themes sit cleanly without the old awkward wrapping.
 - Polished active theme buttons with a subtle lift and stronger theme-aware glow so selection feedback feels more intentional.
 - Updated Theme Explorer achievement progress to track all available themes dynamically.
+
 ## [2.2.0] — Parallel Elevation (12-Build Superman Drop)
 
 ### Added
+
 - **Cinematic new hero & social assets** — Beautiful wide meadow golden-hour banner and polished social preview card generated and integrated. The repo now looks as serene and inviting as the game plays.
 - **Cute head crest on the bird** — Small expressive feather tuft added to every cached sprite (all themes + emotions). The bird feels even more like a living companion character.
 - New "Superman Mode" badge and energetic LFG callout in README celebrating the 12 parallel Grok 4.3 build process that produced this elevation.
 
 ### Improved
+
 - **README transformed** — Stunning new hero image at the top, clearer visual hierarchy, celebratory yet calm tone, updated Open Graph card to the new social preview. The landing experience on GitHub is now world-class.
 - Updated version strings, headers, and meta across the project for the 2.2.0 Parallel Elevation.
 - Minor ground and particle atmosphere already rich from prior work now complemented by the new crest and presentation assets.
 - **Premium calm interactions** — Theme-aware focus rings + gentle scale lift on hover for toolbar buttons, mobile controls, theme selectors, and canvas. All micro-animations and transforms fully respect `prefers-reduced-motion` and forced-colors. The UI now feels even more special and cohesive with the five serene themes.
 
 ### Docs & Release
+
 - This drop was forged in 12 simultaneous Grok 4.3 builds with full respect for the zero-dependency, single-file, accessibility-first, calm-core rules. LFG.
 
 ## [2.1.0] — Meadow & Visual Delight
 
 ### Added
+
 - **New "Meadow" theme** — Golden-hour greens, warm sunlit bird, gentle flute-like arpeggios. Fifth distinct palette for even more calm variety.
 - Enhanced high-score celebration with richer particle bursts and subtle screen emphasis (still respects `prefers-reduced-motion`).
 - More expressive micro-animations on the bird (subtle body squash on strong flaps, livelier wing timing).
 
 ### Improved
+
 - Refined theme button layout in the Zen Customizer for all five themes (now uses elegant auto-fit grid; active states feel premium and intentional).
 - **Meadow theme now alive** — gentle drifting pollen / petal flecks with soft warm colors that match the palette, making the theme feel distinct and serene (low density, calm, respects reduced-motion). Organic 4-lobe petal rendering + living sparse grass tufts on the ground band with subtle wind sway (static in reduced-motion) for true "meadow" presence.
 - All previous themes now fully table-driven with matching music and weather density.
@@ -45,6 +51,7 @@ All notable changes to this project are documented here.
 - **Shield collection** — added a soft warm low sine tail ("you are held"). The emotional reward is stronger and more calm.
 
 ### Docs & Release
+
 - Continuing the Vibe & Soul direction under v2.1.0. All changes remain strictly zero-dependency, single-file, procedural, and fully respectful of reduced-motion and accessibility rules.
 
 ## [2.0.2] — Full Polish Audit

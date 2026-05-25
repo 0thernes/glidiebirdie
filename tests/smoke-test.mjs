@@ -67,7 +67,7 @@ assert.match(
 );
 assert.match(
   textFiles.js,
-  /serviceWorker[\s\S]*register\("\.\/service-worker\.js"/,
+  /serviceWorker[\s\S]*register\(["']\.\/service-worker\.js["']/,
   'service worker must register the local app shell',
 );
 assert.match(

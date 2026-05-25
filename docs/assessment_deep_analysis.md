@@ -93,7 +93,7 @@ flappy-bird-calm-edition/
 
 ## 3. System Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              BROWSER ENVIRONMENT                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -176,7 +176,7 @@ flappy-bird-calm-edition/
 
 ## 4. Data Flow Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              INPUT LAYER                                     │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -240,7 +240,7 @@ flappy-bird-calm-edition/
 
 ## 5. State Machine Analysis
 
-```
+```text
                     ┌─────────────┐
                     │   "start"   │
                     │  (idle demo) │
@@ -278,7 +278,7 @@ flappy-bird-calm-edition/
 
 **Structural Hierarchy:**
 
-```
+```text
 html[lang="en", dir="ltr"]
 ├── head
 │   ├── charset, viewport (viewport-fit=cover, interactive-widget=resizes-content)
@@ -358,7 +358,7 @@ html[lang="en", dir="ltr"]
 
 **Layer Architecture (CSS Cascade Layers):**
 
-```
+```text
 @layer base, layout, components, utilities;
 ```
 
@@ -428,7 +428,7 @@ html[lang="en", dir="ltr"]
 
 ### Section 1: CONFIG (~40 constants, Object.freeze)
 
-```
+```text
 CANVAS_W/H          420×640 logical pixels
 FRAME_MS_60         16.667ms baseline
 DT_MAX              3 (lag spike cap)
@@ -509,7 +509,7 @@ FRAME_ERROR_COOLDOWN_SEC 3
 
 **Audio Graph Topology:**
 
-```
+```text
 oscillator ──► masterGain ──┬──► masterLowpass ──► destination
                             └──► reverbConvolver ──► reverbWetGain ──► destination
 ```
@@ -543,7 +543,7 @@ oscillator ──► masterGain ──┬──► masterLowpass ──► desti
 
 **Core Properties:**
 
-```
+```text
 phase: "start" | "play" | "gameOver"
 score, best, frames, time, elapsedSec, runSec
 theme, gravitySetting, speedSetting, musicVolume, sfxVolume
@@ -585,7 +585,7 @@ Offscreen canvas caching strategy:
 
 **Bird Object:**
 
-```
+```text
 x, y, radius, velocity, rotation, emotion, emotionTimer
 wingAngle, wingDir, scaleX, scaleY, trail[], isBraking, isDiving
 blush, pupilOffsetX, pupilOffsetY, pupilDilate
@@ -593,7 +593,7 @@ blush, pupilOffsetX, pupilOffsetY, pupilDilate
 
 **Ground Object:**
 
-```
+```text
 y, height, offset
 ```
 
@@ -970,9 +970,9 @@ syncUiState(); // 8. Initial UI state
 
 ## 9. Deep Dive: service-worker.js — PWA Cache Strategy
 
-**Cache Strategy: Cache-First with Navigation Fallback**
+### Cache Strategy: Cache-First with Navigation Fallback
 
-```
+```text
 INSTALL:
   → Open cache "flappy-calm-v2.0.2"
   → Add all APP_SHELL files
@@ -1327,7 +1327,7 @@ Repository previously contained live credentials for 8+ services inside `.gitign
 
 ## 17. Complete Dependency Graph
 
-```
+```text
 index.html
 ├── style.css (preload + stylesheet)
 ├── manifest.webmanifest (PWA metadata)
@@ -1409,7 +1409,7 @@ tests/smoke-test.mjs
 
 **Theme Application Flow:**
 
-```
+```text
 User clicks theme button
     ↓
 state.theme updated
@@ -1453,7 +1453,7 @@ syncStatsAndAchievements(true)
 
 **Delta Time Normalization:**
 
-```
+```text
 dt = elapsedMs / (1000/60)  // normalized to 60fps
 dt = min(dt, 3)             // cap at 3× to prevent tunneling
 dtSec = elapsedMs / 1000    // wall-clock seconds
@@ -1461,7 +1461,7 @@ dtSec = elapsedMs / 1000    // wall-clock seconds
 
 **Bird Physics (per frame):**
 
-```
+```text
 if braking and falling: velocity *= 0.78^dt
 if diving: velocity += 0.16*dt (capped at terminalFall)
 velocity *= drag^dt  // drag=0.992 (up) or 0.985 (down)
@@ -1473,7 +1473,7 @@ rotation += (targetRotation - rotation) * easing*dt
 
 **Pipe Movement:**
 
-```
+```text
 speed = pipeSpeed * speedMultiplier * dt
 x -= speed
 if moving: topHeight = baseTopHeight + sin(movePhase)*14
@@ -1481,7 +1481,7 @@ if moving: topHeight = baseTopHeight + sin(movePhase)*14
 
 **Speed Ramp:**
 
-```
+```text
 if score % 6 == 0: speedMultiplier = min(maxSpeedMultiplier, speedMultiplier + 0.03)
 ```
 
@@ -1519,7 +1519,7 @@ if score % 6 == 0: speedMultiplier = min(maxSpeedMultiplier, speedMultiplier + 0
 
 ## 23. Complete State Transition Diagram
 
-```
+```text
 ┌─────────┐     Space/Click/Tap      ┌─────────┐
 │  START  │ ─────────────────────────► │  PLAY   │
 │ (idle)  │                            │ (active)│

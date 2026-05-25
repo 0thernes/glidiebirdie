@@ -370,6 +370,7 @@
   .ui-button.danger:hover {
     background: rgba(248, 113, 113, 0.12);
   }
+  #postcardCopyBtn { display: none; }
 
   canvas {
     width: 100%;

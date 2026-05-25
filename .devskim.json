@@ -1,0 +1,7 @@
+{
+  "ignoreFiles": [
+    "**/*.d.ts",
+    "**/lib.dom.d.ts"
+  ],
+  "suppressionDurationInDays": 0
+}

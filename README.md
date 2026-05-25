@@ -45,6 +45,7 @@ Calm Edition keeps the fast arcade loop, then softens the failure edges: slower 
 **A polished, friendly, browser-first Flappy Bird built for flow instead of frustration.**
 
 ### The Calm Philosophy
+
 We kept the addictive loop everyone loves and removed everything that hurts.  
 Larger gaps. Gentler gravity. A shield that forgives. Five living themes you can feel in your chest.  
 Procedural sound that breathes with the world. A bird with real emotions and eyes that look for safety.  
@@ -195,6 +196,7 @@ Accessibility is part of the product, not cleanup work after the fact.
 ## Documentation Guide
 
 If you are new to the repo, read the docs in this order:
+
 | Path                      | Purpose                                                                                    |
 | ------------------------- | ------------------------------------------------------------------------------------------ |
 | `index.html`              | Semantic shell, canvas, mobile control bar, customizer drawer, tutorial, PWA meta tags.    |
@@ -220,6 +222,7 @@ If you are new to the repo, read the docs in this order:
 4. `CLAUDE.md` for AI-assistant-specific guardrails.
 
 ## Contributing
+
 Contributions are welcome when they keep the game calm, accessible, dependency-free, and easy
 to run. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md), then use the issue templates for bugs,
 feature ideas, or accessibility feedback.
