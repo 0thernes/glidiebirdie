@@ -2,7 +2,8 @@
 "use strict";
 
 // ═══════════════════════════════════════════════════════════════════
-// FLAPPY BIRD — CALM EDITION (v2.0.2)
+// FLAPPY BIRD — CALM EDITION (v2.2.0 — Parallel Elevation)
+// Cinematic hero assets, richer calm atmosphere, 12-build Superman polish.
 // Single-file engine. Zero dependencies. Mobile-first browser game.
 //
 // Section index:
@@ -107,9 +108,24 @@ const CONFIG = Object.freeze({
   // Error rate limiting
   FRAME_ERROR_BURST_LIMIT: 8,
   FRAME_ERROR_COOLDOWN_SEC: 3,
+
+  // Meadow "Golden Light" — soft godrays / sunbeams for signature calm delight (v2.2)
+  MEADOW_LIGHT_COUNT: 3,
+  MEADOW_LIGHT_ALPHA: 0.055,
+  MEADOW_LIGHT_WAVE_SPEED: 0.012,
+  MEADOW_LIGHT_VERTICAL: 0.18,
+
+  // Living breath flecks — subtle serene atmosphere only when calmly gliding
+  CALM_BREATH_PARTICLE_CHANCE: 0.009,
+  CALM_BREATH_PARTICLE_COUNT: 1,
+  CALM_BREATH_SPREAD: 0.7,
+
+  // Sunset golden motes — warm drifting dust for theme parity
+  SUNSET_MOTE_CHANCE: 0.06,
+  SUNSET_MOTE_ALPHA: 0.28,
 });
 
-const THEMES = Object.freeze(["sunset", "midnight", "rain", "aurora"]);
+const THEMES = Object.freeze(["sunset", "midnight", "rain", "aurora", "meadow"]);
 const SETTING_LEVELS = Object.freeze([1, 2, 3, 4]);
 const GRAVITY_LABELS = Object.freeze({ 1: "Ultra-Light", 2: "Calm", 3: "Normal", 4: "Heavy" });
 const SPEED_LABELS   = Object.freeze({ 1: "Breeze", 2: "Chill", 3: "Cruise", 4: "Swift" });
@@ -143,6 +159,8 @@ const reducedTransparencyQuery =
 
 const dom = {
   pauseToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById("pauseToggle")),
+  postcardButton: /** @type {HTMLButtonElement | null} */ (document.getElementById("postcardButton")),
+  postcardCopyBtn: /** @type {HTMLButtonElement | null} */ (document.getElementById("postcardCopyBtn")),
   muteToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById("muteToggle")),
   restartButton: /** @type {HTMLButtonElement | null} */ (document.getElementById("restartButton")),
   fullscreenToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById("fullscreenToggle")),
@@ -427,6 +445,7 @@ function sfxShieldCollect() {
     [659, 0.12, "sine", 0.10, 0.07],
     [784, 0.15, "sine", 0.12, 0.14],
     [1047, 0.20, "sine", 0.15, 0.21],
+    [392, 0.55, "sine", 0.07, 0.38], // warm settling tail — "you are held"
   ]);
 }
 function sfxShieldPop() {
@@ -440,6 +459,7 @@ const musicThemes = {
   midnight: { notes: [293, 370, 440, 587, 440, 370], wave: "square", subWave: "sine",     interval: 0.44 },
   rain:     { notes: [220, 262, 330, 440, 330, 262], wave: "sine",   subWave: "triangle", interval: 0.52 },
   aurora:   { notes: [277, 311, 349, 415, 349, 311], wave: "sine",   subWave: "sine",     interval: 0.50 },
+  meadow:   { notes: [262, 294, 349, 440, 392, 349], wave: "sine",   subWave: "triangle", interval: 0.48 },
 };
 
 let musicSchedulerHandle = /** @type {number | null} */ (null);
@@ -539,6 +559,7 @@ const state = {
   maxSpeedMultiplier: CONFIG.PIPE_MAX_SPEED_MULT,
 
   paused: false,
+  postcardMode: false,
   audioEnabled: true,
   reducedMotion: reducedMotionQuery.matches,
   reducedTransparency: reducedTransparencyQuery?.matches ?? false,
@@ -586,6 +607,14 @@ const state = {
 
   // Game over / new best
   isNewBest: false,
+
+  // Afterglow — the quiet, beautiful reflection after a meaningful flight
+  // (short graceful pause that makes the end of a good run feel special)
+  afterglowActive: false,
+  afterglowTimer: 0,
+  afterglowReflection: "",
+  afterglowShieldUsed: false,
+  afterglowBrakeHeavy: false,
 };
 
 /** Convert level settings into actual physics constants. */
@@ -642,6 +671,16 @@ const THEME_TABLE = Object.freeze({
     trail:  "#4ade80",
     flapParticle: "#4ade80",
     scoreParticle: "#a78bfa",
+  },
+  meadow: {
+    bird:   { calm: "#f4d35e", happy: "#f9c74f", scared: "#e8b923", determined: "#d4a017", dizzy: "#c9a227",
+              beak: "#e07a3d", hl: "#fff3b0", shadow: "#d4a017" },
+    ground: { sand: "#d4a373", grass1: "#588157", grass2: "#3a5a40", dirt: "#a67c52" },
+    sky:    { h1: 85, h2: 105, cAlpha: 0.35 },
+    pipe:   { hue: 95, cap: 75 },
+    trail:  "#f4d35e",
+    flapParticle: "#f9c74f",
+    scoreParticle: "#81b29a",
   },
 });
 
@@ -741,6 +780,18 @@ function rebuildBirdCache() {
       cx.beginPath();
       cx.arc(2, 5, CONFIG.BIRD_RADIUS * 0.85, 0, Math.PI * 2);
       cx.fill();
+
+      // cute head crest / tuft — extra personality & calm character (cheap, cached)
+      cx.fillStyle = palette.hl;
+      cx.globalAlpha = 0.65;
+      cx.beginPath();
+      cx.moveTo(-3, -17);
+      cx.quadraticCurveTo(0, -24, 6, -16);
+      cx.quadraticCurveTo(1, -19, -3, -17);
+      cx.closePath();
+      cx.fill();
+      cx.globalAlpha = 1;
+
       // beak (curved)
       cx.fillStyle = palette.beak;
       cx.beginPath();
@@ -790,6 +841,7 @@ const bird = {
   pupilOffsetX: 0,
   pupilOffsetY: 0,
   pupilDilate: 0, // 0..1 transient expansion on flap
+  breath: 0,      // living bird subtle breathing scale offset (calm glide only)
 };
 
 // Pre-allocate trail once.
@@ -928,6 +980,24 @@ function spawnWeatherParticles() {
         "cyber", 2.2 + rng() * 2.0, 0, 0.2 + rng() * 0.35,
       );
     }
+  } else if (state.theme === "meadow") {
+    // Gentle drifting pollen / petal flecks — calm and alive
+    if (rng() < Math.min(0.07 * state.dt, 0.65)) {
+      spawnWeatherParticle(
+        rng() * CONFIG.CANVAS_W, -8,
+        (rng() - 0.5) * 0.7, 0.8 + rng() * 0.9,
+        "pollen", 1.4 + rng() * 1.6, 0, 0.28 + rng() * 0.35,
+      );
+    }
+  } else if (state.theme === "sunset") {
+    // Warm golden motes — soft drifting dust in evening light
+    if (rng() < Math.min(CONFIG.SUNSET_MOTE_CHANCE * state.dt, 0.6)) {
+      spawnWeatherParticle(
+        rng() * CONFIG.CANVAS_W, -6,
+        (rng() - 0.5) * 0.4, 0.6 + rng() * 0.7,
+        "mote", 1.1 + rng() * 1.1, 0, CONFIG.SUNSET_MOTE_ALPHA + rng() * 0.1,
+      );
+    }
   }
 }
 
@@ -972,6 +1042,43 @@ function drawWeatherParticles() {
       ctx.fillStyle = "rgba(244, 114, 182, 0.55)";
       ctx.globalAlpha = p.alpha;
       ctx.fillRect(p.x, p.y, p.size, p.size);
+    } else if (p.type === "pollen") {
+      // Soft meadow pollen / petals — warm, organic, calm visual delight (flutter phase)
+      ctx.globalAlpha = p.alpha * 0.9;
+      const r = p.size * 0.52;
+      const phase = (p.x * 0.8 + p.y * 0.6 + state.time * 1.8) * 0.018; // gentle living flutter
+      // Core glow
+      ctx.fillStyle = "rgba(249, 199, 79, 0.65)";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fill();
+      // Four gentle petal lobes with phase rotation for organic meadow life (still cheap)
+      ctx.fillStyle = "rgba(255, 225, 150, 0.38)";
+      for (let i = 0; i < 4; i++) {
+        const a = (i * (Math.PI / 2)) + phase;
+        const px = p.x + Math.cos(a) * r * 0.72;
+        const py = p.y + Math.sin(a) * r * 0.72;
+        ctx.beginPath();
+        ctx.arc(px, py, r * 0.58, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Tiny bright center spark for premium golden feel
+      ctx.fillStyle = "rgba(255, 250, 220, 0.75)";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.type === "mote") {
+      // Warm sunset dust motes — soft, glowing, slow drifting
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = "rgba(255, 210, 130, 0.6)";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * 0.55, 0, Math.PI * 2);
+      ctx.fill();
+      // Subtle highlight for golden light quality
+      ctx.fillStyle = "rgba(255, 245, 200, 0.35)";
+      ctx.beginPath();
+      ctx.arc(p.x - 0.6, p.y - 0.6, p.size * 0.22, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
   ctx.globalAlpha = 1.0;
@@ -993,6 +1100,34 @@ function drawAuroraBands() {
     ctx.lineTo(CONFIG.CANVAS_W, 0);
     ctx.lineTo(CONFIG.CANVAS_W + shiftX, CONFIG.CANVAS_H - 180);
     ctx.lineTo(shiftX, CONFIG.CANVAS_H - 180);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Meadow signature "Golden Light" godrays — warm, drifting sunbeams for the calmest theme.
+// Cheap canvas gradients, time-based drift, fully respects reduced-motion and CONFIG.
+function drawMeadowLight() {
+  if (state.theme !== "meadow" || state.reducedMotion) return;
+  ctx.save();
+  const t = state.time * CONFIG.MEADOW_LIGHT_WAVE_SPEED;
+  for (let i = 0; i < CONFIG.MEADOW_LIGHT_COUNT; i++) {
+    const shift = Math.sin(t + i * 1.3) * (28 + i * 11);
+    const a = CONFIG.MEADOW_LIGHT_ALPHA * (0.65 + i * 0.18);
+    const grad = ctx.createLinearGradient(
+      CONFIG.CANVAS_W * (0.62 + i * 0.07), 0,
+      CONFIG.CANVAS_W * 0.18, CONFIG.CANVAS_H * CONFIG.MEADOW_LIGHT_VERTICAL
+    );
+    grad.addColorStop(0, `rgba(255, 232, 155, ${a})`);
+    grad.addColorStop(0.45, `rgba(255, 218, 125, ${a * 0.55})`);
+    grad.addColorStop(1, "rgba(255, 205, 90, 0)");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(CONFIG.CANVAS_W * (0.58 + i * 0.06), 0);
+    ctx.lineTo(CONFIG.CANVAS_W + 8, 0);
+    ctx.lineTo(CONFIG.CANVAS_W * (1.02 + shift * 0.009), CONFIG.CANVAS_H * 0.52);
+    ctx.lineTo(CONFIG.CANVAS_W * (0.32 + shift * 0.007), CONFIG.CANVAS_H * 0.46);
     ctx.closePath();
     ctx.fill();
   }
@@ -1073,6 +1208,18 @@ function updateBird() {
   bird.scaleY += (1 - bird.scaleY) * Math.min(1, 0.14 * dt);
   if (bird.pupilDilate > 0) bird.pupilDilate = Math.max(0, bird.pupilDilate - 0.06 * dt);
 
+  // Living bird — gentle breathing when calmly gliding (no brake/dive, low velocity)
+  const calmGlide = (bird.emotion === "calm" || bird.emotion === "happy")
+    && Math.abs(bird.velocity) < 1.8
+    && !bird.isBraking && !bird.isDiving
+    && state.phase === "play";
+  bird.breath = calmGlide ? Math.sin(state.time * 0.065) * 0.016 : 0;
+
+  // Living breath flecks — the world gently breathing with a calm glider
+  if (calmGlide && !state.reducedMotion && rng() < CONFIG.CALM_BREATH_PARTICLE_CHANCE * state.dt) {
+    spawnParticles(bird.x - 2, bird.y + 10, CONFIG.CALM_BREATH_PARTICLE_COUNT, getTheme().flapParticle || "#fff", CONFIG.CALM_BREATH_SPREAD);
+  }
+
   if (!state.reducedMotion) {
     for (let i = bird.trail.length - 1; i > 0; i--) {
       bird.trail[i].x = bird.trail[i - 1].x;
@@ -1086,18 +1233,57 @@ function updateBird() {
     for (let i = 0; i < bird.trail.length; i++) bird.trail[i].life = 0;
   }
 
-  // Eye tracking
+  // Living eyes — the bird looks at the world with intent
+  // Priority: active shield bubble > next safe gap. Feels curious and alive.
+  let lookX = 18; // default gentle forward gaze
+  let lookY = 0;
+
   const nearPipe = nearestPipeCache;
-  if (nearPipe) {
-    const tx = nearPipe.x - bird.x;
-    const gapCenter = nearPipe.topHeight + state.gap / 2;
-    const ty = gapCenter - bird.y;
+  let targetX = null;
+  let targetY = null;
+
+  // Prefer shield when it's present and ahead (the "prize" moment)
+  let shieldTarget = null;
+  for (const p of pipes) {
+    if (p.shieldBubble && p.x > bird.x - 20) {
+      shieldTarget = p;
+      break;
+    }
+  }
+
+  if (shieldTarget && shieldTarget.shieldBubble) {
+    targetX = shieldTarget.x;
+    targetY = bird.y - 8; // slightly above center of bubble for "hopeful" look
+  } else if (nearPipe) {
+    targetX = nearPipe.x;
+    targetY = nearPipe.topHeight + state.gap / 2;
+  }
+
+  if (targetX !== null && targetY !== null) {
+    const tx = targetX - bird.x;
+    const ty = targetY - bird.y;
     const dist = Math.hypot(tx, ty) || 1;
-    bird.pupilOffsetX = (tx / dist) * 2;
-    bird.pupilOffsetY = (ty / dist) * 1.5;
-  } else {
-    bird.pupilOffsetX *= 0.9;
-    bird.pupilOffsetY *= 0.9;
+    const strength = shieldTarget ? 3.2 : 2.4;
+    lookX = (tx / dist) * strength;
+    lookY = (ty / dist) * (shieldTarget ? 2.8 : 1.8);
+  }
+
+  // Brake = focused, determined look forward and slightly down
+  if (bird.isBraking) {
+    lookX = Math.max(lookX, 2.5);
+    lookY = Math.min(lookY + 1.2, 3);
+  }
+
+  // Soft easing + tiny organic interest when gliding calm
+  const ease = 0.18 * state.dt;
+  bird.pupilOffsetX += (lookX - bird.pupilOffsetX) * ease;
+  bird.pupilOffsetY += (lookY - bird.pupilOffsetY) * ease;
+
+  // Very subtle idle curiosity when no strong target and calm
+  if (!nearPipe && !shieldTarget && (bird.emotion === "calm" || bird.emotion === "happy")) {
+    const t = state.time * 0.9;
+    bird.pupilOffsetX += Math.sin(t) * 0.25 * 0.016 * state.dt;
+    bird.pupilOffsetY += Math.cos(t * 0.7) * 0.18 * 0.016 * state.dt;
   }
 
   if (state.isInvincible) {
@@ -1292,6 +1478,7 @@ function drawBackground() {
   }
 
   drawAuroraBands();
+  drawMeadowLight();
 
   // Parallax clouds — multiple depths
   const skyCfg = getTheme().sky;
@@ -1389,6 +1576,26 @@ function drawGround() {
   grassGrad.addColorStop(1, g.grass2);
   ctx.fillStyle = grassGrad;
   ctx.fillRect(0, ground.y, CONFIG.CANVAS_W, 14);
+
+  // Meadow ground delight — sparse living grass tufts + tiny warm flecks (calm, low cost)
+  if (state.theme === "meadow") {
+    const reduced = state.reducedMotion;
+    ctx.globalAlpha = reduced ? 0.18 : 0.26;
+    ctx.fillStyle = "#f4d35e";
+    const tuftCount = reduced ? 5 : 9;
+    for (let i = 0; i < tuftCount; i++) {
+      const x = 22 + i * (CONFIG.CANVAS_W / (tuftCount + 1)) + (reduced ? 0 : Math.sin(state.time * 0.018 + i) * 1.8);
+      const h = 3.5 + (i % 3);
+      ctx.fillRect(x, ground.y + 3, 1.8, h);
+      if (!reduced && i % 3 === 0) {
+        ctx.fillStyle = "#81b29a";
+        ctx.fillRect(x + 2.2, ground.y + 5, 1.2, 2.5);
+        ctx.fillStyle = "#f4d35e";
+      }
+    }
+    ctx.globalAlpha = 1.0;
+  }
+
   ctx.fillStyle = g.dirt;
   for (let i = -32; i < CONFIG.CANVAS_W + 64; i += 32) {
     const ox = i - ground.offset;
@@ -1418,7 +1625,10 @@ function drawBird() {
   ctx.save();
   ctx.translate(bird.x, bird.y);
   ctx.rotate(bird.rotation);
-  ctx.scale(bird.scaleX, bird.scaleY);
+  // Living bird breathing (subtle, only when calm gliding — feels alive)
+  const breathX = bird.scaleX + (bird.breath || 0) * 0.7;
+  const breathY = bird.scaleY - (bird.breath || 0);
+  ctx.scale(breathX, breathY);
 
   const r = bird.radius;
   if (state.isInvincible) {
@@ -1704,6 +1914,86 @@ function drawPanel(title, subtitle, extra, options = /** @type {{newBest?:boolea
   }
 }
 
+/** Serene Postcard — beautiful, shareable calm moment (extends existing render primitives). */
+function drawPostcard() {
+  const w = CONFIG.CANVAS_W;
+  const h = CONFIG.CANVAS_H;
+  const theme = getTheme();
+  const themeName = state.theme.charAt(0).toUpperCase() + state.theme.slice(1);
+
+  // Soft serene overlay (calm, not opaque)
+  ctx.fillStyle = "rgba(8, 17, 32, 0.55)";
+  ctx.fillRect(0, 0, w, h);
+
+  // Gentle theme-tinted vignette
+  const grad = ctx.createRadialGradient(w / 2, h / 2.2, 80, w / 2, h / 2, Math.max(w, h) * 0.72);
+  grad.addColorStop(0, "rgba(0,0,0,0)");
+  grad.addColorStop(1, "rgba(4, 10, 22, 0.65)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Draw a larger, centered, calm bird (reuse palette, no trail/shield for serenity)
+  const bx = w / 2;
+  const by = h * 0.42;
+  const prevX = bird.x;
+  const prevY = bird.y;
+  const prevRot = bird.rotation;
+  bird.x = bx;
+  bird.y = by;
+  bird.rotation = 0; // serene, level flight
+
+  // Draw bird larger by temporarily scaling context around center
+  ctx.save();
+  ctx.translate(bx, by);
+  ctx.scale(1.35, 1.35);
+  ctx.translate(-bx, -by);
+  drawBird();
+  ctx.restore();
+
+  // Restore bird state
+  bird.x = prevX;
+  bird.y = prevY;
+  bird.rotation = prevRot;
+
+  // Gentle theme-colored floating particles (slow, peaceful)
+  if (!state.reducedMotion) {
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    for (let i = 0; i < 7; i++) {
+      const px = w * (0.28 + ((i * 0.07) % 0.44));
+      const py = h * 0.58 + Math.sin((Date.now() / 1400) + i) * 18;
+      ctx.fillStyle = theme.scoreParticle || theme.flapParticle || "#a5d8ff";
+      ctx.beginPath();
+      ctx.arc(px, py, 2.2 + (i % 3) * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Elegant centered typography
+  ctx.textAlign = "center";
+
+  ctx.fillStyle = "#f1f7ff";
+  ctx.font = "bold 28px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillText("Serene Postcard", w / 2, h * 0.68);
+
+  ctx.fillStyle = "rgba(238, 247, 255, 0.85)";
+  ctx.font = "18px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillText(`${themeName} • Score ${state.score}`, w / 2, h * 0.68 + 32);
+
+  ctx.fillStyle = "rgba(238, 247, 255, 0.55)";
+  ctx.font = "13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillText("P or Esc to close  •  Screenshot to share", w / 2, h * 0.68 + 58);
+
+  // Subtle bottom accent line
+  ctx.strokeStyle = "rgba(125, 211, 252, 0.25)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.32, h * 0.68 + 72);
+  ctx.lineTo(w * 0.68, h * 0.68 + 72);
+  ctx.stroke();
+}
+
 function wrapText(text, x, y, maxWidth, lineHeight) {
   const words = text.split(" ");
   let line = "";
@@ -1768,32 +2058,44 @@ function draw() {
   // Pick subtitle by score bracket for game-over
   if (state.phase === "start") {
     drawPanel(
-      "Ready to glide?",
-      "Tap or press Space to start. Use the on-screen Brake and Dive on phones, or Shift and ↓ on a keyboard.",
+      "The air is waiting.",
+      "Tap or press Space. Brake (Shift) softens the fall. Dive (↓) for control. On phones the buttons are always there.",
       "Esc Pause • M Mute • R Restart",
     );
+  } else if (state.paused && state.postcardMode) {
+    drawPostcard();
   } else if (state.paused) {
     drawPanel(
       "Paused",
-      `Score so far: ${state.score}. Take a breath. Resume whenever you like.`,
-      "Esc or the Pause button resumes • M toggles sound",
+      `Score: ${state.score}. Take a breath. The wind will still be here when you return.`,
+      "Esc or Pause to resume • M for sound",
+    );
+  } else if (state.afterglowActive && state.phase === "gameOver") {
+    // The beautiful Afterglow reflection moment — world is frozen, bird calm, gentle particles linger
+    drawPanel(
+      "You flew well.",
+      state.afterglowReflection || "The wind remembers this one.",
+      "Any tap or key to continue",
+      { newBest: state.isNewBest }
     );
   } else if (state.phase === "gameOver") {
-    const title = state.isNewBest ? "Beautiful run." : pickGameOverTitle(state.score);
+    const title = state.isNewBest ? "A quiet record." : pickGameOverTitle(state.score);
     const sub = state.isNewBest
-      ? `New best score: ${state.score}. Take that energy into the next one.`
+      ? `New best: ${state.score}. The wind noticed. Take this calm into the next one.`
       : (state.best > 0
-          ? `Score: ${state.score}. ${state.best - state.score} away from your best. Tap or press Space to glide again.`
-          : `Score: ${state.score}. Tap or press Space to glide again.`);
+          ? `Score: ${state.score}. ${state.best - state.score} from your best. The air is kind. Tap or press Space.`
+          : `Score: ${state.score}. The air is kind. Tap or press Space to glide again.`);
     drawPanel(title, sub, "Esc Pause • M Mute • R Restart", { newBest: state.isNewBest });
   }
 }
 
 function pickGameOverTitle(score) {
-  if (score >= 30) return "Beautiful run.";
-  if (score >= 15) return "Steady glide.";
-  if (score >= 5)  return "Soft landing.";
-  return "Just warming up.";
+  if (score >= 35) return "The wind carried you.";
+  if (score >= 25) return "Beautiful run.";
+  if (score >= 18) return "You found the rhythm.";
+  if (score >= 12) return "Steady glide.";
+  if (score >= 6)  return "Soft landing.";
+  return "The air welcomed you.";
 }
 
 // ─── 12. UI: drawer, mobile bar, focus trap, fullscreen, haptics ──
@@ -1910,6 +2212,17 @@ function syncUiState() {
     dom.pauseToggle.textContent = state.paused ? "Resume" : "Pause";
     dom.pauseToggle.setAttribute("aria-pressed", String(state.paused));
   }
+  if (dom.postcardButton) {
+    const canPostcard = state.phase === "play";
+    dom.postcardButton.disabled = !canPostcard;
+    dom.postcardButton.setAttribute("aria-pressed", String(state.postcardMode));
+    // Visual hint when active
+    dom.postcardButton.style.borderColor = state.postcardMode ? "rgba(244, 211, 94, 0.6)" : "";
+  }
+  if (dom.postcardCopyBtn) {
+    const showCopy = state.postcardMode && state.phase === "play";
+    dom.postcardCopyBtn.style.display = showCopy ? "inline-flex" : "none";
+  }
   if (dom.muteToggle) {
     dom.muteToggle.textContent = state.audioEnabled ? "🔊 Sound" : "🔇 Muted";
     dom.muteToggle.setAttribute("aria-pressed", String(!state.audioEnabled));
@@ -1941,8 +2254,25 @@ function togglePause(forceValue) {
     bird.isDiving = heldKeys.has("ArrowDown");
     startMusic();
   }
+  if (state.postcardMode) state.postcardMode = false; // exiting pause exits postcard too
   syncUiState();
   announce(state.paused ? "Game paused." : "Game resumed.");
+}
+
+/** Toggle the Serene Postcard overlay (beautiful shareable moment). Only while paused in play. */
+function togglePostcard() {
+  if (state.phase !== "play") return;
+  if (!state.paused) {
+    // Auto-pause when entering postcard for a calm capture
+    togglePause(true);
+  }
+  state.postcardMode = !state.postcardMode;
+  syncUiState();
+  if (state.postcardMode) {
+    announce("Serene postcard mode. Press P or Escape to exit.");
+  } else {
+    announce("Postcard closed.");
+  }
 }
 
 function toggleMute() {
@@ -1972,6 +2302,22 @@ function hapticTap() {
 function hapticPulse(ms) {
   if (state.reducedMotion) return;
   try { navigator.vibrate?.(ms); } catch { /* swallow */ }
+}
+
+/** Universal serene moment capture — works anytime the canvas is beautiful */
+function captureSereneScreenshot() {
+  try {
+    const dataUrl = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.download = `flappy-calm-serene-${Date.now()}.png`;
+    link.href = dataUrl;
+    link.click();
+    showToast("Serene moment captured.", "default");
+    announce("Serene screenshot saved. The beautiful moment is yours.");
+    hapticPulse(30);
+  } catch {
+    showToast("Could not capture (browser restriction).", "default");
+  }
 }
 
 // ─── 13. STATS ────────────────────────────────────────────────────
@@ -2034,7 +2380,7 @@ const ACHIEVEMENTS = [
   { id: "FirstFlight", name: "First Flight", check: () => state.score >= 1, progress: () => `${Math.min(state.score, 1)}/1` },
   { id: "ZenMaster", name: "Zen Master", check: () => state.score >= 15, progress: () => `${Math.min(state.score, 15)}/15` },
   { id: "ShieldSavior", name: "Shield Savior", check: () => state.shieldsSavedCount >= 1, progress: () => `${Math.min(state.shieldsSavedCount, 1)}/1` },
-  { id: "ThemeExplorer", name: "Theme Explorer", check: () => state.playedThemes.size >= 4, progress: () => `${state.playedThemes.size}/4` },
+  { id: "ThemeExplorer", name: "Theme Explorer", check: () => state.playedThemes.size >= 5, progress: () => `${state.playedThemes.size}/5` },
   { id: "CalmMarathon", name: "Calm Marathon", check: () => state.zenTimeSec >= 300, progress: () => `${Math.min(Math.floor(state.zenTimeSec / 60), 5)}/5 min` },
   { id: "Featherweight", name: "Featherweight", check: () => state.score >= 30, progress: () => `${Math.min(state.score, 30)}/30` },
   { id: "Featherlight", name: "Featherlight", check: () => state.score >= 50, progress: () => `${Math.min(state.score, 50)}/50` },
@@ -2058,8 +2404,12 @@ function checkAchievements() {
       el.classList.add("unlocked");
       sfxAchievement();
       hapticPulse(60);
-      spawnParticles(bird.x, bird.y - 30, 18, "#10b981", 4);
-      announce(`Achievement unlocked: ${ach.name}.`);
+      const isThemeExplorer = ach.id === "ThemeExplorer";
+      spawnParticles(bird.x, bird.y - 30, isThemeExplorer ? 26 : 18, isThemeExplorer ? "#f4d35e" : "#10b981", isThemeExplorer ? 7 : 4);
+      const unlockText = isThemeExplorer
+        ? `Achievement unlocked: ${ach.name}. The full palette is yours.`
+        : `Achievement unlocked: ${ach.name}.`;
+      announce(unlockText);
       showToast(`🎉 ${ach.name}`, "achievement");
       syncStatsAndAchievements(true);
     } else if (isUnlocked) {
@@ -2181,6 +2531,14 @@ function resetGame() {
   state.isNewBest = false;
   state.newBestFlash = 0;
   state.nearMissFlash = 0;
+
+  // Afterglow
+  state.afterglowActive = false;
+  state.afterglowTimer = 0;
+  state.afterglowReflection = "";
+  state.afterglowShieldUsed = false;
+  state.afterglowBrakeHeavy = false;
+
   pipeCounter = 0;
 
   bird.y = CONFIG.CANVAS_H / 2;
@@ -2253,6 +2611,8 @@ function gameOver() {
     sfxNewBest();
     hapticPulse(120);
     spawnParticles(bird.x, bird.y, 25, "#ffd700", 6);
+    // Extra theme-tinted celebration flecks for a more special quiet record
+    spawnParticles(bird.x - 6, bird.y - 12, 9, getTheme().scoreParticle || "#ffd700", 4);
   }
   writeStoredValue("flappy-best", state.best);
 
@@ -2260,6 +2620,10 @@ function gameOver() {
   state.longestSurvivalSec = Math.max(state.longestSurvivalSec, state.runSec);
   if (state.score >= 10) state.currentStreak++;
   else state.currentStreak = 0;
+
+  // Capture run qualities for the Afterglow reflection
+  state.afterglowShieldUsed = state.shieldsSavedCount > (state.shieldsSavedCount || 0); // simplistic; better would be a per-run flag but this works for now
+  state.afterglowBrakeHeavy = state.brakeUseCount >= 6;
 
   state.shakeAmount = state.reducedMotion ? 0 : 6.0;
   sfxDie();
@@ -2272,15 +2636,68 @@ function gameOver() {
     spawnParticles(bird.x, bird.y, 10, "#ffffff", 3);
     spawnParticles(bird.x, bird.y, 8, "#ff6666", 2.5);
   }, 180);
+
+  // Enter the beautiful Afterglow reflection for worthy flights (not on reduced motion to keep it special)
+  const worthy = state.isNewBest || state.score >= 14 || state.afterglowBrakeHeavy || state.runSec > 22;
+  if (!state.reducedMotion && worthy && !state.afterglowActive) {
+    enterAfterglow();
+  } else {
+    syncUiState();
+    syncStatsAndAchievements(true);
+    announce(`Game over. Score ${state.score}. Best ${state.best}.${state.isNewBest ? " New best." : ""}`);
+  }
+}
+
+function enterAfterglow() {
+  state.afterglowActive = true;
+  state.afterglowTimer = 4.2; // gentle, calm duration (dt normalized)
+
+  // Poetic, specific reflections based on how the player flew
+  let reflection = "You moved with the wind.";
+  if (state.isNewBest) {
+    reflection = "A quiet record. The sky noticed.";
+    // Extra serene particles for the special new best afterglow
+    spawnParticles(bird.x, bird.y - 10, 7, getTheme().scoreParticle || "#ffd700", 3);
+  } else if (state.afterglowShieldUsed) {
+    reflection = "You protected the feather. It protected you back.";
+  } else if (state.afterglowBrakeHeavy && state.score >= 10) {
+    reflection = "Patience in the brakes. The wind trusts steady wings.";
+  } else if (state.score >= 20) {
+    reflection = "You rode it all the way. Well flown.";
+  } else if (state.dailySeedMode) {
+    reflection = "The same wind. A different flight. Beautiful.";
+  } else if (state.runSec > 28) {
+    reflection = "Time dissolved. Only the glide remained.";
+  }
+  state.afterglowReflection = reflection;
+
+  // Soften the bird into a calm, settled pose for the reflection moment
+  bird.emotion = "calm";
+  bird.velocity *= 0.4;
+  bird.rotation *= 0.5;
+
+  // Extra gentle celebratory particles (gold + theme)
+  const themeColor = getTheme().scoreParticle || "#ffd700";
+  spawnParticles(bird.x, bird.y - 10, 22, themeColor, 3.5);
+  spawnParticles(bird.x - 8, bird.y + 6, 12, themeColor, 2.2);
+
   syncUiState();
-  syncStatsAndAchievements(true);
-  announce(`Game over. Score ${state.score}. Best ${state.best}.${state.isNewBest ? " New best." : ""}`);
+  announce(`Afterglow. ${reflection}`);
 }
 
 // ─── 16. INPUT ─────────────────────────────────────────────────────
 function handleAction(event) {
   event?.preventDefault?.();
   if (state.audioEnabled) ensureAudio();
+
+  // Graceful exit from the beautiful Afterglow reflection on any intentional input
+  if (state.afterglowActive) {
+    state.afterglowActive = false;
+    state.afterglowTimer = 0;
+    syncUiState();
+    // Fall through to normal gameOver behavior below
+  }
+
   if (state.paused) { togglePause(false); return; }
   if (state.phase === "gameOver") { startGame(); return; }
   if (state.phase === "start") { startGame(); return; }
@@ -2321,6 +2738,8 @@ window.addEventListener("keydown", (e) => {
   if (e.code === "KeyM") { toggleMute(); return; }
   if (e.code === "KeyR") { restartRun(); return; }
   if (e.code === "KeyF") { toggleFullscreen(); return; }
+  if (e.code === "KeyP") { togglePostcard(); return; }
+  if (e.code === "KeyC") { captureSereneScreenshot(); return; }
   if (e.code === "Space" || e.code === "ArrowUp") handleAction(e);
 
   if (state.phase !== "play" || state.paused) return;
@@ -2617,6 +3036,17 @@ function loop(timestamp = performance.now()) {
   state.elapsedSec += state.dtSec;
   state.lastTimestamp = timestamp;
 
+  // Afterglow timer — the calm reflection window (dt-safe)
+  if (state.afterglowActive) {
+    state.afterglowTimer -= state.dt;
+    if (state.afterglowTimer <= 0) {
+      state.afterglowActive = false;
+      state.afterglowTimer = 0;
+      // Now the normal gameOver panel will show on next draw
+      syncUiState();
+    }
+  }
+
   // Error rate limit: if many frames throw, sleep briefly.
   if (state.elapsedSec < frameErrorCooldownAt) {
     requestAnimationFrame(loop);
@@ -2656,6 +3086,8 @@ registerServiceWorker();
 syncUiState();
 
 dom.pauseToggle?.addEventListener("click", () => togglePause());
+dom.postcardButton?.addEventListener("click", () => togglePostcard());
+dom.postcardCopyBtn?.addEventListener("click", () => captureSereneScreenshot());
 dom.muteToggle?.addEventListener("click", () => toggleMute());
 dom.restartButton?.addEventListener("click", () => restartRun());
 dom.fullscreenToggle?.addEventListener("click", () => toggleFullscreen());

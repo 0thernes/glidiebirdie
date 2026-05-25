@@ -19,7 +19,7 @@
   <meta property="og:title" content="Flappy Bird — Calm Edition" />
   <meta property="og:description" content="Gentle physics, bigger gaps, slower pacing — pure relaxation." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="docs/assets/flappy-calm-edition-preview.png" />
+  <meta property="og:image" content="docs/assets/social-preview-calm.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Flappy Bird — Calm Edition" />
   <meta name="twitter:description" content="Calm, accessible, dependency-free browser game." />
@@ -48,6 +48,7 @@
           <p class="lede">
             A softer, more readable, less stressful take on Flappy Bird. Gentle pacing,
             full touch controls on phones, refresh-rate-safe physics, and a UI built for comfort.
+            Every flap an invitation to breathe and glide.
           </p>
         </div>
         <div class="status-cluster" aria-label="Design qualities">
@@ -68,6 +69,8 @@
         <div class="toolbar" role="group" aria-label="Game actions">
           <button class="ui-button" id="restartButton" type="button" aria-controls="game" aria-keyshortcuts="R">Restart</button>
           <button class="ui-button" id="pauseToggle" type="button" aria-controls="game" aria-keyshortcuts="Escape" aria-pressed="false">Pause</button>
+          <button class="ui-button" id="postcardButton" type="button" aria-controls="game" aria-keyshortcuts="P" title="Serene Postcard — capture a calm moment">🪶 Postcard</button>
+          <button class="ui-button postcard-action" id="postcardCopyBtn" type="button" style="display:none" title="Save this serene moment as PNG">📸 Copy</button>
           <button class="ui-button" id="muteToggle" type="button" aria-controls="game" aria-keyshortcuts="M" aria-pressed="false">🔊 Sound</button>
           <button class="ui-button" id="fullscreenToggle" type="button" aria-controls="game" aria-keyshortcuts="F" aria-pressed="false">Fullscreen</button>
           <button class="ui-button" id="drawerToggle" type="button" aria-controls="customizerDrawer" aria-expanded="false" aria-pressed="false">Customize</button>
@@ -149,6 +152,7 @@
         <button type="button" class="theme-btn" data-theme="midnight" aria-pressed="false">🌌 Midnight</button>
         <button type="button" class="theme-btn" data-theme="rain" aria-pressed="false">🌧️ Cozy Rain</button>
         <button type="button" class="theme-btn" data-theme="aurora" aria-pressed="false">✨ Aurora</button>
+        <button type="button" class="theme-btn" data-theme="meadow" aria-pressed="false">🌿 Meadow</button>
       </div>
     </div>
 
@@ -233,6 +237,11 @@
           <p class="stat-label">Current Streak (≥10)</p>
         </div>
       </div>
+
+      <div class="sparkline-wrap" aria-hidden="true">
+        <canvas id="sparkline" width="200" height="32" aria-label="Recent score history sparkline"></canvas>
+      </div>
+
       <button class="ui-button drawer-inline-btn danger" id="resetStatsBtn" type="button">Reset all stats</button>
     </div>
 
@@ -270,7 +279,7 @@
           <span class="achievement-badge">🎨</span>
           <div class="achievement-details">
             <h4 class="achievement-title">Theme Explorer</h4>
-            <p class="achievement-desc">Play under all four visual themes</p>
+            <p class="achievement-desc">Play under all five visual themes</p>
             <p class="achievement-progress"></p>
           </div>
           <span class="achievement-check" aria-hidden="true">✔</span>
@@ -356,6 +365,10 @@
       JavaScript is required to play Flappy Bird — Calm Edition.
     </p>
   </noscript>
+
+  <!-- Toast container for achievement / share / serene moment feedback (calm, non-intrusive) -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
   <script src="game.js" defer></script>
 </body>
 </html>

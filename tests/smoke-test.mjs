@@ -57,7 +57,7 @@ assert.ok(manifest.name && manifest.icons?.length > 0,              "manifest mu
 assert.match(textFiles.js, /function registerServiceWorker\(/,       "service worker registration helper missing");
 assert.match(textFiles.js, /serviceWorker[\s\S]*register\("\.\/service-worker\.js"/,
   "service worker must register the local app shell");
-assert.match(textFiles.serviceWorker, /CACHE_NAME\s*=\s*"flappy-calm-v2\.0\.2"/,
+assert.match(textFiles.serviceWorker, /CACHE_NAME\s*=\s*"flappy-calm-v2\.2\.0"/,
   "service worker cache version must match release");
 for (const shellFile of ["./", "./index.html", "./style.css", "./game.js", "./manifest.webmanifest"]) {
   assert.match(textFiles.serviceWorker, new RegExp(shellFile.replace(/[./]/g, "\\$&")),

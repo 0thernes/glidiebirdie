@@ -4,8 +4,20 @@
 [![Vanilla JS](https://img.shields.io/badge/stack-vanilla%20JS-f7df1e)](game.js)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-0f766e)](package.json)
 [![Accessible Arcade](https://img.shields.io/badge/accessibility-first-2563eb)](README.md#accessibility)
+[![Superman Mode](https://img.shields.io/badge/built%20with-12%20parallel%20Grok%204.3%20builds-ff69b4)](https://github.com/0thernes/flappy-bird-calm-edition)
+
+> **LFG.** Elevated across 12 simultaneous Grok 4.3 builds — Superman mode fully engaged.
+> This drop adds cinematic new visuals, richer calm atmosphere, and a repo that finally looks as good as the game feels.
 
 **A polished, friendly, browser-first Flappy Bird built for flow instead of frustration.**
+
+### The Calm Philosophy
+We kept the addictive loop everyone loves and removed everything that hurts.  
+Larger gaps. Gentler gravity. A shield that forgives. Five living themes you can feel in your chest.  
+Procedural sound that breathes with the world. A bird with real emotions and eyes that look for safety.  
+No accounts. No ads. No build step. Just open the file and glide.
+
+This is what happens when you treat "calm" as a design material, not a marketing word.
 
 Calm Edition keeps the instant arcade loop people love, then smooths the rough edges:
 gentler physics, readable timing, cozy themes, procedural audio + reverb, accessibility, stats,
@@ -14,7 +26,7 @@ for phones (Brake / Flap / Dive). Installable as a PWA on iOS and Android, with 
 worker that caches the app shell after the first localhost/HTTPS visit. No build step. No external
 runtime assets. Just open the game and glide.
 
-[![Flappy Bird Calm Edition preview showing the polished hero and playfield.](docs/assets/flappy-calm-edition-preview.png)](https://0thernes.github.io/flappy-bird-calm-edition/)
+[![Serene meadow golden hour scene — the bird gliding peacefully between generous pipes in Flappy Bird Calm Edition.](docs/assets/hero-calm-meadow.jpg)](https://0thernes.github.io/flappy-bird-calm-edition/)
 
 [Play the live demo](https://0thernes.github.io/flappy-bird-calm-edition/) ·
 [Run locally](#quick-start) ·
@@ -28,11 +40,19 @@ runtime assets. Just open the game and glide.
 | Softer difficulty      | Larger pipe gaps, slower travel, gentler gravity, slower terminal fall, circle hitbox.         |
 | Full mobile depth      | On-screen Brake / Flap / Dive buttons on phones — full keyboard depth, no controls hidden.     |
 | More player expression | Hold Brake (or `Shift`), hold Dive (or `↓`), and tune physics in the Zen Customizer.           |
-| More delight           | Themes, reverb, ambient music, particle bursts, expressive bird emotions, cozy achievements.   |
+| More delight           | Meadow golden godrays + fluttering pollen, 5 themes, reverb, ambient music, particle bursts, expressive bird emotions, cozy achievements, and the new Serene Postcard mode for beautiful shareable moments. |
 | Less punishment        | Feather Shield absorbs one collision and gives the bird a graceful recovery moment.            |
 | Better reliability     | Delta-time physics + DPR-sharp canvas across 60Hz, 144Hz, 240Hz displays and Retina/4K phones. |
 | Better inclusion       | Keyboard + skip-link, ARIA live updates, reduced-motion, reduced-transparency, forced-colors.  |
 | PWA-ready              | Installable via Add-to-Home-Screen on iOS and Android. Offline app shell after first visit.    |
+
+## The Calm Story
+
+Flappy Bird — Calm Edition was shaped by a simple belief: the original joy of the arcade loop deserves to be felt without the sting of repeated failure. Every design choice — larger gaps, slower pacing, the living bird with its expressive eyes, the soft reverb and ambient palettes, the on-screen Brake/Flap/Dive bar, the Zen Customizer, and the poetic in-game messages ("The wind carried you", "The air welcomed you") — exists to turn frantic flapping into mindful gliding.
+
+The project itself is a small, solo, vibe-coded act of care: one HTML file, one CSS file, one engine in `game.js`, zero runtime dependencies, and a deep commitment to accessibility and reduced-motion respect. The Serene Postcard mode and recent elevations were forged with the same respect for that core.
+
+We hope the game gives you a few minutes of genuine ease. If it does, and you feel moved to help it stay that way, the door is open.
 
 ## Features
 
@@ -42,7 +62,7 @@ runtime assets. Just open the game and glide.
 - **Calm physics presets** — Tune gravity and speed from gentle to lively.
 - **Daily Seed mode** — Deterministic pipe pattern by UTC date for friendly comparison.
 - **Zen Customizer** — Physics sliders, audio volumes, theme picker, daily-seed toggle, audio test, reset stats.
-- **Four themes** — Sunset, Midnight, Cozy Rain, and Aurora each change colors, weather, and music.
+- **Five themes** — Sunset, Midnight, Cozy Rain, Aurora, and the new Meadow (golden-hour greens & warm sunlight) each change colors, weather, and music.
 - **Feather Shield** — A collectible bubble that absorbs one crash and grants brief invincibility.
 - **Expressive bird** — Calm, happy, scared, determined, and dizzy states with blush, smile, and dizzy swirls.
 - **Eye tracking** — Pupils track the nearest safe gap for a lively, readable character.
@@ -131,16 +151,18 @@ Calm Edition treats accessibility as part of the game design, not a side quest.
 | `AUDIT-250.md`            | 250-point solo web-game quality audit and closure ledger.                                  |
 | `CHANGELOG.md`            | Version history.                                                                           |
 | `CLAUDE.md`               | Project context for AI coding assistants.                                                  |
-| `docs/assets/`            | README and repository presentation assets.                                                 |
+| `docs/assets/`            | Cinematic hero + social preview images (meadow golden hour, aurora calm), README assets.     |
 | `.github/ISSUE_TEMPLATE/` | Friendly issue forms for bugs, ideas, and accessibility feedback.                          |
 | `.github/workflows/ci.yml` | GitHub Actions smoke check for pushes and pull requests.                                  |
 | `.memory/`                | Project context notes for future maintainers and AI assistants.                            |
+| `CODE_OF_CONDUCT.md`      | Calm, welcoming community guidelines tuned to this project's spirit.                       |
+| `docs/architecture_master_blueprint.md` | Calm, humble philosophy & technical architecture (replaced earlier corporate-style blueprint). |
 | `LICENSE.txt`             | AGPL-3.0-or-later license text.                                                            |
 
 ## Contributing
 
 Contributions are welcome when they keep the game calm, accessible, dependency-free, and easy
-to run. Start with [CONTRIBUTING.md](CONTRIBUTING.md), then use the issue templates for bugs,
+to run. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md), then use the issue templates for bugs,
 feature ideas, or accessibility feedback.
 
 Good first areas:
