@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Added
+
+- Added a fifth `Meadow` theme with its own palette, music loop, theme-color metadata, and gentle drifting pollen flecks that respect `prefers-reduced-motion`.
+
+### Changed
+
+- Reworked the Zen Customizer theme selector into an auto-fit grid so all five themes sit cleanly without the old awkward wrapping.
+- Polished active theme buttons with a subtle lift and stronger theme-aware glow so selection feedback feels more intentional.
+- Updated Theme Explorer achievement progress to track all available themes dynamically.
+
 ## [2.0.2] — Full Polish Audit
 
 ### Added
