@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 // ═══════════════════════════════════════════════════════════════════
 // FLAPPY BIRD — CALM EDITION (v2.2.0 — Parallel Elevation)
@@ -91,8 +91,8 @@ const CONFIG = Object.freeze({
 
   // Object lookups (level → physics)
   GRAVITY_MAP: { 1: 0.038, 2: 0.052, 3: 0.066, 4: 0.082 },
-  FLAP_MAP:    { 1: -2.15, 2: -2.35, 3: -2.55, 4: -2.75 },
-  SPEED_MAP:   { 1: 0.85,  2: 1.15,  3: 1.35,  4: 1.65 },
+  FLAP_MAP: { 1: -2.15, 2: -2.35, 3: -2.55, 4: -2.75 },
+  SPEED_MAP: { 1: 0.85, 2: 1.15, 3: 1.35, 4: 1.65 },
   SPAWN_INTERVAL_MAP: { 1: 220, 2: 170, 3: 148, 4: 120 },
 
   // Audio
@@ -124,16 +124,15 @@ const CONFIG = Object.freeze({
   SUNSET_MOTE_ALPHA: 0.28,
 });
 
-const THEMES = Object.freeze(["sunset", "midnight", "rain", "aurora", "meadow"]);
+const THEMES = Object.freeze(['sunset', 'midnight', 'rain', 'aurora', 'meadow']);
 const SETTING_LEVELS = Object.freeze([1, 2, 3, 4]);
-const GRAVITY_LABELS = Object.freeze({ 1: "Ultra-Light", 2: "Calm", 3: "Normal", 4: "Heavy" });
-const SPEED_LABELS   = Object.freeze({ 1: "Breeze", 2: "Chill", 3: "Cruise", 4: "Swift" });
+const GRAVITY_LABELS = Object.freeze({ 1: 'Ultra-Light', 2: 'Calm', 3: 'Normal', 4: 'Heavy' });
+const SPEED_LABELS = Object.freeze({ 1: 'Breeze', 2: 'Chill', 3: 'Cruise', 4: 'Swift' });
 
 // ─── 2. DOM + DPR-AWARE CANVAS ────────────────────────────────────
-const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById("game"));
-const ctx = canvas?.getContext("2d");
-if (!canvas || !ctx)
-  throw new Error("Canvas element #game not found or 2D context unavailable.");
+const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('game'));
+const ctx = canvas?.getContext('2d');
+if (!canvas || !ctx) throw new Error('Canvas element #game not found or 2D context unavailable.');
 
 /** @returns {number} */
 function getDPR() {
@@ -143,81 +142,95 @@ function getDPR() {
 let activeDPR = 1;
 function configureCanvasForDPR() {
   activeDPR = getDPR();
-  canvas.width  = Math.round(CONFIG.CANVAS_W * activeDPR);
+  canvas.width = Math.round(CONFIG.CANVAS_W * activeDPR);
   canvas.height = Math.round(CONFIG.CANVAS_H * activeDPR);
   ctx.setTransform(activeDPR, 0, 0, activeDPR, 0, 0);
   // CSS sizing already declares aspect-ratio + width: 100% via style.css.
   rebuildSpriteCaches();
 }
 
-const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 const reducedTransparencyQuery =
-  typeof window.matchMedia === "function"
-    ? window.matchMedia("(prefers-reduced-transparency: reduce)")
+  typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-transparency: reduce)')
     : null;
 
 const dom = {
-  pauseToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById("pauseToggle")),
-  postcardButton: /** @type {HTMLButtonElement | null} */ (document.getElementById("postcardButton")),
-  postcardCopyBtn: /** @type {HTMLButtonElement | null} */ (document.getElementById("postcardCopyBtn")),
-  muteToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById("muteToggle")),
-  restartButton: /** @type {HTMLButtonElement | null} */ (document.getElementById("restartButton")),
-  fullscreenToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById("fullscreenToggle")),
-  drawerToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById("drawerToggle")),
-  customizerDrawer: /** @type {HTMLElement | null} */ (document.getElementById("customizerDrawer")),
-  drawerClose: /** @type {HTMLButtonElement | null} */ (document.getElementById("drawerClose")),
-  gravitySlider: /** @type {HTMLInputElement | null} */ (document.getElementById("gravitySlider")),
-  speedSlider:   /** @type {HTMLInputElement | null} */ (document.getElementById("speedSlider")),
-  musicVolumeSlider: /** @type {HTMLInputElement | null} */ (document.getElementById("musicVolumeSlider")),
-  sfxVolumeSlider:   /** @type {HTMLInputElement | null} */ (document.getElementById("sfxVolumeSlider")),
-  gravityVal: document.getElementById("gravityVal"),
-  speedVal:   document.getElementById("speedVal"),
-  musicVolumeVal: document.getElementById("musicVolumeVal"),
-  sfxVolumeVal:   document.getElementById("sfxVolumeVal"),
-  srStatus: document.getElementById("srStatus"),
+  pauseToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById('pauseToggle')),
+  postcardButton: /** @type {HTMLButtonElement | null} */ (
+    document.getElementById('postcardButton')
+  ),
+  postcardCopyBtn: /** @type {HTMLButtonElement | null} */ (
+    document.getElementById('postcardCopyBtn')
+  ),
+  muteToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById('muteToggle')),
+  restartButton: /** @type {HTMLButtonElement | null} */ (document.getElementById('restartButton')),
+  fullscreenToggle: /** @type {HTMLButtonElement | null} */ (
+    document.getElementById('fullscreenToggle')
+  ),
+  drawerToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById('drawerToggle')),
+  customizerDrawer: /** @type {HTMLElement | null} */ (document.getElementById('customizerDrawer')),
+  drawerClose: /** @type {HTMLButtonElement | null} */ (document.getElementById('drawerClose')),
+  gravitySlider: /** @type {HTMLInputElement | null} */ (document.getElementById('gravitySlider')),
+  speedSlider: /** @type {HTMLInputElement | null} */ (document.getElementById('speedSlider')),
+  musicVolumeSlider: /** @type {HTMLInputElement | null} */ (
+    document.getElementById('musicVolumeSlider')
+  ),
+  sfxVolumeSlider: /** @type {HTMLInputElement | null} */ (
+    document.getElementById('sfxVolumeSlider')
+  ),
+  gravityVal: document.getElementById('gravityVal'),
+  speedVal: document.getElementById('speedVal'),
+  musicVolumeVal: document.getElementById('musicVolumeVal'),
+  sfxVolumeVal: document.getElementById('sfxVolumeVal'),
+  srStatus: document.getElementById('srStatus'),
   // Stats
-  statZenMinutes: document.getElementById("statZenMinutes"),
-  statShieldsSaved: document.getElementById("statShieldsSaved"),
-  statRunsCompleted: document.getElementById("statRunsCompleted"),
-  statNearMisses: document.getElementById("statNearMisses"),
-  statLongestSurvival: document.getElementById("statLongestSurvival"),
-  statStreak: document.getElementById("statStreak"),
+  statZenMinutes: document.getElementById('statZenMinutes'),
+  statShieldsSaved: document.getElementById('statShieldsSaved'),
+  statRunsCompleted: document.getElementById('statRunsCompleted'),
+  statNearMisses: document.getElementById('statNearMisses'),
+  statLongestSurvival: document.getElementById('statLongestSurvival'),
+  statStreak: document.getElementById('statStreak'),
   // Theme buttons
-  themeBtns: document.querySelectorAll(".theme-btn"),
+  themeBtns: document.querySelectorAll('.theme-btn'),
   // Mobile control bar
-  mobileControls: document.getElementById("mobileControls"),
-  mBrake: /** @type {HTMLButtonElement | null} */ (document.getElementById("mBrake")),
-  mFlap:  /** @type {HTMLButtonElement | null} */ (document.getElementById("mFlap")),
-  mDive:  /** @type {HTMLButtonElement | null} */ (document.getElementById("mDive")),
+  mobileControls: document.getElementById('mobileControls'),
+  mBrake: /** @type {HTMLButtonElement | null} */ (document.getElementById('mBrake')),
+  mFlap: /** @type {HTMLButtonElement | null} */ (document.getElementById('mFlap')),
+  mDive: /** @type {HTMLButtonElement | null} */ (document.getElementById('mDive')),
   // Tutorial
-  tutorialOverlay: document.getElementById("tutorialOverlay"),
-  tutorialDismiss: /** @type {HTMLButtonElement | null} */ (document.getElementById("tutorialDismiss")),
+  tutorialOverlay: document.getElementById('tutorialOverlay'),
+  tutorialDismiss: /** @type {HTMLButtonElement | null} */ (
+    document.getElementById('tutorialDismiss')
+  ),
   // Daily seed
-  dailySeedToggle: /** @type {HTMLInputElement | null} */ (document.getElementById("dailySeedToggle")),
-  dailySeedLabel: document.getElementById("dailySeedLabel"),
-  dailySeedStatus: document.getElementById("dailySeedStatus"),
+  dailySeedToggle: /** @type {HTMLInputElement | null} */ (
+    document.getElementById('dailySeedToggle')
+  ),
+  dailySeedLabel: document.getElementById('dailySeedLabel'),
+  dailySeedStatus: document.getElementById('dailySeedStatus'),
   // Reset stats
-  resetStatsBtn: /** @type {HTMLButtonElement | null} */ (document.getElementById("resetStatsBtn")),
+  resetStatsBtn: /** @type {HTMLButtonElement | null} */ (document.getElementById('resetStatsBtn')),
   // Audio test
-  audioTestBtn: /** @type {HTMLButtonElement | null} */ (document.getElementById("audioTestBtn")),
+  audioTestBtn: /** @type {HTMLButtonElement | null} */ (document.getElementById('audioTestBtn')),
   // Share
-  shareBtn: /** @type {HTMLButtonElement | null} */ (document.getElementById("shareBtn")),
+  shareBtn: /** @type {HTMLButtonElement | null} */ (document.getElementById('shareBtn')),
   // FPS toggle
-  fpsToggle: /** @type {HTMLInputElement | null} */ (document.getElementById("fpsToggle")),
+  fpsToggle: /** @type {HTMLInputElement | null} */ (document.getElementById('fpsToggle')),
   // Toast container
-  toastContainer: document.getElementById("toastContainer"),
+  toastContainer: document.getElementById('toastContainer'),
   // Score history sparkline canvas
-  sparkline: /** @type {HTMLCanvasElement | null} */ (document.getElementById("sparkline")),
+  sparkline: /** @type {HTMLCanvasElement | null} */ (document.getElementById('sparkline')),
   // Session run number
-  sessionRun: document.getElementById("sessionRun"),
+  sessionRun: document.getElementById('sessionRun'),
   // Surrounding stage panel (tap-to-flap on mobile)
-  stagePanel: document.querySelector(".stage"),
+  stagePanel: document.querySelector('.stage'),
 };
 
 /** Announce to ATs via the polite live region. Re-asserts text so SRs re-read. */
 function announce(message) {
   if (!dom.srStatus) return;
-  dom.srStatus.textContent = "";
+  dom.srStatus.textContent = '';
   requestAnimationFrame(() => {
     if (dom.srStatus) dom.srStatus.textContent = message;
   });
@@ -243,9 +256,15 @@ function dateSeed(d = new Date()) {
 }
 
 let _rngFn = Math.random;
-function rng() { return _rngFn(); }
-function setSeededRNG(seed) { _rngFn = mulberry32(seed >>> 0); }
-function setUnseededRNG() { _rngFn = Math.random; }
+function rng() {
+  return _rngFn();
+}
+function setSeededRNG(seed) {
+  _rngFn = mulberry32(seed >>> 0);
+}
+function setUnseededRNG() {
+  _rngFn = Math.random;
+}
 
 // ─── 4. STORAGE ────────────────────────────────────────────────────
 /** @param {string} key @param {readonly string[]} choices @param {string} fallback */
@@ -253,7 +272,9 @@ function readStoredChoice(key, choices, fallback) {
   try {
     const stored = localStorage.getItem(key);
     return stored != null && choices.includes(stored) ? stored : fallback;
-  } catch { return fallback; }
+  } catch {
+    return fallback;
+  }
 }
 
 /** @param {number} value @param {number} fallback @param {number} min @param {number} max */
@@ -267,7 +288,9 @@ function readStoredNumber(key, fallback, min = -Infinity, max = Infinity) {
     const stored = localStorage.getItem(key);
     const value = stored === null ? fallback : Number(stored);
     return clampNumber(value, fallback, min, max);
-  } catch { return fallback; }
+  } catch {
+    return fallback;
+  }
 }
 
 function readStoredLevel(key, fallback) {
@@ -278,41 +301,49 @@ function readStoredLevel(key, fallback) {
 function readStoredBool(key, fallback) {
   try {
     const stored = localStorage.getItem(key);
-    if (stored === "true") return true;
-    if (stored === "false") return false;
+    if (stored === 'true') return true;
+    if (stored === 'false') return false;
     return fallback;
-  } catch { return fallback; }
+  } catch {
+    return fallback;
+  }
 }
 
 function readPlayedThemes() {
   try {
-    const parsed = JSON.parse(localStorage.getItem("played-themes") || '["sunset"]');
-    const themes = Array.isArray(parsed)
-      ? parsed.filter((t) => THEMES.includes(t))
-      : [];
-    return new Set(themes.length ? themes : ["sunset"]);
-  } catch { return new Set(["sunset"]); }
+    const parsed = JSON.parse(localStorage.getItem('played-themes') || '["sunset"]');
+    const themes = Array.isArray(parsed) ? parsed.filter((t) => THEMES.includes(t)) : [];
+    return new Set(themes.length ? themes : ['sunset']);
+  } catch {
+    return new Set(['sunset']);
+  }
 }
 
 function readScoreHistory() {
   try {
-    const parsed = JSON.parse(localStorage.getItem("score-history") || "[]");
+    const parsed = JSON.parse(localStorage.getItem('score-history') || '[]');
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter((n) => typeof n === "number" && Number.isFinite(n) && n >= 0)
-      .slice(-50);
-  } catch { return []; }
+    return parsed.filter((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0).slice(-50);
+  } catch {
+    return [];
+  }
 }
 
 function readUnlockedAchievements() {
   try {
-    const parsed = JSON.parse(localStorage.getItem("unlocked-achievements") || "[]");
-    return Array.isArray(parsed) ? new Set(parsed.filter((s) => typeof s === "string")) : new Set();
-  } catch { return new Set(); }
+    const parsed = JSON.parse(localStorage.getItem('unlocked-achievements') || '[]');
+    return Array.isArray(parsed) ? new Set(parsed.filter((s) => typeof s === 'string')) : new Set();
+  } catch {
+    return new Set();
+  }
 }
 
 function writeStoredValue(key, value) {
-  try { localStorage.setItem(key, String(value)); } catch { /* blocked */ }
+  try {
+    localStorage.setItem(key, String(value));
+  } catch {
+    /* blocked */
+  }
 }
 
 // ─── 5. AUDIO ─────────────────────────────────────────────────────
@@ -342,7 +373,7 @@ function buildAudioGraph() {
   masterGain.gain.value = 1.0;
 
   masterLowpass = audioCtx.createBiquadFilter();
-  masterLowpass.type = "lowpass";
+  masterLowpass.type = 'lowpass';
   masterLowpass.frequency.value = 6000;
   masterLowpass.Q.value = 0.5;
 
@@ -365,10 +396,14 @@ function ensureAudio() {
       audioCtx = new AudioCtx();
       buildAudioGraph();
     }
-    if (audioCtx.state === "suspended") {
-      audioCtx.resume().catch(() => { /* swallow */ });
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {
+        /* swallow */
+      });
     }
-  } catch { /* AudioContext unavailable */ }
+  } catch {
+    /* AudioContext unavailable */
+  }
 }
 
 function audioDestination() {
@@ -391,10 +426,12 @@ function playToneAt(freq, duration, type, volume, startTime) {
     gain.connect(dest);
     osc.start(startTime);
     osc.stop(startTime + duration);
-  } catch { /* swallow */ }
+  } catch {
+    /* swallow */
+  }
 }
 
-function playTone(freq, duration, type = "square", volume = 0.12) {
+function playTone(freq, duration, type = 'square', volume = 0.12) {
   if (!state.audioEnabled) return;
   ensureAudio();
   if (!audioCtx) return;
@@ -413,54 +450,91 @@ function playSequence(notes) {
   }
 }
 
-function sfxFlap()  { playTone(420, 0.10, "triangle", 0.15); playTone(560, 0.08, "sine", 0.10); }
+function sfxFlap() {
+  playTone(420, 0.1, 'triangle', 0.15);
+  playTone(560, 0.08, 'sine', 0.1);
+}
 function sfxScore() {
   playSequence([
-    [660, 0.08, "sine", 0.10, 0.00],
-    [880, 0.10, "sine", 0.12, 0.08],
-    [1100, 0.12, "sine", 0.10, 0.18],
+    [660, 0.08, 'sine', 0.1, 0.0],
+    [880, 0.1, 'sine', 0.12, 0.08],
+    [1100, 0.12, 'sine', 0.1, 0.18],
   ]);
 }
 function sfxNewBest() {
   playSequence([
-    [523, 0.10, "sine", 0.12, 0.00],
-    [659, 0.10, "sine", 0.12, 0.10],
-    [784, 0.12, "sine", 0.13, 0.20],
-    [1047, 0.18, "sine", 0.14, 0.32],
+    [523, 0.1, 'sine', 0.12, 0.0],
+    [659, 0.1, 'sine', 0.12, 0.1],
+    [784, 0.12, 'sine', 0.13, 0.2],
+    [1047, 0.18, 'sine', 0.14, 0.32],
   ]);
 }
-function sfxDie() { playTone(220, 0.25, "sawtooth", 0.14); playTone(140, 0.35, "sawtooth", 0.10); }
-function sfxDive() { playTone(300, 0.06, "triangle", 0.08); }
-function sfxBrake() { playTone(380, 0.05, "sine", 0.08); }
-function sfxNearMiss() { playTone(820, 0.05, "sine", 0.06); }
+function sfxDie() {
+  playTone(220, 0.25, 'sawtooth', 0.14);
+  playTone(140, 0.35, 'sawtooth', 0.1);
+}
+function sfxDive() {
+  playTone(300, 0.06, 'triangle', 0.08);
+}
+function sfxBrake() {
+  playTone(380, 0.05, 'sine', 0.08);
+}
+function sfxNearMiss() {
+  playTone(820, 0.05, 'sine', 0.06);
+}
 function sfxAchievement() {
   playSequence([
-    [880, 0.15, "sine", 0.10, 0.00],
-    [1320, 0.25, "sine", 0.09, 0.12],
+    [880, 0.15, 'sine', 0.1, 0.0],
+    [1320, 0.25, 'sine', 0.09, 0.12],
   ]);
 }
 function sfxShieldCollect() {
   playSequence([
-    [523, 0.10, "sine", 0.12, 0.00],
-    [659, 0.12, "sine", 0.10, 0.07],
-    [784, 0.15, "sine", 0.12, 0.14],
-    [1047, 0.20, "sine", 0.15, 0.21],
-    [392, 0.55, "sine", 0.07, 0.38], // warm settling tail — "you are held"
+    [523, 0.1, 'sine', 0.12, 0.0],
+    [659, 0.12, 'sine', 0.1, 0.07],
+    [784, 0.15, 'sine', 0.12, 0.14],
+    [1047, 0.2, 'sine', 0.15, 0.21],
+    [392, 0.55, 'sine', 0.07, 0.38], // warm settling tail — "you are held"
   ]);
 }
 function sfxShieldPop() {
-  playTone(880, 0.08, "triangle", 0.15);
-  playTone(1200, 0.12, "sine", 0.10);
+  playTone(880, 0.08, 'triangle', 0.15);
+  playTone(1200, 0.12, 'sine', 0.1);
 }
 
 // Music (per-theme arpeggios, scheduled on audio clock)
 const musicThemes = {
-  sunset:   { notes: [262, 330, 392, 523, 392, 330], wave: "sine",   subWave: "triangle", interval: 0.50 },
-  midnight: { notes: [293, 370, 440, 587, 440, 370], wave: "square", subWave: "sine",     interval: 0.44 },
-  rain:     { notes: [220, 262, 330, 440, 330, 262], wave: "sine",   subWave: "triangle", interval: 0.52 },
-  aurora:   { notes: [277, 311, 349, 415, 349, 311], wave: "sine",   subWave: "sine",     interval: 0.50 },
-  meadow:   { notes: [247, 294, 370, 494, 370, 330], wave: "triangle", subWave: "sine",   interval: 0.48 },
-  meadow:   { notes: [262, 294, 349, 440, 392, 349], wave: "sine",   subWave: "triangle", interval: 0.48 },
+  sunset: {
+    notes: [262, 330, 392, 523, 392, 330],
+    wave: 'sine',
+    subWave: 'triangle',
+    interval: 0.5,
+  },
+  midnight: {
+    notes: [293, 370, 440, 587, 440, 370],
+    wave: 'square',
+    subWave: 'sine',
+    interval: 0.44,
+  },
+  rain: {
+    notes: [220, 262, 330, 440, 330, 262],
+    wave: 'sine',
+    subWave: 'triangle',
+    interval: 0.52,
+  },
+  aurora: { notes: [277, 311, 349, 415, 349, 311], wave: 'sine', subWave: 'sine', interval: 0.5 },
+  meadow: {
+    notes: [247, 294, 370, 494, 370, 330],
+    wave: 'triangle',
+    subWave: 'sine',
+    interval: 0.48,
+  },
+  meadow: {
+    notes: [262, 294, 349, 440, 392, 349],
+    wave: 'sine',
+    subWave: 'triangle',
+    interval: 0.48,
+  },
 };
 
 let musicSchedulerHandle = /** @type {number | null} */ (null);
@@ -487,11 +561,17 @@ function scheduleMusicAhead() {
     // Ambient pad: slow drone on the tonic, scheduled every 4 notes
     if (musicIdx % 4 === 0) {
       const tonic = notes[0] / 2;
-      playToneAt(tonic, theme.interval * 4, "sine", 0.012 * state.musicVolume, musicNextNoteTime);
+      playToneAt(tonic, theme.interval * 4, 'sine', 0.012 * state.musicVolume, musicNextNoteTime);
     }
 
-    if (state.theme === "rain" && Math.random() < 0.35) {
-      playToneAt(Math.random() * 400 + 700, 0.005, "sine", 0.007 * state.musicVolume, musicNextNoteTime);
+    if (state.theme === 'rain' && Math.random() < 0.35) {
+      playToneAt(
+        Math.random() * 400 + 700,
+        0.005,
+        'sine',
+        0.007 * state.musicVolume,
+        musicNextNoteTime,
+      );
     }
 
     musicNextNoteTime += theme.interval;
@@ -504,7 +584,10 @@ function fadeMaster(target, durationSec) {
   const t = audioCtx.currentTime;
   masterGain.gain.cancelScheduledValues(t);
   masterGain.gain.setValueAtTime(masterGain.gain.value, t);
-  masterGain.gain.linearRampToValueAtTime(Math.max(0.0001, target), t + Math.max(0.01, durationSec));
+  masterGain.gain.linearRampToValueAtTime(
+    Math.max(0.0001, target),
+    t + Math.max(0.01, durationSec),
+  );
 }
 
 function startMusic() {
@@ -529,22 +612,22 @@ function stopMusic(fade = true) {
 
 // ─── 6. STATE ─────────────────────────────────────────────────────
 const state = {
-  phase: "start", // 'start' | 'play' | 'gameOver'
+  phase: 'start', // 'start' | 'play' | 'gameOver'
   score: 0,
-  best: readStoredNumber("flappy-best", 0, 0),
+  best: readStoredNumber('flappy-best', 0, 0),
   frames: 0,
-  time: 0,        // 60-fps-normalized accumulated dt
-  elapsedSec: 0,  // wall-clock seconds since boot (resets on game start)
-  runSec: 0,      // wall-clock seconds in current run
+  time: 0, // 60-fps-normalized accumulated dt
+  elapsedSec: 0, // wall-clock seconds since boot (resets on game start)
+  runSec: 0, // wall-clock seconds in current run
 
   // Customizer
-  theme: readStoredChoice("flappy-theme", THEMES, "sunset"),
-  gravitySetting: readStoredLevel("flappy-gravity", 2),
-  speedSetting:   readStoredLevel("flappy-speed", 2),
-  musicVolume: readStoredNumber("flappy-music-volume", 0.6, 0, 1),
-  sfxVolume:   readStoredNumber("flappy-sfx-volume", 0.8, 0, 1),
-  dailySeedMode: readStoredBool("flappy-daily-seed", false),
-  showFps: readStoredBool("flappy-fps", false),
+  theme: readStoredChoice('flappy-theme', THEMES, 'sunset'),
+  gravitySetting: readStoredLevel('flappy-gravity', 2),
+  speedSetting: readStoredLevel('flappy-speed', 2),
+  musicVolume: readStoredNumber('flappy-music-volume', 0.6, 0, 1),
+  sfxVolume: readStoredNumber('flappy-sfx-volume', 0.8, 0, 1),
+  dailySeedMode: readStoredBool('flappy-daily-seed', false),
+  showFps: readStoredBool('flappy-fps', false),
 
   // Derived physics
   gravity: 0.052,
@@ -589,12 +672,12 @@ const state = {
   invincibilityTimer: 0,
 
   // Persistent stats
-  zenTimeSec: readStoredNumber("zen-time-sec", 0, 0),
-  shieldsSavedCount: readStoredNumber("shields-saved-count", 0, 0),
-  runsCount: readStoredNumber("runs-count", 0, 0),
-  nearMissesCount: readStoredNumber("near-misses-count", 0, 0),
-  longestSurvivalSec: readStoredNumber("longest-survival-sec", 0, 0),
-  currentStreak: readStoredNumber("current-streak", 0, 0),
+  zenTimeSec: readStoredNumber('zen-time-sec', 0, 0),
+  shieldsSavedCount: readStoredNumber('shields-saved-count', 0, 0),
+  runsCount: readStoredNumber('runs-count', 0, 0),
+  nearMissesCount: readStoredNumber('near-misses-count', 0, 0),
+  longestSurvivalSec: readStoredNumber('longest-survival-sec', 0, 0),
+  currentStreak: readStoredNumber('current-streak', 0, 0),
   playedThemes: readPlayedThemes(),
   scoreHistory: readScoreHistory(),
   unlockedAchievements: readUnlockedAchievements(),
@@ -604,7 +687,7 @@ const state = {
   diveUseCount: 0,
   runNearMisses: 0,
   themeChangedDuringRun: false,
-  runStartedAtTheme: "sunset",
+  runStartedAtTheme: 'sunset',
 
   // Game over / new best
   isNewBest: false,
@@ -613,7 +696,7 @@ const state = {
   // (short graceful pause that makes the end of a good run feel special)
   afterglowActive: false,
   afterglowTimer: 0,
-  afterglowReflection: "",
+  afterglowReflection: '',
   afterglowShieldUsed: false,
   afterglowBrakeHeavy: false,
 };
@@ -623,7 +706,7 @@ function updateDerivedPhysics() {
   if (!SETTING_LEVELS.includes(state.gravitySetting)) state.gravitySetting = 2;
   if (!SETTING_LEVELS.includes(state.speedSetting)) state.speedSetting = 2;
   state.gravity = CONFIG.GRAVITY_MAP[state.gravitySetting];
-  state.flap    = CONFIG.FLAP_MAP[state.gravitySetting];
+  state.flap = CONFIG.FLAP_MAP[state.gravitySetting];
   state.pipeSpeed = CONFIG.SPEED_MAP[state.speedSetting];
   state.pipeSpawnInterval = CONFIG.SPAWN_INTERVAL_MAP[state.speedSetting];
 }
@@ -634,62 +717,110 @@ const heldKeys = new Set();
 // ─── 7. THEME TABLES (consolidated) ────────────────────────────────
 const THEME_TABLE = Object.freeze({
   sunset: {
-    bird:   { calm: "#ffd44f", happy: "#ffdd44", scared: "#ffcc44", determined: "#ffaa22", dizzy: "#ddbb44",
-              beak: "#ff8b2d", hl: "#ffe680", shadow: "#f2b638" },
-    ground: { sand: "#c8a24c", grass1: "#5cb85c", grass2: "#3d8b3d", dirt: "#a6893a" },
-    sky:    { h1: 195, h2: 215, cAlpha: 0.55 },
-    pipe:   { hue: 130, cap: 70 },
-    trail:  "#ffe680",
-    flapParticle: "#ffe680",
-    scoreParticle: "#ffd700",
+    bird: {
+      calm: '#ffd44f',
+      happy: '#ffdd44',
+      scared: '#ffcc44',
+      determined: '#ffaa22',
+      dizzy: '#ddbb44',
+      beak: '#ff8b2d',
+      hl: '#ffe680',
+      shadow: '#f2b638',
+    },
+    ground: { sand: '#c8a24c', grass1: '#5cb85c', grass2: '#3d8b3d', dirt: '#a6893a' },
+    sky: { h1: 195, h2: 215, cAlpha: 0.55 },
+    pipe: { hue: 130, cap: 70 },
+    trail: '#ffe680',
+    flapParticle: '#ffe680',
+    scoreParticle: '#ffd700',
   },
   midnight: {
-    bird:   { calm: "#f472b6", happy: "#ff77cc", scared: "#c084fc", determined: "#ec4899", dizzy: "#a21caf",
-              beak: "#38bdf8", hl: "#fbcfe8", shadow: "#db2777" },
-    ground: { sand: "#1e0b36", grass1: "#ec4899", grass2: "#9d174d", dirt: "#3c0d63" },
-    sky:    { h1: 240, h2: 260, cAlpha: 0.15 },
-    pipe:   { hue: 320, cap: 280 },
-    trail:  "#c084fc",
-    flapParticle: "#f472b6",
-    scoreParticle: "#38bdf8",
+    bird: {
+      calm: '#f472b6',
+      happy: '#ff77cc',
+      scared: '#c084fc',
+      determined: '#ec4899',
+      dizzy: '#a21caf',
+      beak: '#38bdf8',
+      hl: '#fbcfe8',
+      shadow: '#db2777',
+    },
+    ground: { sand: '#1e0b36', grass1: '#ec4899', grass2: '#9d174d', dirt: '#3c0d63' },
+    sky: { h1: 240, h2: 260, cAlpha: 0.15 },
+    pipe: { hue: 320, cap: 280 },
+    trail: '#c084fc',
+    flapParticle: '#f472b6',
+    scoreParticle: '#38bdf8',
   },
   rain: {
-    bird:   { calm: "#94a3b8", happy: "#38bdf8", scared: "#475569", determined: "#1e293b", dizzy: "#64748b",
-              beak: "#2dd4bf", hl: "#cbd5e1", shadow: "#475569" },
-    ground: { sand: "#475569", grass1: "#64748b", grass2: "#334155", dirt: "#1e293b" },
-    sky:    { h1: 205, h2: 220, cAlpha: 0.25 },
-    pipe:   { hue: 200, cap: 200 },
-    trail:  "#94a3b8",
-    flapParticle: "#cbd5e1",
-    scoreParticle: "#2dd4bf",
+    bird: {
+      calm: '#94a3b8',
+      happy: '#38bdf8',
+      scared: '#475569',
+      determined: '#1e293b',
+      dizzy: '#64748b',
+      beak: '#2dd4bf',
+      hl: '#cbd5e1',
+      shadow: '#475569',
+    },
+    ground: { sand: '#475569', grass1: '#64748b', grass2: '#334155', dirt: '#1e293b' },
+    sky: { h1: 205, h2: 220, cAlpha: 0.25 },
+    pipe: { hue: 200, cap: 200 },
+    trail: '#94a3b8',
+    flapParticle: '#cbd5e1',
+    scoreParticle: '#2dd4bf',
   },
   aurora: {
-    bird:   { calm: "#4ade80", happy: "#a78bfa", scared: "#10b981", determined: "#047857", dizzy: "#34d399",
-              beak: "#facc15", hl: "#bbf7d0", shadow: "#059669" },
-    ground: { sand: "#0c2e26", grass1: "#10b981", grass2: "#047857", dirt: "#064e3b" },
-    sky:    { h1: 165, h2: 185, cAlpha: 0.2 },
-    pipe:   { hue: 150, cap: 160 },
-    trail:  "#4ade80",
-    flapParticle: "#4ade80",
-    scoreParticle: "#a78bfa",
+    bird: {
+      calm: '#4ade80',
+      happy: '#a78bfa',
+      scared: '#10b981',
+      determined: '#047857',
+      dizzy: '#34d399',
+      beak: '#facc15',
+      hl: '#bbf7d0',
+      shadow: '#059669',
+    },
+    ground: { sand: '#0c2e26', grass1: '#10b981', grass2: '#047857', dirt: '#064e3b' },
+    sky: { h1: 165, h2: 185, cAlpha: 0.2 },
+    pipe: { hue: 150, cap: 160 },
+    trail: '#4ade80',
+    flapParticle: '#4ade80',
+    scoreParticle: '#a78bfa',
   },
   meadow: {
-    bird:   { calm: "#f6e27a", happy: "#fde68a", scared: "#d7d977", determined: "#86c95a", dizzy: "#d5c460",
-              beak: "#f59e0b", hl: "#fff7c2", shadow: "#c5b14c" },
-    ground: { sand: "#b79e58", grass1: "#79c26d", grass2: "#4e8d4a", dirt: "#7e6840" },
-    sky:    { h1: 110, h2: 130, cAlpha: 0.32 },
-    pipe:   { hue: 105, cap: 72 },
-    trail:  "#fde68a",
-    flapParticle: "#fef3c7",
-    scoreParticle: "#facc15",
-    bird:   { calm: "#f4d35e", happy: "#f9c74f", scared: "#e8b923", determined: "#d4a017", dizzy: "#c9a227",
-              beak: "#e07a3d", hl: "#fff3b0", shadow: "#d4a017" },
-    ground: { sand: "#d4a373", grass1: "#588157", grass2: "#3a5a40", dirt: "#a67c52" },
-    sky:    { h1: 85, h2: 105, cAlpha: 0.35 },
-    pipe:   { hue: 95, cap: 75 },
-    trail:  "#f4d35e",
-    flapParticle: "#f9c74f",
-    scoreParticle: "#81b29a",
+    bird: {
+      calm: '#f6e27a',
+      happy: '#fde68a',
+      scared: '#d7d977',
+      determined: '#86c95a',
+      dizzy: '#d5c460',
+      beak: '#f59e0b',
+      hl: '#fff7c2',
+      shadow: '#c5b14c',
+    },
+    ground: { sand: '#b79e58', grass1: '#79c26d', grass2: '#4e8d4a', dirt: '#7e6840' },
+    sky: { h1: 110, h2: 130, cAlpha: 0.32 },
+    pipe: { hue: 105, cap: 72 },
+    trail: '#fde68a',
+    flapParticle: '#fef3c7',
+    scoreParticle: '#facc15',
+    bird: {
+      calm: '#f4d35e',
+      happy: '#f9c74f',
+      scared: '#e8b923',
+      determined: '#d4a017',
+      dizzy: '#c9a227',
+      beak: '#e07a3d',
+      hl: '#fff3b0',
+      shadow: '#d4a017',
+    },
+    ground: { sand: '#d4a373', grass1: '#588157', grass2: '#3a5a40', dirt: '#a67c52' },
+    sky: { h1: 85, h2: 105, cAlpha: 0.35 },
+    pipe: { hue: 95, cap: 75 },
+    trail: '#f4d35e',
+    flapParticle: '#f9c74f',
+    scoreParticle: '#81b29a',
   },
 });
 
@@ -704,25 +835,25 @@ function getPipeScoreHue(score) {
 // ─── 8. SPRITE CACHE (offscreen canvases) ──────────────────────────
 const SPRITE_CACHE = {
   sky: /** @type {HTMLCanvasElement | null} */ (null),
-  skyKey: "",
+  skyKey: '',
   clouds: /** @type {HTMLCanvasElement | null} */ (null),
   bird: /** @type {Record<string, HTMLCanvasElement>} */ ({}),
 };
 
 function makeOffscreen(w, h) {
-  const c = document.createElement("canvas");
-  c.width  = Math.round(w * activeDPR);
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * activeDPR);
   c.height = Math.round(h * activeDPR);
-  const cx = c.getContext("2d");
+  const cx = c.getContext('2d');
   if (cx) cx.setTransform(activeDPR, 0, 0, activeDPR, 0, 0);
   return c;
 }
 
 function rebuildSkyCache() {
-  const key = state.theme + "|" + Math.floor(state.score / 5);
+  const key = state.theme + '|' + Math.floor(state.score / 5);
   if (SPRITE_CACHE.sky && SPRITE_CACHE.skyKey === key) return;
   const c = makeOffscreen(CONFIG.CANVAS_W, CONFIG.CANVAS_H);
-  const cx = c.getContext("2d");
+  const cx = c.getContext('2d');
   if (!cx) return;
   const skyCfg = getTheme().sky;
   const hue = skyCfg.h1;
@@ -738,9 +869,9 @@ function rebuildSkyCache() {
 
 function rebuildCloudCache() {
   const c = makeOffscreen(140, 90);
-  const cx = c.getContext("2d");
+  const cx = c.getContext('2d');
   if (!cx) return;
-  cx.fillStyle = "#ffffff";
+  cx.fillStyle = '#ffffff';
   cx.beginPath();
   cx.arc(35, 55, 28, Math.PI * 0.5, Math.PI * 1.5);
   cx.arc(63, 31, 24, Math.PI, 0);
@@ -752,20 +883,20 @@ function rebuildCloudCache() {
 
 function rebuildBirdCache() {
   SPRITE_CACHE.bird = {};
-  const emotions = ["calm", "happy", "scared", "determined", "dizzy"];
+  const emotions = ['calm', 'happy', 'scared', 'determined', 'dizzy'];
   for (const theme of THEMES) {
     for (const emotion of emotions) {
       const key = `${theme}|${emotion}`;
       const c = makeOffscreen(60, 60);
-      const cx = c.getContext("2d");
+      const cx = c.getContext('2d');
       if (!cx) continue;
       cx.translate(30, 30);
       const palette = THEME_TABLE[theme].bird;
       const bodyColor = palette[emotion] || palette.calm;
       // Soft radial shadow underneath
       const shadowGrad = cx.createRadialGradient(2, 5, 1, 2, 5, CONFIG.BIRD_RADIUS + 4);
-      shadowGrad.addColorStop(0, "rgba(0,0,0,0.28)");
-      shadowGrad.addColorStop(1, "rgba(0,0,0,0)");
+      shadowGrad.addColorStop(0, 'rgba(0,0,0,0.28)');
+      shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
       cx.fillStyle = shadowGrad;
       cx.beginPath();
       cx.ellipse(2, 5, CONFIG.BIRD_RADIUS + 4, (CONFIG.BIRD_RADIUS + 4) * 0.55, 0, 0, Math.PI * 2);
@@ -778,14 +909,14 @@ function rebuildBirdCache() {
       // body radial highlight
       const hlGrad = cx.createRadialGradient(-4, -6, 1, -4, -6, CONFIG.BIRD_RADIUS);
       hlGrad.addColorStop(0, palette.hl);
-      hlGrad.addColorStop(0.7, palette.hl + "33"); // semi-fade
-      hlGrad.addColorStop(1, "rgba(0,0,0,0)");
+      hlGrad.addColorStop(0.7, palette.hl + '33'); // semi-fade
+      hlGrad.addColorStop(1, 'rgba(0,0,0,0)');
       cx.fillStyle = hlGrad;
       cx.beginPath();
       cx.arc(-4, -6, CONFIG.BIRD_RADIUS * 0.6, 0, Math.PI * 2);
       cx.fill();
       // body rim shading (bottom shadow)
-      cx.fillStyle = palette.shadow + "55";
+      cx.fillStyle = palette.shadow + '55';
       cx.beginPath();
       cx.arc(2, 5, CONFIG.BIRD_RADIUS * 0.85, 0, Math.PI * 2);
       cx.fill();
@@ -810,7 +941,7 @@ function rebuildBirdCache() {
       cx.closePath();
       cx.fill();
       // beak highlight
-      cx.fillStyle = "rgba(255,255,255,0.25)";
+      cx.fillStyle = 'rgba(255,255,255,0.25)';
       cx.beginPath();
       cx.moveTo(15, 1);
       cx.quadraticCurveTo(20, 1.5, 24, 3.5);
@@ -823,7 +954,8 @@ function rebuildBirdCache() {
 }
 
 function rebuildSpriteCaches() {
-  SPRITE_CACHE.sky = null; SPRITE_CACHE.skyKey = "";
+  SPRITE_CACHE.sky = null;
+  SPRITE_CACHE.skyKey = '';
   rebuildSkyCache();
   rebuildCloudCache();
   rebuildBirdCache();
@@ -836,7 +968,7 @@ const bird = {
   radius: CONFIG.BIRD_RADIUS,
   velocity: 0,
   rotation: 0,
-  emotion: "calm",
+  emotion: 'calm',
   emotionTimer: 0,
   wingAngle: 0,
   wingDir: 1,
@@ -850,7 +982,7 @@ const bird = {
   pupilOffsetX: 0,
   pupilOffsetY: 0,
   pupilDilate: 0, // 0..1 transient expansion on flap
-  breath: 0,      // living bird subtle breathing scale offset (calm glide only)
+  breath: 0, // living bird subtle breathing scale offset (calm glide only)
 };
 
 // Pre-allocate trail once.
@@ -879,16 +1011,40 @@ const activeParticles = [];
 const weatherPool = [];
 /** @type {Array<any>} */
 const activeWeather = [];
-const MEADOW_POLLEN_COLORS = Object.freeze(["#fde68a", "#fef3c7", "#facc15"]);
+const MEADOW_POLLEN_COLORS = Object.freeze(['#fde68a', '#fef3c7', '#facc15']);
 
 function initObjectPools() {
-  particlePool.length = 0; activeParticles.length = 0;
+  particlePool.length = 0;
+  activeParticles.length = 0;
   for (let i = 0; i < CONFIG.PARTICLE_POOL; i++) {
-    particlePool.push({ x:0, y:0, vx:0, vy:0, life:0, maxLife:0, color:"", size:0, active:false });
+    particlePool.push({
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      life: 0,
+      maxLife: 0,
+      color: '',
+      size: 0,
+      active: false,
+    });
   }
-  weatherPool.length = 0; activeWeather.length = 0;
+  weatherPool.length = 0;
+  activeWeather.length = 0;
   for (let i = 0; i < CONFIG.WEATHER_POOL; i++) {
-    weatherPool.push({ x:0, y:0, vx:0, vy:0, type:"", size:0, length:0, alpha:0, color:"", phase:0, active:false });
+    weatherPool.push({
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      type: '',
+      size: 0,
+      length: 0,
+      alpha: 0,
+      color: '',
+      phase: 0,
+      active: false,
+    });
   }
 }
 
@@ -903,7 +1059,8 @@ function spawnParticles(x, y, count, color, spread = 3) {
     const p = particlePool[idx];
     if (!p.active) {
       p.active = true;
-      p.x = x; p.y = y;
+      p.x = x;
+      p.y = y;
       p.vx = (rng() - 0.5) * particleSpread;
       p.vy = (rng() - 0.5) * particleSpread;
       p.life = 30 + rng() * 20;
@@ -946,15 +1103,34 @@ function drawParticles() {
 }
 
 let nextFreeWeather = 0;
-function spawnWeatherParticle(x, y, vx, vy, type, size = 0, length = 0, alpha = 1, color = "", phase = 0) {
+function spawnWeatherParticle(
+  x,
+  y,
+  vx,
+  vy,
+  type,
+  size = 0,
+  length = 0,
+  alpha = 1,
+  color = '',
+  phase = 0,
+) {
   const start = nextFreeWeather;
   for (let scan = 0; scan < weatherPool.length; scan++) {
     const idx = (start + scan) % weatherPool.length;
     const p = weatherPool[idx];
     if (!p.active) {
       p.active = true;
-      p.x = x; p.y = y; p.vx = vx; p.vy = vy;
-      p.type = type; p.size = size; p.length = length; p.alpha = alpha; p.color = color; p.phase = phase;
+      p.x = x;
+      p.y = y;
+      p.vx = vx;
+      p.vy = vy;
+      p.type = type;
+      p.size = size;
+      p.length = length;
+      p.alpha = alpha;
+      p.color = color;
+      p.phase = phase;
       activeWeather.push(p);
       nextFreeWeather = (idx + 1) % weatherPool.length;
       return;
@@ -963,40 +1139,59 @@ function spawnWeatherParticle(x, y, vx, vy, type, size = 0, length = 0, alpha = 
 }
 
 function spawnWeatherParticles() {
-  if (state.reducedMotion || state.phase !== "play" || state.paused) return;
+  if (state.reducedMotion || state.phase !== 'play' || state.paused) return;
   const spawnChance = Math.min(0.42 * state.dt, 0.95);
 
-  if (state.theme === "rain") {
+  if (state.theme === 'rain') {
     if (rng() < spawnChance) {
       spawnWeatherParticle(
-        rng() * (CONFIG.CANVAS_W + 100) - 50, -10,
-        -1.2, 5.5 + rng() * 2.0,
-        "rain", 0, 7 + rng() * 6, 1.0,
+        rng() * (CONFIG.CANVAS_W + 100) - 50,
+        -10,
+        -1.2,
+        5.5 + rng() * 2.0,
+        'rain',
+        0,
+        7 + rng() * 6,
+        1.0,
       );
     }
-  } else if (state.theme === "aurora") {
+  } else if (state.theme === 'aurora') {
     if (rng() < Math.min(0.06 * state.dt, 0.95)) {
       spawnWeatherParticle(
-        CONFIG.CANVAS_W + 10, rng() * (CONFIG.CANVAS_H - 180),
-        -(0.2 + rng() * 0.4), (rng() - 0.5) * 0.1,
-        "dust", 0.8 + rng() * 1.5, 0, 0.25 + rng() * 0.45,
+        CONFIG.CANVAS_W + 10,
+        rng() * (CONFIG.CANVAS_H - 180),
+        -(0.2 + rng() * 0.4),
+        (rng() - 0.5) * 0.1,
+        'dust',
+        0.8 + rng() * 1.5,
+        0,
+        0.25 + rng() * 0.45,
       );
     }
-  } else if (state.theme === "midnight") {
+  } else if (state.theme === 'midnight') {
     if (rng() < Math.min(0.08 * state.dt, 0.95)) {
       spawnWeatherParticle(
-        rng() * CONFIG.CANVAS_W, -10,
-        0, 0.5 + rng() * 0.7,
-        "cyber", 2.2 + rng() * 2.0, 0, 0.2 + rng() * 0.35,
+        rng() * CONFIG.CANVAS_W,
+        -10,
+        0,
+        0.5 + rng() * 0.7,
+        'cyber',
+        2.2 + rng() * 2.0,
+        0,
+        0.2 + rng() * 0.35,
       );
     }
-  } else if (state.theme === "meadow") {
+  } else if (state.theme === 'meadow') {
     if (rng() < Math.min(0.024 * state.dt, 0.95)) {
       spawnWeatherParticle(
         CONFIG.CANVAS_W + 12,
         22 + rng() * (ground.y - 84),
-        -(0.55 + rng() * 0.55), 0.08 + rng() * 0.18,
-        "pollen", 1.4 + rng() * 1.8, 0.7 + rng() * 1.4, 0.28 + rng() * 0.28,
+        -(0.55 + rng() * 0.55),
+        0.08 + rng() * 0.18,
+        'pollen',
+        1.4 + rng() * 1.8,
+        0.7 + rng() * 1.4,
+        0.28 + rng() * 0.28,
         MEADOW_POLLEN_COLORS[Math.floor(rng() * MEADOW_POLLEN_COLORS.length)],
         rng() * Math.PI * 2,
       );
@@ -1004,18 +1199,28 @@ function spawnWeatherParticles() {
     // Gentle drifting pollen / petal flecks — calm and alive
     if (rng() < Math.min(0.07 * state.dt, 0.65)) {
       spawnWeatherParticle(
-        rng() * CONFIG.CANVAS_W, -8,
-        (rng() - 0.5) * 0.7, 0.8 + rng() * 0.9,
-        "pollen", 1.4 + rng() * 1.6, 0, 0.28 + rng() * 0.35,
+        rng() * CONFIG.CANVAS_W,
+        -8,
+        (rng() - 0.5) * 0.7,
+        0.8 + rng() * 0.9,
+        'pollen',
+        1.4 + rng() * 1.6,
+        0,
+        0.28 + rng() * 0.35,
       );
     }
-  } else if (state.theme === "sunset") {
+  } else if (state.theme === 'sunset') {
     // Warm golden motes — soft drifting dust in evening light
     if (rng() < Math.min(CONFIG.SUNSET_MOTE_CHANCE * state.dt, 0.6)) {
       spawnWeatherParticle(
-        rng() * CONFIG.CANVAS_W, -6,
-        (rng() - 0.5) * 0.4, 0.6 + rng() * 0.7,
-        "mote", 1.1 + rng() * 1.1, 0, CONFIG.SUNSET_MOTE_ALPHA + rng() * 0.1,
+        rng() * CONFIG.CANVAS_W,
+        -6,
+        (rng() - 0.5) * 0.4,
+        0.6 + rng() * 0.7,
+        'mote',
+        1.1 + rng() * 1.1,
+        0,
+        CONFIG.SUNSET_MOTE_ALPHA + rng() * 0.1,
       );
     }
   }
@@ -1029,12 +1234,12 @@ function updateWeatherParticles() {
     p.x += p.vx * dt;
     p.y += p.vy * dt;
     let keep = true;
-    if (p.type === "rain") {
+    if (p.type === 'rain') {
       if (p.y >= ground.y) {
-        spawnParticles(p.x, ground.y, 2, "rgba(150, 220, 255, 0.4)", 1.5);
+        spawnParticles(p.x, ground.y, 2, 'rgba(150, 220, 255, 0.4)', 1.5);
         keep = false;
       }
-    } else if (p.type === "pollen") {
+    } else if (p.type === 'pollen') {
       p.x += Math.sin(state.time * 0.035 + p.phase) * 0.12 * p.length * dt;
       p.y += Math.cos(state.time * 0.02 + p.phase) * 0.03 * dt;
       if (p.x < -18 || p.y < -18 || p.y >= ground.y - 8) keep = false;
@@ -1049,28 +1254,28 @@ function updateWeatherParticles() {
 
 function drawWeatherParticles() {
   for (const p of activeWeather) {
-    if (p.type === "rain") {
-      ctx.strokeStyle = "rgba(156, 206, 235, 0.40)";
+    if (p.type === 'rain') {
+      ctx.strokeStyle = 'rgba(156, 206, 235, 0.40)';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.moveTo(p.x, p.y);
       ctx.lineTo(p.x + p.vx * 1.4, p.y + p.vy * 1.4);
       ctx.stroke();
-    } else if (p.type === "dust") {
-      ctx.fillStyle = "rgba(167, 139, 250, 0.65)";
+    } else if (p.type === 'dust') {
+      ctx.fillStyle = 'rgba(167, 139, 250, 0.65)';
       ctx.globalAlpha = p.alpha;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       ctx.fill();
-    } else if (p.type === "cyber") {
-      ctx.fillStyle = "rgba(244, 114, 182, 0.55)";
+    } else if (p.type === 'cyber') {
+      ctx.fillStyle = 'rgba(244, 114, 182, 0.55)';
       ctx.globalAlpha = p.alpha;
       ctx.fillRect(p.x, p.y, p.size, p.size);
-    } else if (p.type === "pollen") {
+    } else if (p.type === 'pollen') {
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(Math.sin(state.time * 0.025 + p.phase) * 0.5);
-      ctx.fillStyle = p.color || "#fde68a";
+      ctx.fillStyle = p.color || '#fde68a';
       ctx.globalAlpha = p.alpha;
       ctx.beginPath();
       ctx.ellipse(0, 0, p.size, Math.max(0.8, p.size * 0.68), 0, 0, Math.PI * 2);
@@ -1081,14 +1286,14 @@ function drawWeatherParticles() {
       const r = p.size * 0.52;
       const phase = (p.x * 0.8 + p.y * 0.6 + state.time * 1.8) * 0.018; // gentle living flutter
       // Core glow
-      ctx.fillStyle = "rgba(249, 199, 79, 0.65)";
+      ctx.fillStyle = 'rgba(249, 199, 79, 0.65)';
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       ctx.fill();
       // Four gentle petal lobes with phase rotation for organic meadow life (still cheap)
-      ctx.fillStyle = "rgba(255, 225, 150, 0.38)";
+      ctx.fillStyle = 'rgba(255, 225, 150, 0.38)';
       for (let i = 0; i < 4; i++) {
-        const a = (i * (Math.PI / 2)) + phase;
+        const a = i * (Math.PI / 2) + phase;
         const px = p.x + Math.cos(a) * r * 0.72;
         const py = p.y + Math.sin(a) * r * 0.72;
         ctx.beginPath();
@@ -1096,19 +1301,19 @@ function drawWeatherParticles() {
         ctx.fill();
       }
       // Tiny bright center spark for premium golden feel
-      ctx.fillStyle = "rgba(255, 250, 220, 0.75)";
+      ctx.fillStyle = 'rgba(255, 250, 220, 0.75)';
       ctx.beginPath();
       ctx.arc(p.x, p.y, r * 0.28, 0, Math.PI * 2);
       ctx.fill();
-    } else if (p.type === "mote") {
+    } else if (p.type === 'mote') {
       // Warm sunset dust motes — soft, glowing, slow drifting
       ctx.globalAlpha = p.alpha;
-      ctx.fillStyle = "rgba(255, 210, 130, 0.6)";
+      ctx.fillStyle = 'rgba(255, 210, 130, 0.6)';
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size * 0.55, 0, Math.PI * 2);
       ctx.fill();
       // Subtle highlight for golden light quality
-      ctx.fillStyle = "rgba(255, 245, 200, 0.35)";
+      ctx.fillStyle = 'rgba(255, 245, 200, 0.35)';
       ctx.beginPath();
       ctx.arc(p.x - 0.6, p.y - 0.6, p.size * 0.22, 0, Math.PI * 2);
       ctx.fill();
@@ -1118,15 +1323,18 @@ function drawWeatherParticles() {
 }
 
 function drawAuroraBands() {
-  if (state.theme !== "aurora" || state.reducedMotion) return;
+  if (state.theme !== 'aurora' || state.reducedMotion) return;
   ctx.save();
   const t = state.time * 0.005;
   for (let i = 0; i < 3; i++) {
     const shiftX = Math.sin(t + i * 1.7) * (50 + i * 18);
     const grad = ctx.createLinearGradient(0, 0, CONFIG.CANVAS_W, 0);
-    grad.addColorStop(0, "rgba(74, 222, 128, 0)");
-    grad.addColorStop(0.3 + i * 0.15, `rgba(${74 + i * 20}, ${222 - i * 30}, ${128 + i * 40}, 0.06)`);
-    grad.addColorStop(0.6 + i * 0.15, "rgba(0, 0, 0, 0)");
+    grad.addColorStop(0, 'rgba(74, 222, 128, 0)');
+    grad.addColorStop(
+      0.3 + i * 0.15,
+      `rgba(${74 + i * 20}, ${222 - i * 30}, ${128 + i * 40}, 0.06)`,
+    );
+    grad.addColorStop(0.6 + i * 0.15, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -1142,19 +1350,21 @@ function drawAuroraBands() {
 // Meadow signature "Golden Light" godrays — warm, drifting sunbeams for the calmest theme.
 // Cheap canvas gradients, time-based drift, fully respects reduced-motion and CONFIG.
 function drawMeadowLight() {
-  if (state.theme !== "meadow" || state.reducedMotion) return;
+  if (state.theme !== 'meadow' || state.reducedMotion) return;
   ctx.save();
   const t = state.time * CONFIG.MEADOW_LIGHT_WAVE_SPEED;
   for (let i = 0; i < CONFIG.MEADOW_LIGHT_COUNT; i++) {
     const shift = Math.sin(t + i * 1.3) * (28 + i * 11);
     const a = CONFIG.MEADOW_LIGHT_ALPHA * (0.65 + i * 0.18);
     const grad = ctx.createLinearGradient(
-      CONFIG.CANVAS_W * (0.62 + i * 0.07), 0,
-      CONFIG.CANVAS_W * 0.18, CONFIG.CANVAS_H * CONFIG.MEADOW_LIGHT_VERTICAL
+      CONFIG.CANVAS_W * (0.62 + i * 0.07),
+      0,
+      CONFIG.CANVAS_W * 0.18,
+      CONFIG.CANVAS_H * CONFIG.MEADOW_LIGHT_VERTICAL,
     );
     grad.addColorStop(0, `rgba(255, 232, 155, ${a})`);
     grad.addColorStop(0.45, `rgba(255, 218, 125, ${a * 0.55})`);
-    grad.addColorStop(1, "rgba(255, 205, 90, 0)");
+    grad.addColorStop(1, 'rgba(255, 205, 90, 0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.moveTo(CONFIG.CANVAS_W * (0.58 + i * 0.06), 0);
@@ -1174,17 +1384,21 @@ function updateEmotion() {
   const closeToEdge =
     nearPipe &&
     (Math.abs(bird.y - nearPipe.topHeight) < 40 ||
-     Math.abs(bird.y - (nearPipe.topHeight + state.gap)) < 40);
+      Math.abs(bird.y - (nearPipe.topHeight + state.gap)) < 40);
 
-  if (state.phase === "gameOver") bird.emotion = "dizzy";
-  else if (state.score > 0 && state.score % CONFIG.EMOTION_HAPPY_SCORE_STEP === 0 && bird.emotionTimer > 0)
-    bird.emotion = "happy";
-  else if (closeToEdge) bird.emotion = "scared";
-  else if (bird.velocity > CONFIG.EMOTION_SCARED_VELOCITY) bird.emotion = "scared";
-  else if (state.score >= CONFIG.EMOTION_DETERMINED_SCORE) bird.emotion = "determined";
-  else bird.emotion = "calm";
+  if (state.phase === 'gameOver') bird.emotion = 'dizzy';
+  else if (
+    state.score > 0 &&
+    state.score % CONFIG.EMOTION_HAPPY_SCORE_STEP === 0 &&
+    bird.emotionTimer > 0
+  )
+    bird.emotion = 'happy';
+  else if (closeToEdge) bird.emotion = 'scared';
+  else if (bird.velocity > CONFIG.EMOTION_SCARED_VELOCITY) bird.emotion = 'scared';
+  else if (state.score >= CONFIG.EMOTION_DETERMINED_SCORE) bird.emotion = 'determined';
+  else bird.emotion = 'calm';
 
-  if (bird.emotion === "happy") bird.blush = Math.min(1, bird.blush + 0.1);
+  if (bird.emotion === 'happy') bird.blush = Math.min(1, bird.blush + 0.1);
   else bird.blush = Math.max(0, bird.blush - 0.05);
 
   if (bird.emotion !== prev) bird.emotionTimer = CONFIG.EMOTION_HOLD_SEC * 60; // 60 dt-units = 1 second
@@ -1242,15 +1456,23 @@ function updateBird() {
   if (bird.pupilDilate > 0) bird.pupilDilate = Math.max(0, bird.pupilDilate - 0.06 * dt);
 
   // Living bird — gentle breathing when calmly gliding (no brake/dive, low velocity)
-  const calmGlide = (bird.emotion === "calm" || bird.emotion === "happy")
-    && Math.abs(bird.velocity) < 1.8
-    && !bird.isBraking && !bird.isDiving
-    && state.phase === "play";
+  const calmGlide =
+    (bird.emotion === 'calm' || bird.emotion === 'happy') &&
+    Math.abs(bird.velocity) < 1.8 &&
+    !bird.isBraking &&
+    !bird.isDiving &&
+    state.phase === 'play';
   bird.breath = calmGlide ? Math.sin(state.time * 0.065) * 0.016 : 0;
 
   // Living breath flecks — the world gently breathing with a calm glider
   if (calmGlide && !state.reducedMotion && rng() < CONFIG.CALM_BREATH_PARTICLE_CHANCE * state.dt) {
-    spawnParticles(bird.x - 2, bird.y + 10, CONFIG.CALM_BREATH_PARTICLE_COUNT, getTheme().flapParticle || "#fff", CONFIG.CALM_BREATH_SPREAD);
+    spawnParticles(
+      bird.x - 2,
+      bird.y + 10,
+      CONFIG.CALM_BREATH_PARTICLE_COUNT,
+      getTheme().flapParticle || '#fff',
+      CONFIG.CALM_BREATH_SPREAD,
+    );
   }
 
   if (!state.reducedMotion) {
@@ -1313,7 +1535,7 @@ function updateBird() {
   bird.pupilOffsetY += (lookY - bird.pupilOffsetY) * ease;
 
   // Very subtle idle curiosity when no strong target and calm
-  if (!nearPipe && !shieldTarget && (bird.emotion === "calm" || bird.emotion === "happy")) {
+  if (!nearPipe && !shieldTarget && (bird.emotion === 'calm' || bird.emotion === 'happy')) {
     const t = state.time * 0.9;
     bird.pupilOffsetX += Math.sin(t) * 0.25 * 0.016 * state.dt;
     bird.pupilOffsetY += Math.cos(t * 0.7) * 0.18 * 0.016 * state.dt;
@@ -1333,7 +1555,7 @@ function spawnPipe() {
   const isMoving = state.score >= CONFIG.PIPE_SCORE_FOR_MOVING && rng() < CONFIG.PIPE_MOVING_CHANCE;
 
   const themePipe = getTheme().pipe;
-  const color    = `hsl(${themePipe.hue + rng() * 30}, 60%, 35%)`;
+  const color = `hsl(${themePipe.hue + rng() * 30}, 60%, 35%)`;
   const capColor = `hsl(${themePipe.cap + rng() * 30}, 70%, 20%)`;
 
   const newPipe = {
@@ -1408,10 +1630,10 @@ function updateShieldBubbles() {
       state.shieldActive = true;
       sfxShieldCollect();
       hapticPulse(40);
-      spawnParticles(bx, by, 18, "#ffd700", 4);
+      spawnParticles(bx, by, 18, '#ffd700', 4);
       pipe.shieldBubble = null;
       syncStatsAndAchievements(true);
-      announce("Feather Shield activated.");
+      announce('Feather Shield activated.');
     }
   }
 }
@@ -1443,7 +1665,15 @@ function intersectsPipe(pipe) {
   if (circleHitsRect(bird.x, bird.y, r, pipe.x, 0, state.pipeWidth, pipe.topHeight)) return true;
   // bottom pipe
   const gapBottom = pipe.topHeight + state.gap;
-  return circleHitsRect(bird.x, bird.y, r, pipe.x, gapBottom, state.pipeWidth, ground.y - gapBottom);
+  return circleHitsRect(
+    bird.x,
+    bird.y,
+    r,
+    pipe.x,
+    gapBottom,
+    state.pipeWidth,
+    ground.y - gapBottom,
+  );
 }
 
 function checkCollisions() {
@@ -1465,10 +1695,10 @@ function checkCollisions() {
         bird.velocity = CONFIG.SHIELD_POP_VELOCITY;
         sfxShieldPop();
         hapticPulse(80);
-        spawnParticles(bird.x, bird.y, 25, "#ffd700", 6);
+        spawnParticles(bird.x, bird.y, 25, '#ffd700', 6);
         state.shieldsSavedCount++;
         syncStatsAndAchievements(true);
-        announce("Feather Shield absorbed collision. Invincible.");
+        announce('Feather Shield absorbed collision. Invincible.');
         return;
       } else if (state.isInvincible) {
         return;
@@ -1485,7 +1715,10 @@ function checkCollisions() {
     const gapBottom = pipe.topHeight + state.gap;
     const topProximity = bird.y - bird.radius - pipe.topHeight;
     const botProximity = gapBottom - (bird.y + bird.radius);
-    if (Math.abs(topProximity) < CONFIG.NEAR_MISS_Y_BAND || Math.abs(botProximity) < CONFIG.NEAR_MISS_Y_BAND) {
+    if (
+      Math.abs(topProximity) < CONFIG.NEAR_MISS_Y_BAND ||
+      Math.abs(botProximity) < CONFIG.NEAR_MISS_Y_BAND
+    ) {
       if (!pipe.nearMissRecorded) {
         pipe.nearMissRecorded = true;
         state.nearMissesCount++;
@@ -1506,7 +1739,7 @@ function drawBackground() {
   if (SPRITE_CACHE.sky) {
     ctx.drawImage(SPRITE_CACHE.sky, 0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
   } else {
-    ctx.fillStyle = "#7bd8ff";
+    ctx.fillStyle = '#7bd8ff';
     ctx.fillRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
   }
 
@@ -1517,31 +1750,33 @@ function drawBackground() {
   const skyCfg = getTheme().sky;
   const co = state.time * (state.reducedMotion ? 0.08 : 0.22);
   const wrap = (offset, speed) =>
-    ((((offset - co * speed) % (CONFIG.CANVAS_W + 200)) + CONFIG.CANVAS_W + 200) % (CONFIG.CANVAS_W + 200)) - 60;
+    ((((offset - co * speed) % (CONFIG.CANVAS_W + 200)) + CONFIG.CANVAS_W + 200) %
+      (CONFIG.CANVAS_W + 200)) -
+    60;
 
   // Far layer (smallest, slowest, faintest)
   ctx.globalAlpha = skyCfg.cAlpha * 0.45;
-  drawCachedCloud(wrap(40,  0.05), 60,  0.45);
+  drawCachedCloud(wrap(40, 0.05), 60, 0.45);
   drawCachedCloud(wrap(220, 0.06), 110, 0.4);
-  drawCachedCloud(wrap(360, 0.04), 80,  0.5);
+  drawCachedCloud(wrap(360, 0.04), 80, 0.5);
   // Mid layer
   ctx.globalAlpha = skyCfg.cAlpha * 0.75;
   drawCachedCloud(wrap(285, 0.15), 150, 0.78);
-  drawCachedCloud(wrap(180, 0.10), 190, 0.55);
+  drawCachedCloud(wrap(180, 0.1), 190, 0.55);
   // Near layer (largest, fastest, most opaque)
   ctx.globalAlpha = skyCfg.cAlpha;
-  drawCachedCloud(wrap(70,  0.20), 100, 1.0);
-  drawCachedCloud(wrap(460, 0.25), 70,  0.72);
+  drawCachedCloud(wrap(70, 0.2), 100, 1.0);
+  drawCachedCloud(wrap(460, 0.25), 70, 0.72);
   ctx.globalAlpha = 1.0;
 
   // Stars
-  if (state.score >= 10 || state.theme === "midnight") {
+  if (state.score >= 10 || state.theme === 'midnight') {
     for (let i = 0; i < 14; i++) {
       const sx = (i * 97 + state.time * 0.5) % CONFIG.CANVAS_W;
       const sy = 30 + ((i * 53 + state.time * 0.3) % 120);
       const tw = 0.3 + 0.4 * Math.sin(state.time * 0.1 + i);
       ctx.globalAlpha = tw;
-      ctx.fillStyle = "#fff";
+      ctx.fillStyle = '#fff';
       ctx.beginPath();
       ctx.arc(sx, sy, 1.6, 0, Math.PI * 2);
       ctx.fill();
@@ -1552,7 +1787,8 @@ function drawBackground() {
 
 function drawCachedCloud(x, y, scale = 1) {
   if (!SPRITE_CACHE.clouds) return;
-  const w = 140 * scale, h = 90 * scale;
+  const w = 140 * scale,
+    h = 90 * scale;
   ctx.drawImage(SPRITE_CACHE.clouds, x, y - h * 0.4, w, h);
 }
 
@@ -1574,7 +1810,7 @@ function drawPipe(x, y, height, isTop, pipe) {
   ctx.fillStyle = grad;
   ctx.fillRect(x, y, state.pipeWidth, height);
 
-  ctx.fillStyle = "rgba(255,255,255,0.15)";
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
   ctx.fillRect(x + 10, y + 4, 8, Math.max(0, height - 8));
 
   const capH = 20;
@@ -1582,16 +1818,16 @@ function drawPipe(x, y, height, isTop, pipe) {
   ctx.fillStyle = pipe.capColor;
   ctx.fillRect(x - 4, capY, state.pipeWidth + 8, capH);
 
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
   ctx.fillRect(x - 2, capY + 2, state.pipeWidth + 4, 4);
 
   if (pipe.isMoving) {
-    ctx.fillStyle = "rgba(255, 100, 100, 0.7)";
+    ctx.fillStyle = 'rgba(255, 100, 100, 0.7)';
     ctx.beginPath();
     ctx.arc(x + state.pipeWidth / 2, capY + capH / 2, 4, 0, Math.PI * 2);
     ctx.fill();
     // a small icon to differentiate by shape (color-blind redundancy)
-    ctx.strokeStyle = "rgba(255,255,255,0.85)";
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(x + state.pipeWidth / 2 - 5, capY + capH / 2);
@@ -1611,19 +1847,22 @@ function drawGround() {
   ctx.fillRect(0, ground.y, CONFIG.CANVAS_W, 14);
 
   // Meadow ground delight — sparse living grass tufts + tiny warm flecks (calm, low cost)
-  if (state.theme === "meadow") {
+  if (state.theme === 'meadow') {
     const reduced = state.reducedMotion;
     ctx.globalAlpha = reduced ? 0.18 : 0.26;
-    ctx.fillStyle = "#f4d35e";
+    ctx.fillStyle = '#f4d35e';
     const tuftCount = reduced ? 5 : 9;
     for (let i = 0; i < tuftCount; i++) {
-      const x = 22 + i * (CONFIG.CANVAS_W / (tuftCount + 1)) + (reduced ? 0 : Math.sin(state.time * 0.018 + i) * 1.8);
+      const x =
+        22 +
+        i * (CONFIG.CANVAS_W / (tuftCount + 1)) +
+        (reduced ? 0 : Math.sin(state.time * 0.018 + i) * 1.8);
       const h = 3.5 + (i % 3);
       ctx.fillRect(x, ground.y + 3, 1.8, h);
       if (!reduced && i % 3 === 0) {
-        ctx.fillStyle = "#81b29a";
+        ctx.fillStyle = '#81b29a';
         ctx.fillRect(x + 2.2, ground.y + 5, 1.2, 2.5);
-        ctx.fillStyle = "#f4d35e";
+        ctx.fillStyle = '#f4d35e';
       }
     }
     ctx.globalAlpha = 1.0;
@@ -1640,8 +1879,8 @@ function drawGround() {
 function drawBirdTrail() {
   if (state.reducedMotion) return;
   let trailColor = getTheme().trail;
-  if (bird.emotion === "happy") trailColor = "#ffd700";
-  if (bird.emotion === "scared") trailColor = "#ff9999";
+  if (bird.emotion === 'happy') trailColor = '#ffd700';
+  if (bird.emotion === 'scared') trailColor = '#ff9999';
   for (const t of bird.trail) {
     if (t.life <= 0) continue;
     const alpha = t.life / CONFIG.BIRD_TRAIL_LIFE;
@@ -1688,40 +1927,41 @@ function drawBird() {
   ctx.restore();
 
   // Eye white
-  const eyeX = 6, eyeY = -6;
-  ctx.fillStyle = "#fff";
+  const eyeX = 6,
+    eyeY = -6;
+  ctx.fillStyle = '#fff';
   ctx.beginPath();
   ctx.arc(eyeX, eyeY, 8, 0, Math.PI * 2);
   ctx.fill();
 
   let pupilR = 3.5;
-  if (bird.emotion === "scared") pupilR = 4.5;
-  if (bird.emotion === "dizzy") pupilR = 2.5;
-  if (bird.emotion === "determined") pupilR = 3;
+  if (bird.emotion === 'scared') pupilR = 4.5;
+  if (bird.emotion === 'dizzy') pupilR = 2.5;
+  if (bird.emotion === 'determined') pupilR = 3;
   pupilR += bird.pupilDilate * 1.2; // micro-interaction
 
-  ctx.fillStyle = "#1a1a1a";
+  ctx.fillStyle = '#1a1a1a';
   ctx.beginPath();
   ctx.arc(eyeX + bird.pupilOffsetX, eyeY + bird.pupilOffsetY, pupilR, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = '#fff';
   ctx.beginPath();
   ctx.arc(eyeX + bird.pupilOffsetX + 1, eyeY + bird.pupilOffsetY - 1, 1.2, 0, Math.PI * 2);
   ctx.fill();
 
   // Eyebrow
-  ctx.strokeStyle = "#664400";
+  ctx.strokeStyle = '#664400';
   ctx.lineWidth = 2;
-  ctx.lineCap = "round";
+  ctx.lineCap = 'round';
   ctx.beginPath();
-  if (bird.emotion === "scared") {
+  if (bird.emotion === 'scared') {
     ctx.moveTo(eyeX - 6, eyeY - 10);
     ctx.lineTo(eyeX + 4, eyeY - 12);
-  } else if (bird.emotion === "determined") {
+  } else if (bird.emotion === 'determined') {
     ctx.moveTo(eyeX - 6, eyeY - 12);
     ctx.lineTo(eyeX + 4, eyeY - 8);
-  } else if (bird.emotion === "dizzy") {
+  } else if (bird.emotion === 'dizzy') {
     ctx.moveTo(eyeX - 5, eyeY - 10);
     ctx.quadraticCurveTo(eyeX, eyeY - 13, eyeX + 5, eyeY - 10);
   } else {
@@ -1742,8 +1982,8 @@ function drawBird() {
   }
 
   // Smile
-  if (bird.emotion === "happy") {
-    ctx.strokeStyle = "#ff6b1d";
+  if (bird.emotion === 'happy') {
+    ctx.strokeStyle = '#ff6b1d';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(14, 6, 5, 0, Math.PI * 0.8);
@@ -1751,11 +1991,11 @@ function drawBird() {
   }
 
   // Dizzy
-  if (bird.emotion === "dizzy") {
-    ctx.strokeStyle = "#ffcc00";
+  if (bird.emotion === 'dizzy') {
+    ctx.strokeStyle = '#ffcc00';
     ctx.lineWidth = 1.5;
     for (let s = 0; s < 3; s++) {
-      const angle = state.time * 0.15 + s * (Math.PI * 2 / 3);
+      const angle = state.time * 0.15 + s * ((Math.PI * 2) / 3);
       const sx = Math.cos(angle) * 22;
       const sy = Math.sin(angle) * 22 - 8;
       ctx.beginPath();
@@ -1777,27 +2017,27 @@ function drawShieldBubbles() {
     const pulseR = b.radius + Math.sin(b.pulse) * 3;
     ctx.save();
     // Outer glow ring (replaces shadowBlur — cheaper on mobile)
-    ctx.fillStyle = "rgba(255, 215, 0, 0.12)";
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.12)';
     ctx.beginPath();
     ctx.arc(bx, by, pulseR + 4, 0, Math.PI * 2);
     ctx.fill();
     const grad = ctx.createRadialGradient(bx, by, 2, bx, by, pulseR);
-    grad.addColorStop(0, "rgba(255, 235, 120, 0.88)");
-    grad.addColorStop(0.6, "rgba(255, 215, 0, 0.45)");
-    grad.addColorStop(1, "rgba(255, 215, 0, 0.05)");
+    grad.addColorStop(0, 'rgba(255, 235, 120, 0.88)');
+    grad.addColorStop(0.6, 'rgba(255, 215, 0, 0.45)');
+    grad.addColorStop(1, 'rgba(255, 215, 0, 0.05)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(bx, by, pulseR, 0, Math.PI * 2);
     ctx.fill();
     // ring (color-blind redundancy: icon-glyph + ring shape)
-    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    ctx.fillStyle = "#fff";
-    ctx.font = "14px system-ui";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("S", bx, by);
+    ctx.fillStyle = '#fff';
+    ctx.font = '14px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('S', bx, by);
     ctx.restore();
   }
 }
@@ -1808,22 +2048,28 @@ function drawBirdShield() {
   ctx.translate(bird.x, bird.y);
   ctx.rotate(state.time * 0.04);
   // Layered fills instead of shadowBlur (mobile-friendly)
-  ctx.strokeStyle = "rgba(255, 215, 0, 0.25)";
+  ctx.strokeStyle = 'rgba(255, 215, 0, 0.25)';
   ctx.lineWidth = 6;
   ctx.beginPath();
   ctx.arc(0, 0, bird.radius + 12, 0, Math.PI * 2);
   ctx.stroke();
-  ctx.strokeStyle = "rgba(255, 215, 0, 0.85)";
+  ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
   ctx.arc(0, 0, bird.radius + 12, 0, Math.PI * 2);
   ctx.stroke();
   // 4 rotating energy nodes
   for (let i = 0; i < 4; i++) {
-    const a = i * Math.PI / 2;
-    ctx.fillStyle = "#fff";
+    const a = (i * Math.PI) / 2;
+    ctx.fillStyle = '#fff';
     ctx.beginPath();
-    ctx.arc(Math.cos(a) * (bird.radius + 12), Math.sin(a) * (bird.radius + 12), 3.2, 0, Math.PI * 2);
+    ctx.arc(
+      Math.cos(a) * (bird.radius + 12),
+      Math.sin(a) * (bird.radius + 12),
+      3.2,
+      0,
+      Math.PI * 2,
+    );
     ctx.fill();
   }
   ctx.restore();
@@ -1831,24 +2077,22 @@ function drawBirdShield() {
 
 function drawScore() {
   let glowColor =
-    bird.emotion === "happy" ? "#ffd700"
-    : bird.emotion === "determined" ? "#ff8800"
-    : "#ffffff";
-  if (state.newBestFlash > 0) glowColor = "#ffd700";
+    bird.emotion === 'happy' ? '#ffd700' : bird.emotion === 'determined' ? '#ff8800' : '#ffffff';
+  if (state.newBestFlash > 0) glowColor = '#ffd700';
 
   ctx.fillStyle = glowColor;
-  ctx.strokeStyle = "rgba(0,0,0,0.45)";
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)';
   ctx.lineWidth = 3;
-  ctx.font = "bold 44px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-  ctx.textAlign = "center";
+  ctx.font = 'bold 44px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'center';
   ctx.strokeText(String(state.score), CONFIG.CANVAS_W / 2, 65);
   ctx.fillText(String(state.score), CONFIG.CANVAS_W / 2, 65);
 
-  if (state.phase === "play") {
-    ctx.font = "13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    const emo = { calm: "😌", happy: "😄", scared: "😰", determined: "😎", dizzy: "😵" };
-    ctx.fillText(emo[bird.emotion] || "", CONFIG.CANVAS_W / 2, 85);
+  if (state.phase === 'play') {
+    ctx.font = '13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    const emo = { calm: '😌', happy: '😄', scared: '😰', determined: '😎', dizzy: '😵' };
+    ctx.fillText(emo[bird.emotion] || '', CONFIG.CANVAS_W / 2, 85);
   }
 }
 
@@ -1866,22 +2110,26 @@ function updateFpsCounter(dtSec) {
 }
 function drawFpsCounter() {
   if (!state.showFps) return;
-  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
   ctx.fillRect(CONFIG.CANVAS_W - 56, 6, 50, 18);
-  ctx.fillStyle = fpsDisplay >= 50 ? "#4ade80" : fpsDisplay >= 30 ? "#facc15" : "#f87171";
-  ctx.font = "bold 12px system-ui";
-  ctx.textAlign = "center";
+  ctx.fillStyle = fpsDisplay >= 50 ? '#4ade80' : fpsDisplay >= 30 ? '#facc15' : '#f87171';
+  ctx.font = 'bold 12px system-ui';
+  ctx.textAlign = 'center';
   ctx.fillText(`${fpsDisplay} fps`, CONFIG.CANVAS_W - 31, 19);
 }
 
 function drawVignette() {
   if (state.reducedTransparency) return;
   const grad = ctx.createRadialGradient(
-    CONFIG.CANVAS_W / 2, CONFIG.CANVAS_H / 2, CONFIG.CANVAS_W * 0.35,
-    CONFIG.CANVAS_W / 2, CONFIG.CANVAS_H / 2, CONFIG.CANVAS_W * 0.75,
+    CONFIG.CANVAS_W / 2,
+    CONFIG.CANVAS_H / 2,
+    CONFIG.CANVAS_W * 0.35,
+    CONFIG.CANVAS_W / 2,
+    CONFIG.CANVAS_H / 2,
+    CONFIG.CANVAS_W * 0.75,
   );
-  grad.addColorStop(0, "rgba(0,0,0,0)");
-  grad.addColorStop(1, "rgba(0,0,0,0.28)");
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.28)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
 }
@@ -1894,55 +2142,59 @@ function drawNearMissFlash() {
 }
 
 function drawCalmMeter() {
-  if (state.phase !== "play") return;
-  const x = 14, y = 14, w = 8, h = 100;
-  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  if (state.phase !== 'play') return;
+  const x = 14,
+    y = 14,
+    w = 8,
+    h = 100;
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
   ctx.fillRect(x, y, w, h);
   const filled = Math.max(0, Math.min(1, state.calmMeter));
   ctx.fillStyle = `hsl(${160 + filled * 60}, 70%, 60%)`;
   ctx.fillRect(x, y + h - h * filled, w, h * filled);
-  ctx.strokeStyle = "rgba(255,255,255,0.4)";
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
   ctx.lineWidth = 1;
   ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
 }
 
 function drawPanel(title, subtitle, extra, options = /** @type {{newBest?:boolean}} */ ({})) {
-  const pw = 320, ph = 210;
+  const pw = 320,
+    ph = 210;
   const px = (CONFIG.CANVAS_W - pw) / 2;
   const py = 160;
 
-  ctx.fillStyle = "rgba(12, 20, 35, 0.88)";
-  ctx.strokeStyle = options.newBest ? "rgba(255, 215, 0, 0.6)" : "rgba(255,255,255,0.18)";
+  ctx.fillStyle = 'rgba(12, 20, 35, 0.88)';
+  ctx.strokeStyle = options.newBest ? 'rgba(255, 215, 0, 0.6)' : 'rgba(255,255,255,0.18)';
   ctx.lineWidth = options.newBest ? 3 : 2;
   roundRect(px, py, pw, ph, 22);
   ctx.fill();
   ctx.stroke();
 
   if (options.newBest) {
-    ctx.fillStyle = "rgba(255, 215, 0, 0.9)";
-    ctx.font = "bold 14px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("🌟 NEW BEST 🌟", CONFIG.CANVAS_W / 2, py + 22);
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+    ctx.font = 'bold 14px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('🌟 NEW BEST 🌟', CONFIG.CANVAS_W / 2, py + 22);
   }
 
-  ctx.fillStyle = "#fff";
-  ctx.textAlign = "center";
-  ctx.font = "bold 30px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 30px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.fillText(title, CONFIG.CANVAS_W / 2, py + (options.newBest ? 60 : 50));
 
-  ctx.font = "17px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.font = '17px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
   wrapText(subtitle, CONFIG.CANVAS_W / 2, py + (options.newBest ? 92 : 86), 280, 22);
 
   if (state.best > 0) {
-    ctx.font = "bold 20px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-    ctx.fillStyle = "#ffd24d";
+    ctx.font = 'bold 20px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillStyle = '#ffd24d';
     ctx.fillText(`Best: ${state.best}`, CONFIG.CANVAS_W / 2, py + 155);
   }
 
   if (extra) {
-    ctx.font = "12px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.font = '12px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     wrapText(extra, CONFIG.CANVAS_W / 2, py + 180, 285, 15);
   }
 }
@@ -1955,13 +2207,13 @@ function drawPostcard() {
   const themeName = state.theme.charAt(0).toUpperCase() + state.theme.slice(1);
 
   // Soft serene overlay (calm, not opaque)
-  ctx.fillStyle = "rgba(8, 17, 32, 0.55)";
+  ctx.fillStyle = 'rgba(8, 17, 32, 0.55)';
   ctx.fillRect(0, 0, w, h);
 
   // Gentle theme-tinted vignette
   const grad = ctx.createRadialGradient(w / 2, h / 2.2, 80, w / 2, h / 2, Math.max(w, h) * 0.72);
-  grad.addColorStop(0, "rgba(0,0,0,0)");
-  grad.addColorStop(1, "rgba(4, 10, 22, 0.65)");
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(4, 10, 22, 0.65)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
 
@@ -1994,8 +2246,8 @@ function drawPostcard() {
     ctx.globalAlpha = 0.7;
     for (let i = 0; i < 7; i++) {
       const px = w * (0.28 + ((i * 0.07) % 0.44));
-      const py = h * 0.58 + Math.sin((Date.now() / 1400) + i) * 18;
-      ctx.fillStyle = theme.scoreParticle || theme.flapParticle || "#a5d8ff";
+      const py = h * 0.58 + Math.sin(Date.now() / 1400 + i) * 18;
+      ctx.fillStyle = theme.scoreParticle || theme.flapParticle || '#a5d8ff';
       ctx.beginPath();
       ctx.arc(px, py, 2.2 + (i % 3) * 0.4, 0, Math.PI * 2);
       ctx.fill();
@@ -2004,22 +2256,22 @@ function drawPostcard() {
   }
 
   // Elegant centered typography
-  ctx.textAlign = "center";
+  ctx.textAlign = 'center';
 
-  ctx.fillStyle = "#f1f7ff";
-  ctx.font = "bold 28px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-  ctx.fillText("Serene Postcard", w / 2, h * 0.68);
+  ctx.fillStyle = '#f1f7ff';
+  ctx.font = 'bold 28px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillText('Serene Postcard', w / 2, h * 0.68);
 
-  ctx.fillStyle = "rgba(238, 247, 255, 0.85)";
-  ctx.font = "18px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
+  ctx.fillStyle = 'rgba(238, 247, 255, 0.85)';
+  ctx.font = '18px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.fillText(`${themeName} • Score ${state.score}`, w / 2, h * 0.68 + 32);
 
-  ctx.fillStyle = "rgba(238, 247, 255, 0.55)";
-  ctx.font = "13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
-  ctx.fillText("P or Esc to close  •  Screenshot to share", w / 2, h * 0.68 + 58);
+  ctx.fillStyle = 'rgba(238, 247, 255, 0.55)';
+  ctx.font = '13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.fillText('P or Esc to close  •  Screenshot to share', w / 2, h * 0.68 + 58);
 
   // Subtle bottom accent line
-  ctx.strokeStyle = "rgba(125, 211, 252, 0.25)";
+  ctx.strokeStyle = 'rgba(125, 211, 252, 0.25)';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(w * 0.32, h * 0.68 + 72);
@@ -2028,8 +2280,8 @@ function drawPostcard() {
 }
 
 function wrapText(text, x, y, maxWidth, lineHeight) {
-  const words = text.split(" ");
-  let line = "";
+  const words = text.split(' ');
+  let line = '';
   let cy = y;
   for (const word of words) {
     const test = `${line}${word} `;
@@ -2046,7 +2298,7 @@ function wrapText(text, x, y, maxWidth, lineHeight) {
 
 function roundRect(x, y, w, h, r) {
   // Use native ctx.roundRect when available (Chrome 99+, Safari 16+, Firefox 113+).
-  if (typeof ctx.roundRect === "function") {
+  if (typeof ctx.roundRect === 'function') {
     ctx.beginPath();
     ctx.roundRect(x, y, w, h, r);
     return;
@@ -2089,89 +2341,96 @@ function draw() {
   ctx.restore();
 
   // Pick subtitle by score bracket for game-over
-  if (state.phase === "start") {
+  if (state.phase === 'start') {
     drawPanel(
-      "The air is waiting.",
-      "Tap or press Space. Brake (Shift) softens the fall. Dive (↓) for control. On phones the buttons are always there.",
-      "Esc Pause • M Mute • R Restart",
+      'The air is waiting.',
+      'Tap or press Space. Brake (Shift) softens the fall. Dive (↓) for control. On phones the buttons are always there.',
+      'Esc Pause • M Mute • R Restart',
     );
   } else if (state.paused && state.postcardMode) {
     drawPostcard();
   } else if (state.paused) {
     drawPanel(
-      "Paused",
+      'Paused',
       `Score: ${state.score}. Take a breath. The wind will still be here when you return.`,
-      "Esc or Pause to resume • M for sound",
+      'Esc or Pause to resume • M for sound',
     );
-  } else if (state.afterglowActive && state.phase === "gameOver") {
+  } else if (state.afterglowActive && state.phase === 'gameOver') {
     // The beautiful Afterglow reflection moment — world is frozen, bird calm, gentle particles linger
     drawPanel(
-      "You flew well.",
-      state.afterglowReflection || "The wind remembers this one.",
-      "Any tap or key to continue",
-      { newBest: state.isNewBest }
+      'You flew well.',
+      state.afterglowReflection || 'The wind remembers this one.',
+      'Any tap or key to continue',
+      { newBest: state.isNewBest },
     );
-  } else if (state.phase === "gameOver") {
-    const title = state.isNewBest ? "A quiet record." : pickGameOverTitle(state.score);
+  } else if (state.phase === 'gameOver') {
+    const title = state.isNewBest ? 'A quiet record.' : pickGameOverTitle(state.score);
     const sub = state.isNewBest
       ? `New best: ${state.score}. The wind noticed. Take this calm into the next one.`
-      : (state.best > 0
-          ? `Score: ${state.score}. ${state.best - state.score} from your best. The air is kind. Tap or press Space.`
-          : `Score: ${state.score}. The air is kind. Tap or press Space to glide again.`);
-    drawPanel(title, sub, "Esc Pause • M Mute • R Restart", { newBest: state.isNewBest });
+      : state.best > 0
+        ? `Score: ${state.score}. ${state.best - state.score} from your best. The air is kind. Tap or press Space.`
+        : `Score: ${state.score}. The air is kind. Tap or press Space to glide again.`;
+    drawPanel(title, sub, 'Esc Pause • M Mute • R Restart', { newBest: state.isNewBest });
   }
 }
 
 function pickGameOverTitle(score) {
-  if (score >= 35) return "The wind carried you.";
-  if (score >= 25) return "Beautiful run.";
-  if (score >= 18) return "You found the rhythm.";
-  if (score >= 12) return "Steady glide.";
-  if (score >= 6)  return "Soft landing.";
-  return "The air welcomed you.";
+  if (score >= 35) return 'The wind carried you.';
+  if (score >= 25) return 'Beautiful run.';
+  if (score >= 18) return 'You found the rhythm.';
+  if (score >= 12) return 'Steady glide.';
+  if (score >= 6) return 'Soft landing.';
+  return 'The air welcomed you.';
 }
 
 // ─── 12. UI: drawer, mobile bar, focus trap, fullscreen, haptics ──
 let drawerWasPlaying = false;
 
 function isDrawerOpen() {
-  return Boolean(dom.customizerDrawer?.classList.contains("open"));
+  return Boolean(dom.customizerDrawer?.classList.contains('open'));
 }
 
 function setCustomizerOpen(isOpen, restoreFocus = true) {
   if (!dom.customizerDrawer) return;
-  dom.customizerDrawer.classList.toggle("open", isOpen);
-  dom.customizerDrawer.setAttribute("aria-hidden", String(!isOpen));
-  if (isOpen) dom.customizerDrawer.removeAttribute("inert");
-  else dom.customizerDrawer.setAttribute("inert", "");
-  try { /** @type {any} */ (dom.customizerDrawer).inert = !isOpen; } catch { /* unsupported */ }
+  dom.customizerDrawer.classList.toggle('open', isOpen);
+  dom.customizerDrawer.setAttribute('aria-hidden', String(!isOpen));
+  if (isOpen) dom.customizerDrawer.removeAttribute('inert');
+  else dom.customizerDrawer.setAttribute('inert', '');
+  try {
+    /** @type {any} */ (dom.customizerDrawer).inert = !isOpen;
+  } catch {
+    /* unsupported */
+  }
 
-  dom.drawerToggle?.setAttribute("aria-expanded", String(isOpen));
-  dom.drawerToggle?.setAttribute("aria-pressed", String(isOpen));
+  dom.drawerToggle?.setAttribute('aria-expanded', String(isOpen));
+  dom.drawerToggle?.setAttribute('aria-pressed', String(isOpen));
 
-  if (isOpen && state.phase === "play" && !state.paused) {
+  if (isOpen && state.phase === 'play' && !state.paused) {
     drawerWasPlaying = true;
     togglePause(true);
   } else if (!isOpen && drawerWasPlaying) {
     drawerWasPlaying = false;
-    if (state.paused && state.phase === "play") togglePause(false);
+    if (state.paused && state.phase === 'play') togglePause(false);
   }
 
   if (restoreFocus) {
     requestAnimationFrame(() => {
-      setTimeout(() => {
-        if (isOpen) {
-          if (
-            document.activeElement instanceof HTMLElement &&
-            !dom.customizerDrawer?.contains(document.activeElement)
-          ) {
-            document.activeElement.blur();
+      setTimeout(
+        () => {
+          if (isOpen) {
+            if (
+              document.activeElement instanceof HTMLElement &&
+              !dom.customizerDrawer?.contains(document.activeElement)
+            ) {
+              document.activeElement.blur();
+            }
+            focusElement(dom.drawerClose || getDrawerFocusable()[0] || dom.customizerDrawer);
+          } else {
+            focusElement(dom.drawerToggle);
           }
-          focusElement(dom.drawerClose || getDrawerFocusable()[0] || dom.customizerDrawer);
-        } else {
-          focusElement(dom.drawerToggle);
-        }
-      }, isOpen ? 80 : 0);
+        },
+        isOpen ? 80 : 0,
+      );
     });
   }
 }
@@ -2198,7 +2457,7 @@ function getDrawerFocusable() {
 }
 
 function trapDrawerFocus(e) {
-  if (e.key !== "Tab" || !isDrawerOpen()) return;
+  if (e.key !== 'Tab' || !isDrawerOpen()) return;
   const drawer = dom.customizerDrawer;
   if (!drawer) return;
   const focusable = getDrawerFocusable();
@@ -2220,82 +2479,89 @@ function trapDrawerFocus(e) {
 }
 
 function applyTheme(theme) {
-  const nextTheme = THEMES.includes(theme) ? theme : "sunset";
+  const nextTheme = THEMES.includes(theme) ? theme : 'sunset';
   document.body.classList.remove(...THEMES.map((n) => `theme-${n}`));
   document.body.classList.add(`theme-${nextTheme}`);
   // theme-color meta for mobile chrome
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) {
-    const palette = { sunset: "#180927", midnight: "#020206", rain: "#0a0f1d", aurora: "#030f0c", meadow: "#0d1710" };
-    metaTheme.setAttribute("content", palette[nextTheme] || "#081120");
+    const palette = {
+      sunset: '#180927',
+      midnight: '#020206',
+      rain: '#0a0f1d',
+      aurora: '#030f0c',
+      meadow: '#0d1710',
+    };
+    metaTheme.setAttribute('content', palette[nextTheme] || '#081120');
   }
   dom.themeBtns.forEach((btn) => {
-    const isActive = btn.getAttribute("data-theme") === nextTheme;
-    btn.classList.toggle("active", isActive);
-    btn.setAttribute("aria-pressed", String(isActive));
+    const isActive = btn.getAttribute('data-theme') === nextTheme;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
   });
-  SPRITE_CACHE.sky = null; SPRITE_CACHE.skyKey = "";
+  SPRITE_CACHE.sky = null;
+  SPRITE_CACHE.skyKey = '';
   rebuildSkyCache();
 }
 
 function syncUiState() {
   if (dom.pauseToggle) {
-    const canPause = state.phase === "play";
+    const canPause = state.phase === 'play';
     dom.pauseToggle.disabled = !canPause;
-    dom.pauseToggle.textContent = state.paused ? "Resume" : "Pause";
-    dom.pauseToggle.setAttribute("aria-pressed", String(state.paused));
+    dom.pauseToggle.textContent = state.paused ? 'Resume' : 'Pause';
+    dom.pauseToggle.setAttribute('aria-pressed', String(state.paused));
   }
   if (dom.postcardButton) {
-    const canPostcard = state.phase === "play";
+    const canPostcard = state.phase === 'play';
     dom.postcardButton.disabled = !canPostcard;
-    dom.postcardButton.setAttribute("aria-pressed", String(state.postcardMode));
+    dom.postcardButton.setAttribute('aria-pressed', String(state.postcardMode));
     // Visual hint when active
-    dom.postcardButton.style.borderColor = state.postcardMode ? "rgba(244, 211, 94, 0.6)" : "";
+    dom.postcardButton.style.borderColor = state.postcardMode ? 'rgba(244, 211, 94, 0.6)' : '';
   }
   if (dom.postcardCopyBtn) {
-    const showCopy = state.postcardMode && state.phase === "play";
-    dom.postcardCopyBtn.style.display = showCopy ? "inline-flex" : "none";
+    const showCopy = state.postcardMode && state.phase === 'play';
+    dom.postcardCopyBtn.style.display = showCopy ? 'inline-flex' : 'none';
   }
   if (dom.muteToggle) {
-    dom.muteToggle.textContent = state.audioEnabled ? "🔊 Sound" : "🔇 Muted";
-    dom.muteToggle.setAttribute("aria-pressed", String(!state.audioEnabled));
+    dom.muteToggle.textContent = state.audioEnabled ? '🔊 Sound' : '🔇 Muted';
+    dom.muteToggle.setAttribute('aria-pressed', String(!state.audioEnabled));
   }
   if (dom.fullscreenToggle) {
     const fs = document.fullscreenElement != null;
-    dom.fullscreenToggle.textContent = fs ? "Exit FS" : "Fullscreen";
-    dom.fullscreenToggle.setAttribute("aria-pressed", String(fs));
+    dom.fullscreenToggle.textContent = fs ? 'Exit FS' : 'Fullscreen';
+    dom.fullscreenToggle.setAttribute('aria-pressed', String(fs));
   }
   if (dom.dailySeedToggle) {
     dom.dailySeedToggle.checked = state.dailySeedMode;
-    dom.dailySeedToggle.setAttribute("aria-checked", String(state.dailySeedMode));
+    dom.dailySeedToggle.setAttribute('aria-checked', String(state.dailySeedMode));
   }
   if (dom.dailySeedStatus) {
     dom.dailySeedStatus.textContent = state.dailySeedMode
       ? `On — shared seed #${dateSeed()}`
-      : "Off — random pipes each run";
+      : 'Off — random pipes each run';
   }
 }
 
 function togglePause(forceValue) {
-  if (state.phase !== "play") return;
-  const target = typeof forceValue === "boolean" ? forceValue : !state.paused;
+  if (state.phase !== 'play') return;
+  const target = typeof forceValue === 'boolean' ? forceValue : !state.paused;
   if (state.paused === target) return;
   state.paused = target;
   if (state.paused) {
     stopMusic();
   } else {
-    bird.isBraking = heldKeys.has("ShiftLeft") || heldKeys.has("ShiftRight");
-    bird.isDiving = heldKeys.has("ArrowDown");
+    bird.isBraking = heldKeys.has('ShiftLeft') || heldKeys.has('ShiftRight');
+    bird.isDiving = heldKeys.has('ArrowDown');
     startMusic();
   }
   if (state.postcardMode) state.postcardMode = false; // exiting pause exits postcard too
   syncUiState();
-  announce(state.paused ? "Game paused." : "Game resumed.");
+  announce(state.paused ? 'Game paused.' : 'Game resumed.');
 }
 
 /** Toggle the Serene Postcard overlay (beautiful shareable moment). Only while paused in play. */
 function togglePostcard() {
-  if (state.phase !== "play") return;
+  if (state.phase !== 'play') return;
   if (!state.paused) {
     // Auto-pause when entering postcard for a calm capture
     togglePause(true);
@@ -2303,18 +2569,18 @@ function togglePostcard() {
   state.postcardMode = !state.postcardMode;
   syncUiState();
   if (state.postcardMode) {
-    announce("Serene postcard mode. Press P or Escape to exit.");
+    announce('Serene postcard mode. Press P or Escape to exit.');
   } else {
-    announce("Postcard closed.");
+    announce('Postcard closed.');
   }
 }
 
 function toggleMute() {
   state.audioEnabled = !state.audioEnabled;
   if (!state.audioEnabled) stopMusic();
-  else if (state.phase === "play" && !state.paused) startMusic();
+  else if (state.phase === 'play' && !state.paused) startMusic();
   syncUiState();
-  announce(state.audioEnabled ? "Sound on." : "Sound muted.");
+  announce(state.audioEnabled ? 'Sound on.' : 'Sound muted.');
 }
 
 function toggleFullscreen() {
@@ -2325,32 +2591,42 @@ function toggleFullscreen() {
       const root = document.documentElement;
       root.requestFullscreen?.().catch(() => {});
     }
-  } catch { /* unsupported */ }
+  } catch {
+    /* unsupported */
+  }
 }
 
 // Haptics (Android Chrome only; iOS Safari ignores)
 function hapticTap() {
   if (state.reducedMotion) return;
-  try { navigator.vibrate?.(10); } catch { /* swallow */ }
+  try {
+    navigator.vibrate?.(10);
+  } catch {
+    /* swallow */
+  }
 }
 function hapticPulse(ms) {
   if (state.reducedMotion) return;
-  try { navigator.vibrate?.(ms); } catch { /* swallow */ }
+  try {
+    navigator.vibrate?.(ms);
+  } catch {
+    /* swallow */
+  }
 }
 
 /** Universal serene moment capture — works anytime the canvas is beautiful */
 function captureSereneScreenshot() {
   try {
-    const dataUrl = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
+    const dataUrl = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
     link.download = `flappy-calm-serene-${Date.now()}.png`;
     link.href = dataUrl;
     link.click();
-    showToast("Serene moment captured.", "default");
-    announce("Serene screenshot saved. The beautiful moment is yours.");
+    showToast('Serene moment captured.', 'default');
+    announce('Serene screenshot saved. The beautiful moment is yours.');
     hapticPulse(30);
   } catch {
-    showToast("Could not capture (browser restriction).", "default");
+    showToast('Could not capture (browser restriction).', 'default');
   }
 }
 
@@ -2362,15 +2638,18 @@ function pushScoreHistory(score) {
 
 function syncStatsAndAchievements(saveToStorage = false) {
   if (saveToStorage) {
-    writeStoredValue("zen-time-sec", Math.floor(state.zenTimeSec));
-    writeStoredValue("shields-saved-count", state.shieldsSavedCount);
-    writeStoredValue("runs-count", state.runsCount);
-    writeStoredValue("near-misses-count", state.nearMissesCount);
-    writeStoredValue("longest-survival-sec", Math.floor(state.longestSurvivalSec));
-    writeStoredValue("current-streak", state.currentStreak);
-    writeStoredValue("played-themes", JSON.stringify(Array.from(state.playedThemes)));
-    writeStoredValue("score-history", JSON.stringify(state.scoreHistory.slice(-50)));
-    writeStoredValue("unlocked-achievements", JSON.stringify(Array.from(state.unlockedAchievements)));
+    writeStoredValue('zen-time-sec', Math.floor(state.zenTimeSec));
+    writeStoredValue('shields-saved-count', state.shieldsSavedCount);
+    writeStoredValue('runs-count', state.runsCount);
+    writeStoredValue('near-misses-count', state.nearMissesCount);
+    writeStoredValue('longest-survival-sec', Math.floor(state.longestSurvivalSec));
+    writeStoredValue('current-streak', state.currentStreak);
+    writeStoredValue('played-themes', JSON.stringify(Array.from(state.playedThemes)));
+    writeStoredValue('score-history', JSON.stringify(state.scoreHistory.slice(-50)));
+    writeStoredValue(
+      'unlocked-achievements',
+      JSON.stringify(Array.from(state.unlockedAchievements)),
+    );
   }
   if (dom.statZenMinutes) dom.statZenMinutes.textContent = (state.zenTimeSec / 60).toFixed(1);
   if (dom.statShieldsSaved) dom.statShieldsSaved.textContent = String(state.shieldsSavedCount);
@@ -2397,72 +2676,158 @@ function resetStats() {
   state.unlockedAchievements = new Set();
   state.playedThemes = new Set([state.theme]);
   // wipe storage
-  ["zen-time-sec","shields-saved-count","runs-count","near-misses-count",
-   "longest-survival-sec","current-streak","score-history","unlocked-achievements","played-themes","flappy-best"]
-   .forEach((k) => { try { localStorage.removeItem(k); } catch {} });
+  [
+    'zen-time-sec',
+    'shields-saved-count',
+    'runs-count',
+    'near-misses-count',
+    'longest-survival-sec',
+    'current-streak',
+    'score-history',
+    'unlocked-achievements',
+    'played-themes',
+    'flappy-best',
+  ].forEach((k) => {
+    try {
+      localStorage.removeItem(k);
+    } catch {}
+  });
   state.best = 0;
   syncStatsAndAchievements(true);
   // un-mark all achievement DOMs
-  document.querySelectorAll(".achievement-item").forEach((el) => el.classList.remove("unlocked"));
-  document.querySelectorAll(".achievement-progress").forEach((el) => { el.textContent = ""; });
-  announce("All stats and achievements reset.");
+  document.querySelectorAll('.achievement-item').forEach((el) => el.classList.remove('unlocked'));
+  document.querySelectorAll('.achievement-progress').forEach((el) => {
+    el.textContent = '';
+  });
+  announce('All stats and achievements reset.');
 }
 
 // ─── 14. ACHIEVEMENTS ──────────────────────────────────────────────
 /** Expanded set: definitions are pure functions over state. */
 const ACHIEVEMENTS = [
-  { id: "FirstFlight", name: "First Flight", check: () => state.score >= 1, progress: () => `${Math.min(state.score, 1)}/1` },
-  { id: "ZenMaster", name: "Zen Master", check: () => state.score >= 15, progress: () => `${Math.min(state.score, 15)}/15` },
-  { id: "ShieldSavior", name: "Shield Savior", check: () => state.shieldsSavedCount >= 1, progress: () => `${Math.min(state.shieldsSavedCount, 1)}/1` },
-  { id: "ThemeExplorer", name: "Theme Explorer", check: () => state.playedThemes.size >= THEMES.length, progress: () => `${Math.min(state.playedThemes.size, THEMES.length)}/${THEMES.length}` },
-  { id: "ThemeExplorer", name: "Theme Explorer", check: () => state.playedThemes.size >= 5, progress: () => `${state.playedThemes.size}/5` },
-  { id: "CalmMarathon", name: "Calm Marathon", check: () => state.zenTimeSec >= 300, progress: () => `${Math.min(Math.floor(state.zenTimeSec / 60), 5)}/5 min` },
-  { id: "Featherweight", name: "Featherweight", check: () => state.score >= 30, progress: () => `${Math.min(state.score, 30)}/30` },
-  { id: "Featherlight", name: "Featherlight", check: () => state.score >= 50, progress: () => `${Math.min(state.score, 50)}/50` },
-  { id: "StreakKeeper", name: "Streak Keeper", check: () => state.runNearMisses >= 5, progress: () => `${Math.min(state.runNearMisses, 5)}/5` },
-  { id: "BrakeMaster", name: "Brake Master", check: () => state.brakeUseCount >= 10, progress: () => `${Math.min(state.brakeUseCount, 10)}/10` },
-  { id: "Diver",       name: "Diver",        check: () => state.diveUseCount >= 10, progress: () => `${Math.min(state.diveUseCount, 10)}/10` },
-  { id: "IronCalm",    name: "Iron Calm",    check: () => state.currentStreak >= 3, progress: () => `${Math.min(state.currentStreak, 3)}/3` },
-  { id: "LongHaul",    name: "Long Haul",    check: () => state.longestSurvivalSec >= 60, progress: () => `${Math.min(Math.floor(state.longestSurvivalSec), 60)}/60s` },
+  {
+    id: 'FirstFlight',
+    name: 'First Flight',
+    check: () => state.score >= 1,
+    progress: () => `${Math.min(state.score, 1)}/1`,
+  },
+  {
+    id: 'ZenMaster',
+    name: 'Zen Master',
+    check: () => state.score >= 15,
+    progress: () => `${Math.min(state.score, 15)}/15`,
+  },
+  {
+    id: 'ShieldSavior',
+    name: 'Shield Savior',
+    check: () => state.shieldsSavedCount >= 1,
+    progress: () => `${Math.min(state.shieldsSavedCount, 1)}/1`,
+  },
+  {
+    id: 'ThemeExplorer',
+    name: 'Theme Explorer',
+    check: () => state.playedThemes.size >= THEMES.length,
+    progress: () => `${Math.min(state.playedThemes.size, THEMES.length)}/${THEMES.length}`,
+  },
+  {
+    id: 'ThemeExplorer',
+    name: 'Theme Explorer',
+    check: () => state.playedThemes.size >= 5,
+    progress: () => `${state.playedThemes.size}/5`,
+  },
+  {
+    id: 'CalmMarathon',
+    name: 'Calm Marathon',
+    check: () => state.zenTimeSec >= 300,
+    progress: () => `${Math.min(Math.floor(state.zenTimeSec / 60), 5)}/5 min`,
+  },
+  {
+    id: 'Featherweight',
+    name: 'Featherweight',
+    check: () => state.score >= 30,
+    progress: () => `${Math.min(state.score, 30)}/30`,
+  },
+  {
+    id: 'Featherlight',
+    name: 'Featherlight',
+    check: () => state.score >= 50,
+    progress: () => `${Math.min(state.score, 50)}/50`,
+  },
+  {
+    id: 'StreakKeeper',
+    name: 'Streak Keeper',
+    check: () => state.runNearMisses >= 5,
+    progress: () => `${Math.min(state.runNearMisses, 5)}/5`,
+  },
+  {
+    id: 'BrakeMaster',
+    name: 'Brake Master',
+    check: () => state.brakeUseCount >= 10,
+    progress: () => `${Math.min(state.brakeUseCount, 10)}/10`,
+  },
+  {
+    id: 'Diver',
+    name: 'Diver',
+    check: () => state.diveUseCount >= 10,
+    progress: () => `${Math.min(state.diveUseCount, 10)}/10`,
+  },
+  {
+    id: 'IronCalm',
+    name: 'Iron Calm',
+    check: () => state.currentStreak >= 3,
+    progress: () => `${Math.min(state.currentStreak, 3)}/3`,
+  },
+  {
+    id: 'LongHaul',
+    name: 'Long Haul',
+    check: () => state.longestSurvivalSec >= 60,
+    progress: () => `${Math.min(Math.floor(state.longestSurvivalSec), 60)}/60s`,
+  },
 ];
 
 function checkAchievements() {
   for (const ach of ACHIEVEMENTS) {
     const el = document.getElementById(`ach${ach.id}`);
-    const progressEl = el?.querySelector(".achievement-progress");
+    const progressEl = el?.querySelector('.achievement-progress');
     if (progressEl) progressEl.textContent = ach.progress();
     if (!el) continue;
     const wasUnlocked = state.unlockedAchievements.has(ach.id);
     const isUnlocked = ach.check();
     if (isUnlocked && !wasUnlocked) {
       state.unlockedAchievements.add(ach.id);
-      el.classList.add("unlocked");
+      el.classList.add('unlocked');
       sfxAchievement();
       hapticPulse(60);
-      const isThemeExplorer = ach.id === "ThemeExplorer";
-      spawnParticles(bird.x, bird.y - 30, isThemeExplorer ? 26 : 18, isThemeExplorer ? "#f4d35e" : "#10b981", isThemeExplorer ? 7 : 4);
+      const isThemeExplorer = ach.id === 'ThemeExplorer';
+      spawnParticles(
+        bird.x,
+        bird.y - 30,
+        isThemeExplorer ? 26 : 18,
+        isThemeExplorer ? '#f4d35e' : '#10b981',
+        isThemeExplorer ? 7 : 4,
+      );
       const unlockText = isThemeExplorer
         ? `Achievement unlocked: ${ach.name}. The full palette is yours.`
         : `Achievement unlocked: ${ach.name}.`;
       announce(unlockText);
-      showToast(`🎉 ${ach.name}`, "achievement");
+      showToast(`🎉 ${ach.name}`, 'achievement');
       syncStatsAndAchievements(true);
     } else if (isUnlocked) {
-      el.classList.add("unlocked");
+      el.classList.add('unlocked');
     }
   }
 }
 
 /** Lightweight visible toast (separate from the SR live region). */
-function showToast(text, type = "default") {
+function showToast(text, type = 'default') {
   if (!dom.toastContainer) return;
-  const el = document.createElement("div");
+  const el = document.createElement('div');
   el.className = `toast toast-${type}`;
   el.textContent = text;
   dom.toastContainer.appendChild(el);
   // Auto-remove
   setTimeout(() => {
-    el.classList.add("toast-out");
+    el.classList.add('toast-out');
     setTimeout(() => el.remove(), 400);
   }, 2400);
   // Cap to 4 visible toasts to avoid stacking
@@ -2475,7 +2840,7 @@ function showToast(text, type = "default") {
 function drawSparkline() {
   const c = dom.sparkline;
   if (!c) return;
-  const cx = c.getContext("2d");
+  const cx = c.getContext('2d');
   if (!cx) return;
   // Adapt buffer to displayed size + DPR
   const rect = c.getBoundingClientRect();
@@ -2490,9 +2855,9 @@ function drawSparkline() {
   cx.clearRect(0, 0, w, h);
   const data = state.scoreHistory.slice(-30);
   if (data.length === 0) {
-    cx.fillStyle = "rgba(255,255,255,0.4)";
-    cx.font = "10px system-ui";
-    cx.fillText("No runs yet", 8, h / 2 + 3);
+    cx.fillStyle = 'rgba(255,255,255,0.4)';
+    cx.font = '10px system-ui';
+    cx.fillText('No runs yet', 8, h / 2 + 3);
     return;
   }
   const maxV = Math.max(1, ...data);
@@ -2502,30 +2867,30 @@ function drawSparkline() {
   cx.moveTo(4, h - 4);
   for (let i = 0; i < data.length; i++) {
     const x = 4 + i * step;
-    const y = h - 4 - ((data[i] / maxV) * (h - 10));
+    const y = h - 4 - (data[i] / maxV) * (h - 10);
     cx.lineTo(x, y);
   }
   cx.lineTo(w - 4, h - 4);
   cx.closePath();
-  cx.fillStyle = "rgba(125, 211, 252, 0.15)";
+  cx.fillStyle = 'rgba(125, 211, 252, 0.15)';
   cx.fill();
   // Line
   cx.beginPath();
   for (let i = 0; i < data.length; i++) {
     const x = 4 + i * step;
-    const y = h - 4 - ((data[i] / maxV) * (h - 10));
+    const y = h - 4 - (data[i] / maxV) * (h - 10);
     if (i === 0) cx.moveTo(x, y);
     else cx.lineTo(x, y);
   }
-  cx.strokeStyle = "rgba(125, 211, 252, 0.9)";
+  cx.strokeStyle = 'rgba(125, 211, 252, 0.9)';
   cx.lineWidth = 1.5;
   cx.stroke();
   // Best dot
   const bestIdx = data.indexOf(Math.max(...data));
   if (bestIdx >= 0) {
     const x = 4 + bestIdx * step;
-    const y = h - 4 - ((data[bestIdx] / maxV) * (h - 10));
-    cx.fillStyle = "#facc15";
+    const y = h - 4 - (data[bestIdx] / maxV) * (h - 10);
+    cx.fillStyle = '#facc15';
     cx.beginPath();
     cx.arc(x, y, 2.5, 0, Math.PI * 2);
     cx.fill();
@@ -2542,7 +2907,7 @@ function onScoreChanged() {
 }
 
 function resetGame() {
-  state.phase = "start";
+  state.phase = 'start';
   state.score = 0;
   state.frames = 0;
   state.time = 0;
@@ -2570,7 +2935,7 @@ function resetGame() {
   // Afterglow
   state.afterglowActive = false;
   state.afterglowTimer = 0;
-  state.afterglowReflection = "";
+  state.afterglowReflection = '';
   state.afterglowShieldUsed = false;
   state.afterglowBrakeHeavy = false;
 
@@ -2579,13 +2944,17 @@ function resetGame() {
   bird.y = CONFIG.CANVAS_H / 2;
   bird.velocity = 0;
   bird.rotation = 0;
-  bird.emotion = "calm";
+  bird.emotion = 'calm';
   bird.emotionTimer = 0;
   bird.scaleX = 1;
   bird.scaleY = 1;
-  for (const t of bird.trail) { t.x = 0; t.y = 0; t.life = 0; }
-  bird.isBraking = heldKeys.has("ShiftLeft") || heldKeys.has("ShiftRight");
-  bird.isDiving = heldKeys.has("ArrowDown");
+  for (const t of bird.trail) {
+    t.x = 0;
+    t.y = 0;
+    t.life = 0;
+  }
+  bird.isBraking = heldKeys.has('ShiftLeft') || heldKeys.has('ShiftRight');
+  bird.isDiving = heldKeys.has('ArrowDown');
   bird.blush = 0;
   bird.pupilOffsetX = 0;
   bird.pupilOffsetY = 0;
@@ -2604,13 +2973,16 @@ function resetGame() {
 
   syncUiState();
   syncStatsAndAchievements(true);
-  announce("Ready to glide. Relax and start when you like.");
+  announce('Ready to glide. Relax and start when you like.');
 }
 
 function startGame() {
-  if (state.phase === "play" && !state.paused) { doFlap(); return; }
+  if (state.phase === 'play' && !state.paused) {
+    doFlap();
+    return;
+  }
   resetGame();
-  state.phase = "play";
+  state.phase = 'play';
   state.paused = false;
   state.runsCount++;
   syncStatsAndAchievements();
@@ -2618,12 +2990,12 @@ function startGame() {
   doFlap();
   syncUiState();
   syncStatsAndAchievements(true);
-  announce("Run started.");
+  announce('Run started.');
 }
 
 function restartRun() {
   resetGame();
-  state.phase = "play";
+  state.phase = 'play';
   state.paused = false;
   state.runsCount++;
   syncStatsAndAchievements();
@@ -2631,11 +3003,11 @@ function restartRun() {
   doFlap();
   syncUiState();
   syncStatsAndAchievements(true);
-  announce("Run restarted.");
+  announce('Run restarted.');
 }
 
 function gameOver() {
-  state.phase = "gameOver";
+  state.phase = 'gameOver';
   state.paused = false;
 
   const prevBest = state.best;
@@ -2645,11 +3017,11 @@ function gameOver() {
     state.newBestFlash = 4.0;
     sfxNewBest();
     hapticPulse(120);
-    spawnParticles(bird.x, bird.y, 25, "#ffd700", 6);
+    spawnParticles(bird.x, bird.y, 25, '#ffd700', 6);
     // Extra theme-tinted celebration flecks for a more special quiet record
-    spawnParticles(bird.x - 6, bird.y - 12, 9, getTheme().scoreParticle || "#ffd700", 4);
+    spawnParticles(bird.x - 6, bird.y - 12, 9, getTheme().scoreParticle || '#ffd700', 4);
   }
-  writeStoredValue("flappy-best", state.best);
+  writeStoredValue('flappy-best', state.best);
 
   pushScoreHistory(state.score);
   state.longestSurvivalSec = Math.max(state.longestSurvivalSec, state.runSec);
@@ -2663,23 +3035,26 @@ function gameOver() {
   state.shakeAmount = state.reducedMotion ? 0 : 6.0;
   sfxDie();
   stopMusic();
-  spawnParticles(bird.x, bird.y, 18, "#ff4444", 5);
-  spawnParticles(bird.x, bird.y, 12, "#ffaa00", 4);
+  spawnParticles(bird.x, bird.y, 18, '#ff4444', 5);
+  spawnParticles(bird.x, bird.y, 12, '#ffaa00', 4);
   // Second wave of particles, slightly delayed via direct spawn (audio clock unused for visuals)
   setTimeout(() => {
-    if (state.phase !== "gameOver") return;
-    spawnParticles(bird.x, bird.y, 10, "#ffffff", 3);
-    spawnParticles(bird.x, bird.y, 8, "#ff6666", 2.5);
+    if (state.phase !== 'gameOver') return;
+    spawnParticles(bird.x, bird.y, 10, '#ffffff', 3);
+    spawnParticles(bird.x, bird.y, 8, '#ff6666', 2.5);
   }, 180);
 
   // Enter the beautiful Afterglow reflection for worthy flights (not on reduced motion to keep it special)
-  const worthy = state.isNewBest || state.score >= 14 || state.afterglowBrakeHeavy || state.runSec > 22;
+  const worthy =
+    state.isNewBest || state.score >= 14 || state.afterglowBrakeHeavy || state.runSec > 22;
   if (!state.reducedMotion && worthy && !state.afterglowActive) {
     enterAfterglow();
   } else {
     syncUiState();
     syncStatsAndAchievements(true);
-    announce(`Game over. Score ${state.score}. Best ${state.best}.${state.isNewBest ? " New best." : ""}`);
+    announce(
+      `Game over. Score ${state.score}. Best ${state.best}.${state.isNewBest ? ' New best.' : ''}`,
+    );
   }
 }
 
@@ -2688,31 +3063,31 @@ function enterAfterglow() {
   state.afterglowTimer = 4.2; // gentle, calm duration (dt normalized)
 
   // Poetic, specific reflections based on how the player flew
-  let reflection = "You moved with the wind.";
+  let reflection = 'You moved with the wind.';
   if (state.isNewBest) {
-    reflection = "A quiet record. The sky noticed.";
+    reflection = 'A quiet record. The sky noticed.';
     // Extra serene particles for the special new best afterglow
-    spawnParticles(bird.x, bird.y - 10, 7, getTheme().scoreParticle || "#ffd700", 3);
+    spawnParticles(bird.x, bird.y - 10, 7, getTheme().scoreParticle || '#ffd700', 3);
   } else if (state.afterglowShieldUsed) {
-    reflection = "You protected the feather. It protected you back.";
+    reflection = 'You protected the feather. It protected you back.';
   } else if (state.afterglowBrakeHeavy && state.score >= 10) {
-    reflection = "Patience in the brakes. The wind trusts steady wings.";
+    reflection = 'Patience in the brakes. The wind trusts steady wings.';
   } else if (state.score >= 20) {
-    reflection = "You rode it all the way. Well flown.";
+    reflection = 'You rode it all the way. Well flown.';
   } else if (state.dailySeedMode) {
-    reflection = "The same wind. A different flight. Beautiful.";
+    reflection = 'The same wind. A different flight. Beautiful.';
   } else if (state.runSec > 28) {
-    reflection = "Time dissolved. Only the glide remained.";
+    reflection = 'Time dissolved. Only the glide remained.';
   }
   state.afterglowReflection = reflection;
 
   // Soften the bird into a calm, settled pose for the reflection moment
-  bird.emotion = "calm";
+  bird.emotion = 'calm';
   bird.velocity *= 0.4;
   bird.rotation *= 0.5;
 
   // Extra gentle celebratory particles (gold + theme)
-  const themeColor = getTheme().scoreParticle || "#ffd700";
+  const themeColor = getTheme().scoreParticle || '#ffd700';
   spawnParticles(bird.x, bird.y - 10, 22, themeColor, 3.5);
   spawnParticles(bird.x - 8, bird.y + 6, 12, themeColor, 2.2);
 
@@ -2733,9 +3108,18 @@ function handleAction(event) {
     // Fall through to normal gameOver behavior below
   }
 
-  if (state.paused) { togglePause(false); return; }
-  if (state.phase === "gameOver") { startGame(); return; }
-  if (state.phase === "start") { startGame(); return; }
+  if (state.paused) {
+    togglePause(false);
+    return;
+  }
+  if (state.phase === 'gameOver') {
+    startGame();
+    return;
+  }
+  if (state.phase === 'start') {
+    startGame();
+    return;
+  }
   doFlap();
 }
 
@@ -2744,21 +3128,22 @@ function shouldIgnoreGlobalShortcut(event) {
   if (!(target instanceof Element)) return false;
   if (dom.customizerDrawer?.contains(target)) return true;
   return (
-    Boolean(target.closest('button, input, select, textarea, [contenteditable="true"], [role="slider"]')) &&
-    target !== canvas
+    Boolean(
+      target.closest('button, input, select, textarea, [contenteditable="true"], [role="slider"]'),
+    ) && target !== canvas
   );
 }
 
-window.addEventListener("keydown", (e) => {
+window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
 
   // Drawer focus trap
-  if (isDrawerOpen() && e.key === "Tab") {
+  if (isDrawerOpen() && e.key === 'Tab') {
     trapDrawerFocus(e);
     return;
   }
 
-  if (e.code === "Escape") {
+  if (e.code === 'Escape') {
     if (isDrawerOpen()) setCustomizerOpen(false);
     else togglePause();
     return;
@@ -2768,36 +3153,58 @@ window.addEventListener("keydown", (e) => {
   if (isDrawerOpen()) return;
 
   heldKeys.add(e.code);
-  if (["Space", "ArrowUp", "ArrowDown"].includes(e.code)) e.preventDefault();
+  if (['Space', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
 
-  if (e.code === "KeyM") { toggleMute(); return; }
-  if (e.code === "KeyR") { restartRun(); return; }
-  if (e.code === "KeyF") { toggleFullscreen(); return; }
-  if (e.code === "KeyP") { togglePostcard(); return; }
-  if (e.code === "KeyC") { captureSereneScreenshot(); return; }
-  if (e.code === "Space" || e.code === "ArrowUp") handleAction(e);
+  if (e.code === 'KeyM') {
+    toggleMute();
+    return;
+  }
+  if (e.code === 'KeyR') {
+    restartRun();
+    return;
+  }
+  if (e.code === 'KeyF') {
+    toggleFullscreen();
+    return;
+  }
+  if (e.code === 'KeyP') {
+    togglePostcard();
+    return;
+  }
+  if (e.code === 'KeyC') {
+    captureSereneScreenshot();
+    return;
+  }
+  if (e.code === 'Space' || e.code === 'ArrowUp') handleAction(e);
 
-  if (state.phase !== "play" || state.paused) return;
-  if (e.code === "ArrowDown") bird.isDiving = true;
-  if (e.code === "ShiftLeft" || e.code === "ShiftRight") bird.isBraking = true;
+  if (state.phase !== 'play' || state.paused) return;
+  if (e.code === 'ArrowDown') bird.isDiving = true;
+  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') bird.isBraking = true;
 });
 
-window.addEventListener("keyup", (e) => {
+window.addEventListener('keyup', (e) => {
   heldKeys.delete(e.code);
-  if (e.code === "ArrowDown") bird.isDiving = false;
-  if (e.code === "ShiftLeft" || e.code === "ShiftRight") bird.isBraking = false;
+  if (e.code === 'ArrowDown') bird.isDiving = false;
+  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') bird.isBraking = false;
 });
 
-canvas.addEventListener("pointerdown", (e) => { ensureAudio(); handleAction(e); }, { passive: false });
+canvas.addEventListener(
+  'pointerdown',
+  (e) => {
+    ensureAudio();
+    handleAction(e);
+  },
+  { passive: false },
+);
 
 // Tap anywhere on the surrounding stage panel (outside the mobile controls)
 // also flaps — gives mobile players a bigger forgiving hit zone.
-dom.stagePanel?.addEventListener("pointerdown", (e) => {
+dom.stagePanel?.addEventListener('pointerdown', (e) => {
   const target = e.target;
   if (target === canvas) return; // canvas has its own handler
   if (!(target instanceof Element)) return;
-  if (target.closest(".mobile-controls, .toolbar, .stage-topbar, .tutorial-overlay")) return;
-  if (state.phase === "play" && !state.paused) {
+  if (target.closest('.mobile-controls, .toolbar, .stage-topbar, .tutorial-overlay')) return;
+  if (state.phase === 'play' && !state.paused) {
     ensureAudio();
     handleAction(e);
   }
@@ -2807,17 +3214,44 @@ dom.stagePanel?.addEventListener("pointerdown", (e) => {
 function bindMobileControls() {
   const press = (el, onDown, onUp) => {
     if (!el) return;
-    const down = (e) => { e.preventDefault(); ensureAudio(); onDown(); };
-    const up   = (e) => { e?.preventDefault?.(); onUp(); };
-    el.addEventListener("pointerdown", down, { passive: false });
-    el.addEventListener("pointerup", up);
-    el.addEventListener("pointercancel", up);
-    el.addEventListener("pointerleave", up);
-    el.addEventListener("touchend", up, { passive: false });
+    const down = (e) => {
+      e.preventDefault();
+      ensureAudio();
+      onDown();
+    };
+    const up = (e) => {
+      e?.preventDefault?.();
+      onUp();
+    };
+    el.addEventListener('pointerdown', down, { passive: false });
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
+    el.addEventListener('pointerleave', up);
+    el.addEventListener('touchend', up, { passive: false });
   };
-  press(dom.mFlap,  () => handleAction(null), () => {});
-  press(dom.mBrake, () => { bird.isBraking = true; }, () => { bird.isBraking = false; });
-  press(dom.mDive,  () => { bird.isDiving = true;  }, () => { bird.isDiving = false; });
+  press(
+    dom.mFlap,
+    () => handleAction(null),
+    () => {},
+  );
+  press(
+    dom.mBrake,
+    () => {
+      bird.isBraking = true;
+    },
+    () => {
+      bird.isBraking = false;
+    },
+  );
+  press(
+    dom.mDive,
+    () => {
+      bird.isDiving = true;
+    },
+    () => {
+      bird.isDiving = false;
+    },
+  );
 }
 
 // ─── 17. LIFECYCLE EVENTS ──────────────────────────────────────────
@@ -2825,14 +3259,14 @@ function pauseForPageLifecycle() {
   heldKeys.clear();
   bird.isBraking = false;
   bird.isDiving = false;
-  if (state.phase === "play" && !state.paused) togglePause(true);
+  if (state.phase === 'play' && !state.paused) togglePause(true);
   else syncUiState();
 }
 
-window.addEventListener("blur", pauseForPageLifecycle);
+window.addEventListener('blur', pauseForPageLifecycle);
 
 let lastVisibilitySync = 0;
-document.addEventListener("visibilitychange", () => {
+document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     pauseForPageLifecycle();
     const now = Date.now();
@@ -2846,19 +3280,22 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-window.addEventListener("beforeunload", () => {
+window.addEventListener('beforeunload', () => {
   syncStatsAndAchievements(true);
 });
 
 function onResize() {
   configureCanvasForDPR();
 }
-window.addEventListener("resize", onResize);
-window.addEventListener("orientationchange", onResize);
-document.addEventListener("fullscreenchange", () => { onResize(); syncUiState(); });
+window.addEventListener('resize', onResize);
+window.addEventListener('orientationchange', onResize);
+document.addEventListener('fullscreenchange', () => {
+  onResize();
+  syncUiState();
+});
 
-if (typeof reducedMotionQuery.addEventListener === "function") {
-  reducedMotionQuery.addEventListener("change", (e) => {
+if (typeof reducedMotionQuery.addEventListener === 'function') {
+  reducedMotionQuery.addEventListener('change', (e) => {
     state.reducedMotion = e.matches;
     if (e.matches) {
       state.shakeAmount = 0;
@@ -2867,20 +3304,20 @@ if (typeof reducedMotionQuery.addEventListener === "function") {
     }
   });
 }
-if (reducedTransparencyQuery && typeof reducedTransparencyQuery.addEventListener === "function") {
-  reducedTransparencyQuery.addEventListener("change", (e) => { state.reducedTransparency = e.matches; });
+if (reducedTransparencyQuery && typeof reducedTransparencyQuery.addEventListener === 'function') {
+  reducedTransparencyQuery.addEventListener('change', (e) => {
+    state.reducedTransparency = e.matches;
+  });
 }
 
 // ─── 18. OFFLINE APP SHELL ─────────────────────────────────────────
 function registerServiceWorker() {
-  if (!("serviceWorker" in navigator) || location.protocol === "file:") return;
+  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
   const register = () => {
-    navigator.serviceWorker
-      .register("./service-worker.js", { scope: "./" })
-      .catch(() => {});
+    navigator.serviceWorker.register('./service-worker.js', { scope: './' }).catch(() => {});
   };
-  if (document.readyState === "complete") register();
-  else window.addEventListener("load", register, { once: true });
+  if (document.readyState === 'complete') register();
+  else window.addEventListener('load', register, { once: true });
 }
 
 // ─── 19. CUSTOMIZER & DRAWER BINDINGS ──────────────────────────────
@@ -2895,7 +3332,8 @@ function bindDrawerControls() {
   }
   if (dom.musicVolumeSlider) {
     dom.musicVolumeSlider.value = String(Math.round(state.musicVolume * 100));
-    if (dom.musicVolumeVal) dom.musicVolumeVal.textContent = `${Math.round(state.musicVolume * 100)}%`;
+    if (dom.musicVolumeVal)
+      dom.musicVolumeVal.textContent = `${Math.round(state.musicVolume * 100)}%`;
   }
   if (dom.sfxVolumeSlider) {
     dom.sfxVolumeSlider.value = String(Math.round(state.sfxVolume * 100));
@@ -2905,120 +3343,128 @@ function bindDrawerControls() {
   applyTheme(state.theme);
   setCustomizerOpen(false, false);
 
-  dom.drawerToggle?.addEventListener("click", () => setCustomizerOpen(!isDrawerOpen()));
-  dom.drawerClose?.addEventListener("click", () => setCustomizerOpen(false));
+  dom.drawerToggle?.addEventListener('click', () => setCustomizerOpen(!isDrawerOpen()));
+  dom.drawerClose?.addEventListener('click', () => setCustomizerOpen(false));
 
-  dom.gravitySlider?.addEventListener("input", (e) => {
-    state.gravitySetting = Math.round(clampNumber(Number(/** @type {HTMLInputElement} */(e.target).value), 2, 1, 4));
+  dom.gravitySlider?.addEventListener('input', (e) => {
+    state.gravitySetting = Math.round(
+      clampNumber(Number(/** @type {HTMLInputElement} */ (e.target).value), 2, 1, 4),
+    );
     if (dom.gravityVal) dom.gravityVal.textContent = GRAVITY_LABELS[state.gravitySetting];
     updateDerivedPhysics();
-    writeStoredValue("flappy-gravity", state.gravitySetting);
+    writeStoredValue('flappy-gravity', state.gravitySetting);
   });
 
-  dom.speedSlider?.addEventListener("input", (e) => {
-    state.speedSetting = Math.round(clampNumber(Number(/** @type {HTMLInputElement} */(e.target).value), 2, 1, 4));
+  dom.speedSlider?.addEventListener('input', (e) => {
+    state.speedSetting = Math.round(
+      clampNumber(Number(/** @type {HTMLInputElement} */ (e.target).value), 2, 1, 4),
+    );
     if (dom.speedVal) dom.speedVal.textContent = SPEED_LABELS[state.speedSetting];
     updateDerivedPhysics();
-    writeStoredValue("flappy-speed", state.speedSetting);
+    writeStoredValue('flappy-speed', state.speedSetting);
   });
 
-  dom.musicVolumeSlider?.addEventListener("input", (e) => {
-    const percent = Math.round(clampNumber(Number(/** @type {HTMLInputElement} */(e.target).value), 60, 0, 100));
+  dom.musicVolumeSlider?.addEventListener('input', (e) => {
+    const percent = Math.round(
+      clampNumber(Number(/** @type {HTMLInputElement} */ (e.target).value), 60, 0, 100),
+    );
     state.musicVolume = percent / 100;
     if (dom.musicVolumeVal) dom.musicVolumeVal.textContent = `${percent}%`;
-    writeStoredValue("flappy-music-volume", state.musicVolume);
+    writeStoredValue('flappy-music-volume', state.musicVolume);
     // adjust live without restarting the scheduler (volume is read each note)
   });
 
-  dom.sfxVolumeSlider?.addEventListener("input", (e) => {
-    const percent = Math.round(clampNumber(Number(/** @type {HTMLInputElement} */(e.target).value), 80, 0, 100));
+  dom.sfxVolumeSlider?.addEventListener('input', (e) => {
+    const percent = Math.round(
+      clampNumber(Number(/** @type {HTMLInputElement} */ (e.target).value), 80, 0, 100),
+    );
     state.sfxVolume = percent / 100;
     if (dom.sfxVolumeVal) dom.sfxVolumeVal.textContent = `${percent}%`;
-    writeStoredValue("flappy-sfx-volume", state.sfxVolume);
+    writeStoredValue('flappy-sfx-volume', state.sfxVolume);
   });
 
   dom.themeBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener('click', () => {
       const prevTheme = state.theme;
-      const requested = btn.getAttribute("data-theme") || "";
-      state.theme = THEMES.includes(requested) ? requested : "sunset";
+      const requested = btn.getAttribute('data-theme') || '';
+      state.theme = THEMES.includes(requested) ? requested : 'sunset';
       applyTheme(state.theme);
       state.playedThemes.add(state.theme);
       syncStatsAndAchievements(true);
-      writeStoredValue("flappy-theme", state.theme);
+      writeStoredValue('flappy-theme', state.theme);
       if (state.theme !== prevTheme) {
-        state.themeChangedDuringRun = state.phase === "play";
+        state.themeChangedDuringRun = state.phase === 'play';
         activeWeather.length = 0;
         for (const p of weatherPool) p.active = false;
-        if (state.phase === "play" && !state.paused) startMusic();
-        playTone(523, 0.12, "sine", 0.08);
-        setTimeout(() => playTone(659, 0.15, "sine", 0.06), 80);
+        if (state.phase === 'play' && !state.paused) startMusic();
+        playTone(523, 0.12, 'sine', 0.08);
+        setTimeout(() => playTone(659, 0.15, 'sine', 0.06), 80);
       }
     });
   });
 
-  dom.dailySeedToggle?.addEventListener("change", (e) => {
+  dom.dailySeedToggle?.addEventListener('change', (e) => {
     state.dailySeedMode = /** @type {HTMLInputElement} */ (e.target).checked;
-    writeStoredValue("flappy-daily-seed", state.dailySeedMode);
+    writeStoredValue('flappy-daily-seed', state.dailySeedMode);
     syncUiState();
     if (state.dailySeedMode) setSeededRNG(dateSeed());
     else setUnseededRNG();
-    announce(state.dailySeedMode ? "Daily Seed mode on." : "Daily Seed mode off.");
+    announce(state.dailySeedMode ? 'Daily Seed mode on.' : 'Daily Seed mode off.');
   });
 
-  dom.resetStatsBtn?.addEventListener("click", () => {
-    if (confirm("Reset all stats and achievements?")) resetStats();
+  dom.resetStatsBtn?.addEventListener('click', () => {
+    if (confirm('Reset all stats and achievements?')) resetStats();
   });
 
-  dom.audioTestBtn?.addEventListener("click", () => {
+  dom.audioTestBtn?.addEventListener('click', () => {
     ensureAudio();
     playSequence([
-      [523, 0.12, "sine", 0.10, 0.00],
-      [659, 0.12, "sine", 0.10, 0.12],
-      [784, 0.16, "sine", 0.10, 0.24],
+      [523, 0.12, 'sine', 0.1, 0.0],
+      [659, 0.12, 'sine', 0.1, 0.12],
+      [784, 0.16, 'sine', 0.1, 0.24],
     ]);
   });
 
-  dom.shareBtn?.addEventListener("click", async () => {
+  dom.shareBtn?.addEventListener('click', async () => {
     const score = state.best > 0 ? state.best : state.score;
     const text = `I'm playing Flappy Bird — Calm Edition. Best score: ${score}. 🐦`;
     const url = location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Flappy Bird — Calm Edition", text, url });
-        showToast("Shared.", "default");
+        await navigator.share({ title: 'Flappy Bird — Calm Edition', text, url });
+        showToast('Shared.', 'default');
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(`${text} ${url}`);
-        showToast("Copied to clipboard.", "default");
+        showToast('Copied to clipboard.', 'default');
       } else {
-        showToast("Sharing unavailable.", "default");
+        showToast('Sharing unavailable.', 'default');
       }
     } catch {
       // user cancelled or share failed silently
     }
   });
 
-  dom.fpsToggle?.addEventListener("change", (e) => {
+  dom.fpsToggle?.addEventListener('change', (e) => {
     state.showFps = /** @type {HTMLInputElement} */ (e.target).checked;
-    writeStoredValue("flappy-fps", state.showFps);
+    writeStoredValue('flappy-fps', state.showFps);
   });
 }
 
 // Tutorial overlay
 function bindTutorial() {
   if (!dom.tutorialOverlay) return;
-  const seenTutorial = readStoredBool("flappy-tutorial-seen", false);
+  const seenTutorial = readStoredBool('flappy-tutorial-seen', false);
   if (!seenTutorial) {
-    dom.tutorialOverlay.classList.add("show");
-    dom.tutorialOverlay.setAttribute("aria-hidden", "false");
+    dom.tutorialOverlay.classList.add('show');
+    dom.tutorialOverlay.setAttribute('aria-hidden', 'false');
   } else {
-    dom.tutorialOverlay.classList.remove("show");
-    dom.tutorialOverlay.setAttribute("aria-hidden", "true");
+    dom.tutorialOverlay.classList.remove('show');
+    dom.tutorialOverlay.setAttribute('aria-hidden', 'true');
   }
-  dom.tutorialDismiss?.addEventListener("click", (e) => {
-    dom.tutorialOverlay?.classList.remove("show");
-    dom.tutorialOverlay?.setAttribute("aria-hidden", "true");
-    writeStoredValue("flappy-tutorial-seen", true);
+  dom.tutorialDismiss?.addEventListener('click', (e) => {
+    dom.tutorialOverlay?.classList.remove('show');
+    dom.tutorialOverlay?.setAttribute('aria-hidden', 'true');
+    writeStoredValue('flappy-tutorial-seen', true);
     focusElement(canvas);
     handleAction(e);
   });
@@ -3029,7 +3475,7 @@ let frameErrorCount = 0;
 let frameErrorCooldownAt = 0;
 
 function update() {
-  if (state.phase !== "play" || state.paused) return;
+  if (state.phase !== 'play' || state.paused) return;
   state.frames++;
   state.time += state.dt;
   state.runSec += state.dtSec;
@@ -3094,16 +3540,16 @@ function loop(timestamp = performance.now()) {
   } catch (err) {
     frameErrorCount++;
     if (frameErrorCount === 1 || frameErrorCount % 60 === 0) {
-      console.error("[Flappy] Frame error:", err);
+      console.error('[Flappy] Frame error:', err);
     }
     if (frameErrorCount > CONFIG.FRAME_ERROR_BURST_LIMIT) {
-      console.warn("[Flappy] Frame errors burst — cooling down");
+      console.warn('[Flappy] Frame errors burst — cooling down');
       frameErrorCooldownAt = state.elapsedSec + CONFIG.FRAME_ERROR_COOLDOWN_SEC;
       frameErrorCount = 0;
     }
   }
 
-  if (state.phase === "start") {
+  if (state.phase === 'start') {
     bird.y = CONFIG.CANVAS_H / 2 + Math.sin(timestamp * 0.0025) * 10;
   }
 
@@ -3120,11 +3566,11 @@ bindTutorial();
 registerServiceWorker();
 syncUiState();
 
-dom.pauseToggle?.addEventListener("click", () => togglePause());
-dom.postcardButton?.addEventListener("click", () => togglePostcard());
-dom.postcardCopyBtn?.addEventListener("click", () => captureSereneScreenshot());
-dom.muteToggle?.addEventListener("click", () => toggleMute());
-dom.restartButton?.addEventListener("click", () => restartRun());
-dom.fullscreenToggle?.addEventListener("click", () => toggleFullscreen());
+dom.pauseToggle?.addEventListener('click', () => togglePause());
+dom.postcardButton?.addEventListener('click', () => togglePostcard());
+dom.postcardCopyBtn?.addEventListener('click', () => captureSereneScreenshot());
+dom.muteToggle?.addEventListener('click', () => toggleMute());
+dom.restartButton?.addEventListener('click', () => restartRun());
+dom.fullscreenToggle?.addEventListener('click', () => toggleFullscreen());
 
 requestAnimationFrame(loop);
