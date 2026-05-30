@@ -1,5 +1,6 @@
 # Flappy Bird - Calm Edition
 
+[![CI](https://github.com/0thernes/flappy-bird-calm-edition/actions/workflows/ci.yml/badge.svg)](https://github.com/0thernes/flappy-bird-calm-edition/actions/workflows/ci.yml)
 [![License: AGPL-3.0-or-later](https://img.shields.io/badge/license-AGPL--3.0--or--later-2f855a)](LICENSE.txt)
 [![Vanilla JS](https://img.shields.io/badge/stack-vanilla%20JS-f7df1e)](game.js)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-0f766e)](package.json)
