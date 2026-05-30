@@ -181,6 +181,13 @@
     transition: top 0.2s ease;
   }
   .skip-link:focus { top: 1rem; }
+
+  .noscript-message {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-1);
+    font-family: system-ui, sans-serif;
+  }
 }
 
 @layer layout {

@@ -11,6 +11,9 @@ Desktop.ini
 .idea/
 *.code-workspace
 
+# Claude Code local settings (machine-specific permissions)
+.claude/settings.local.json
+
 # Dependency and build output
 node_modules/
 dist/

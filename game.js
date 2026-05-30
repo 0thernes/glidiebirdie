@@ -680,8 +680,6 @@ const state = {
   brakeUseCount: 0,
   diveUseCount: 0,
   runNearMisses: 0,
-  themeChangedDuringRun: false,
-  runStartedAtTheme: 'sunset',
 
   // Game over / new best
   isNewBest: false,
@@ -2919,8 +2917,6 @@ function resetGame() {
   state.brakeUseCount = 0;
   state.diveUseCount = 0;
   state.runNearMisses = 0;
-  state.themeChangedDuringRun = false;
-  state.runStartedAtTheme = state.theme;
   state.calmMeter = 0;
   state.isNewBest = false;
   state.newBestFlash = 0;
@@ -3388,7 +3384,6 @@ function bindDrawerControls() {
       syncStatsAndAchievements(true);
       writeStoredValue('flappy-theme', state.theme);
       if (state.theme !== prevTheme) {
-        state.themeChangedDuringRun = state.phase === 'play';
         activeWeather.length = 0;
         for (const p of weatherPool) p.active = false;
         if (state.phase === 'play' && !state.paused) startMusic();

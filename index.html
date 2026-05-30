@@ -2,6 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; form-action 'none'" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#081120" />
@@ -371,7 +372,7 @@
   </aside>
 
   <noscript>
-    <p style="text-align:center;padding:3rem;color:#eef7ff;font-family:system-ui">
+    <p class="noscript-message">
       JavaScript is required to play Flappy Bird — Calm Edition.
     </p>
   </noscript>
