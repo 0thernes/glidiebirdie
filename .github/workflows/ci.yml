@@ -22,3 +22,6 @@ jobs:
 
       - name: Run project checks
         run: npm run check
+
+      - name: Type check (ephemeral TypeScript — not a repo dependency)
+        run: npm run typecheck

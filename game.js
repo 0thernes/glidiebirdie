@@ -939,7 +939,7 @@ function rebuildSpriteCaches() {
 
 // ─── 9. WORLD ──────────────────────────────────────────────────────
 const bird = {
-  x: CONFIG.BIRD_X,
+  x: /** @type {number} */ (CONFIG.BIRD_X), // widen from the frozen literal so postcard mode can reposition
   y: CONFIG.CANVAS_H / 2,
   radius: CONFIG.BIRD_RADIUS,
   velocity: 0,

@@ -18,7 +18,7 @@ sw.addEventListener('install', (/** @type {ExtendableEvent} */ event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
+      .then((cache) => cache.addAll([...APP_SHELL]))
       .then(() => sw.skipWaiting()),
   );
 });
