@@ -51,12 +51,25 @@ async function cacheFirst(request) {
 
   try {
     const response = await fetch(request);
-    if (response.ok && isAppShellRequest(request)) {
+    // On an error status (4xx/5xx) prefer the last-known-good cached copy over
+    // surfacing a hard failure for an app-shell resource the user already had.
+    if (!response.ok) {
+      const stale = await caches.match(request);
+      if (stale) return stale;
+      if (request.mode === 'navigate') {
+        const fallback = await caches.match('./index.html');
+        if (fallback) return fallback;
+      }
+      return response;
+    }
+    if (isAppShellRequest(request)) {
       const cache = await caches.open(CACHE_NAME);
       await cache.put(request, response.clone());
     }
     return response;
   } catch {
+    const stale = await caches.match(request);
+    if (stale) return stale;
     if (request.mode === 'navigate') {
       const fallback = await caches.match('./index.html');
       if (fallback) return fallback;

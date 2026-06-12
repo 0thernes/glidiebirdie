@@ -1,8 +1,17 @@
 name: Dependabot auto-merge
 
-# Hands-free dependency maintenance: once CI ("Smoke check") passes, every
-# Dependabot PR — patch, minor, or major — merges itself. Branch protection is
-# the safety gate; nothing red can land. Full PR + CI history is preserved.
+# Hands-free dependency maintenance WITH a human gate on the risky bumps.
+#
+# Patch and minor Dependabot PRs (including GitHub Actions SHA refreshes) merge
+# themselves once CI ("Smoke check") passes. MAJOR version bumps are NOT
+# auto-merged — they are flagged for human review instead, because a major bump
+# of a SHA-pinned action is the single most likely supply-chain injection vector
+# (a compromised/rogue action would otherwise land in CI with no eyes on it).
+#
+# Branch protection remains the safety gate: nothing red can land. fetch-metadata
+# is the official Dependabot action and is intentionally tag-pinned (@v2) — it is
+# maintained by GitHub's Dependabot team and is the documented tool for exactly
+# this gate; Dependabot keeps the tag current.
 
 on: pull_request
 
@@ -15,7 +24,24 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
     steps:
-      - name: Enable auto-merge for the Dependabot PR
-        run: gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-merge patch and minor updates
+        if: ${{ steps.meta.outputs.update-type != 'version-update:semver-major' }}
+        run: gh pr merge --auto --squash "$PR_URL"
         env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Hold major updates for human review
+        if: ${{ steps.meta.outputs.update-type == 'version-update:semver-major' }}
+        run: |
+          gh pr comment "$PR_URL" --body \
+            "🔒 **Major version bump held for human review** — not auto-merged. A major bump of a SHA-pinned action is the highest-risk supply-chain change in this repo, so it needs a human to look before it lands."
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

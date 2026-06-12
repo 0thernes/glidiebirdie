@@ -453,12 +453,15 @@
     .mobile-controls {
       display: grid;
       position: fixed;
-      left: max(1rem, env(safe-area-inset-left));
-      right: max(1rem, env(safe-area-inset-right));
+      /* Center via left:50% + translateX(-50%). A fixed element with BOTH left and
+         right set cannot be centered by `margin: 0 auto`, and the conflict misaligns
+         the bar on notched / foldable phones with asymmetric safe-area insets. */
+      left: 50%;
+      transform: translateX(-50%);
       bottom: max(0.75rem, env(safe-area-inset-bottom));
       z-index: 80;
-      width: min(420px, calc(100vw - 2rem));
-      margin: 0 auto;
+      width: min(420px, calc(100vw - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right)));
+      margin: 0;
       padding: 0.55rem;
       border: 1px solid rgba(238, 247, 255, 0.16);
       border-radius: 1.25rem;

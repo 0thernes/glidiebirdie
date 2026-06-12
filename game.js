@@ -3503,7 +3503,10 @@ function loop(timestamp = performance.now()) {
   const elapsedMs = timestamp - state.lastTimestamp;
   const rawDt = elapsedMs / CONFIG.FRAME_MS_60;
   state.dt = rawDt > 0 ? Math.min(rawDt, CONFIG.DT_MAX) : 1;
-  state.dtSec = Math.max(0, Math.min(elapsedMs / 1000, CONFIG.DT_MAX / 60));
+  // Keep dtSec consistent with dt on zero/negative-elapsed frames (two RAF callbacks
+  // at an identical timestamp). Otherwise dt would advance (=1) while dtSec froze (=0),
+  // drifting state.time vs state.elapsedSec and stalling second-based cooldowns/afterglow.
+  state.dtSec = elapsedMs > 0 ? Math.min(elapsedMs / 1000, CONFIG.DT_MAX / 60) : state.dt / 60;
   state.elapsedSec += state.dtSec;
   state.lastTimestamp = timestamp;
 
