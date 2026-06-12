@@ -6,29 +6,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#081120" />
-  <meta name="description" content="A calm, ergonomic, modern Flappy Bird with normalized physics, comfortable controls, and a relaxing UI." />
+  <meta name="description" content="GlidieBirdie — a calm, ergonomic, modern take on the one-tap arcade flyer, with normalized physics, comfortable controls, and a relaxing UI." />
+  <link rel="canonical" href="https://0thernes.github.io/glidiebirdie/" />
 
   <!-- PWA / iOS / Android install metadata -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Flappy Calm" />
+  <meta name="apple-mobile-web-app-title" content="GlidieBirdie" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23081120'/><text x='50' y='72' font-size='64' text-anchor='middle'>🐦</text></svg>" />
+  <!-- Real raster icon: iOS silently ignores SVG data-URI apple-touch-icons. -->
+  <link rel="apple-touch-icon" sizes="180x180" href="docs/assets/icon-180.png" />
 
   <!-- Open Graph / Twitter -->
-  <meta property="og:title" content="Flappy Bird — Calm Edition" />
+  <meta property="og:title" content="GlidieBirdie — a calm arcade game" />
   <meta property="og:description" content="Gentle physics, bigger gaps, slower pacing — pure relaxation." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://0thernes.github.io/flappy-bird-calm-edition/" />
-  <meta property="og:image" content="https://0thernes.github.io/flappy-bird-calm-edition/docs/assets/social-preview-calm.jpg" />
+  <meta property="og:url" content="https://0thernes.github.io/glidiebirdie/" />
+  <meta property="og:image" content="https://0thernes.github.io/glidiebirdie/docs/assets/social-preview-calm.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Flappy Bird — Calm Edition" />
+  <meta name="twitter:title" content="GlidieBirdie — a calm arcade game" />
   <meta name="twitter:description" content="Calm, accessible, dependency-free browser game." />
-  <meta name="twitter:image" content="https://0thernes.github.io/flappy-bird-calm-edition/docs/assets/social-preview-calm.jpg" />
+  <meta name="twitter:image" content="https://0thernes.github.io/glidiebirdie/docs/assets/social-preview-calm.jpg" />
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐦</text></svg>" />
-  <title>Flappy Bird — Calm Edition</title>
+  <title>GlidieBirdie — a calm arcade game</title>
   <link rel="preload" href="style.css" as="style" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -47,9 +49,9 @@
       <p class="eyebrow">Relaxed arcade • ergonomic controls • normalized physics</p>
       <div class="hero-layout">
         <div class="hero-copy">
-          <h1>🐦 Flappy Bird — Calm Edition</h1>
+          <h1>🐦 GlidieBirdie</h1>
           <p class="lede">
-            A softer, more readable, less stressful take on Flappy Bird. Gentle pacing,
+            A softer, more readable, less stressful one-tap arcade flyer. Gentle pacing,
             full touch controls on phones, refresh-rate-safe physics, and a UI built for comfort.
             Every flap an invitation to breathe and glide.
           </p>
@@ -86,7 +88,7 @@
           id="game"
           tabindex="0"
           role="application"
-          aria-label="Interactive Flappy Bird playfield"
+          aria-label="Interactive GlidieBirdie playfield"
           aria-describedby="controlHelp srStatus"
           aria-keyshortcuts="Space ArrowUp ArrowDown Shift Escape KeyM KeyR KeyF"
         ></canvas>
@@ -266,7 +268,7 @@
         </div>
         <div class="stat-card">
           <p class="stat-num" id="statStreak">0</p>
-          <p class="stat-label">Current Streak (≥10)</p>
+          <p class="stat-label">Day Streak</p>
         </div>
       </div>
 
@@ -376,7 +378,7 @@
           <span class="achievement-badge">🧊</span>
           <div class="achievement-details">
             <h4 class="achievement-title">Iron Calm</h4>
-            <p class="achievement-desc">3 consecutive runs scoring ≥ 10</p>
+            <p class="achievement-desc">Played 3 days in a row</p>
             <p class="achievement-progress"></p>
           </div>
           <span class="achievement-check" aria-hidden="true">✔</span>
@@ -396,7 +398,7 @@
 
   <noscript>
     <p class="noscript-message">
-      JavaScript is required to play Flappy Bird — Calm Edition.
+      JavaScript is required to play GlidieBirdie.
     </p>
   </noscript>
 

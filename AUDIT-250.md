@@ -2,11 +2,11 @@
 
 # 250-Point Gold Standard Solo Web Game Audit
 
-Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free browser and phone game. This audit uses a strict but realistic bar: excellent player experience, phone fit, browser reliability, accessibility, performance, security sanity, documentation, and maintainability for one builder.
+Scope: GlidieBirdie is a solo-built, open-source, dependency-free browser and phone game. This audit uses a strict but realistic bar: excellent player experience, phone fit, browser reliability, accessibility, performance, security sanity, documentation, and maintainability for one builder.
 
 ## Product, Scope, And MVP Fit
 
-- 001. [PASS] Product goal is clear: calm Flappy Bird for browser and phone.
+- 001. [PASS] Product goal is clear: calm GlidieBirdie for browser and phone.
 - 002. [PASS] Solo-builder scope is appropriate and does not require enterprise process.
 - 003. [PASS] English-only source and docs are accepted for global coding and LLM workflows.
 - 004. [PASS] Open-source score manipulation is accepted as non-critical for this game.
@@ -16,7 +16,7 @@ Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free 
 - 008. [PASS] Static hosting is the right distribution model.
 - 009. [PASS] PWA support is useful but not overbuilt; the service worker only caches the app shell.
 - 010. [PASS] Feature set is richer than a toy demo.
-- 011. [PASS] Calm difficulty is differentiated from stock Flappy Bird.
+- 011. [PASS] Calm difficulty is differentiated from stock GlidieBirdie.
 - 012. [PASS] Feather Shield gives a readable forgiving mechanic.
 - 013. [PASS] Daily seed mode fits casual comparison without backend complexity.
 - 014. [PASS] Tutorial overlay supports first-run comprehension.
@@ -48,7 +48,7 @@ Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free 
 - 037. [PASS] Viewport meta uses mobile-safe settings.
 - 038. [PASS] Safe-area padding is considered for phones.
 - 039. [PASS] PWA manifest and service worker support add-to-home-screen and offline app-shell workflows.
-- 040. [PASS] Portrait orientation is appropriate for Flappy Bird.
+- 040. [PASS] Portrait orientation is appropriate for GlidieBirdie.
 - 041. [PASS] Mobile controls use large hit targets.
 - 042. [PASS] Mobile controls use labels, not icon-only mystery buttons.
 - 043. [PASS] Stage copy is compact enough for desktop.
@@ -216,7 +216,7 @@ Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free 
 - 187. [PASS] No third-party scripts are loaded.
 - 188. [PASS] No external fonts are loaded.
 - 189. [PASS] No CDN outage can break the game.
-- 190. [PASS] AGPL license is explicit.
+- 190. [PASS] MIT license is explicit and commercialization-friendly.
 - 191. [PASS] Security policy sets realistic scope.
 - 192. [PASS] Prior secret incident is documented in memory.
 - 193. [PASS] Sensitive data rules are clear.

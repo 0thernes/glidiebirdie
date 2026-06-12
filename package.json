@@ -1,20 +1,22 @@
 {
-  "name": "flappy-bird-calm-edition",
-  "version": "2.2.1",
+  "name": "glidiebirdie",
+  "version": "3.0.0",
   "private": true,
-  "description": "A cinematic, calm, accessible, dependency-free Flappy Bird with golden godrays, living bird character, and serene atmosphere. Browser + PWA, zero dependencies.",
+  "description": "GlidieBirdie — a cinematic, calm, accessible, dependency-free one-tap arcade flyer with golden godrays, a living bird character, and serene atmosphere. Browser + PWA, zero dependencies.",
   "type": "module",
   "scripts": {
-    "check": "node --check game.js && node --check service-worker.js && node tests/static-checks.mjs && node tests/engine-test.mjs && node tests/smoke-test.mjs",
+    "check": "node --check game.js && node --check service-worker.js && node tests/static-checks.mjs && node tests/brand-guard.mjs && node tests/link-guard.mjs && node tests/license-guard.mjs && node tests/engine-test.mjs && node tests/smoke-test.mjs",
     "typecheck": "npx -y -p typescript@5 tsc -p jsconfig.json && npx -y -p typescript@5 tsc --noEmit --allowJs --checkJs --target ES2020 --lib ES2020,WebWorker service-worker.js",
+    "icons": "node tools/generate-icons.mjs",
     "serve": "python -m http.server 8000 --bind 127.0.0.1"
   },
   "engines": {
     "node": ">=18"
   },
   "keywords": [
-    "flappy-bird",
+    "glidiebirdie",
     "browser-game",
+    "arcade",
     "canvas",
     "web-audio",
     "accessibility",
@@ -24,11 +26,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/0thernes/flappy-bird-calm-edition.git"
+    "url": "https://github.com/0thernes/glidiebirdie.git"
   },
   "bugs": {
-    "url": "https://github.com/0thernes/flappy-bird-calm-edition/issues"
+    "url": "https://github.com/0thernes/glidiebirdie/issues"
   },
-  "homepage": "https://0thernes.github.io/flappy-bird-calm-edition/",
-  "license": "AGPL-3.0-or-later"
+  "homepage": "https://0thernes.github.io/glidiebirdie/",
+  "license": "MIT"
 }

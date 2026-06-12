@@ -1,9 +1,8 @@
 'use strict';
 
 // ═══════════════════════════════════════════════════════════════════
-// FLAPPY BIRD — CALM EDITION (v2.2.1 — Audit Hardening)
-// Cinematic hero assets, richer calm atmosphere, 12-build Superman polish.
-// Single-file engine. Zero dependencies. Mobile-first browser game.
+// GLIDIEBIRDIE (v3.0.0) — a calm, one-tap arcade flyer.
+// Single-file engine. Zero dependencies. Mobile-first browser game. MIT licensed.
 //
 // Section index:
 //    1. CONFIG          — all tunable constants

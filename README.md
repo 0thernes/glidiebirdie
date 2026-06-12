@@ -1,26 +1,22 @@
-# Flappy Bird — Calm Edition
+# GlidieBirdie
 
-[![CI](https://github.com/0thernes/flappy-bird-calm-edition/actions/workflows/ci.yml/badge.svg)](https://github.com/0thernes/flappy-bird-calm-edition/actions/workflows/ci.yml)
-[![License: AGPL-3.0-or-later](https://img.shields.io/badge/license-AGPL--3.0--or--later-2f855a)](LICENSE.txt)
+[![CI](https://github.com/0thernes/glidiebirdie/actions/workflows/ci.yml/badge.svg)](https://github.com/0thernes/glidiebirdie/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2f855a)](LICENSE.txt)
 [![Vanilla JS](https://img.shields.io/badge/stack-vanilla%20JS-f7df1e)](game.js)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-0f766e)](package.json)
 [![Accessible Arcade](https://img.shields.io/badge/accessibility-first-2563eb)](README.md#accessibility)
-[![Superman Mode](https://img.shields.io/badge/built%20with-12%20parallel%20Grok%204.3%20builds-ff69b4)](https://github.com/0thernes/flappy-bird-calm-edition)
 
-> **LFG.** Elevated across 12 simultaneous Grok 4.3 builds — Superman mode fully engaged.
-> Cinematic new visuals, richer calm atmosphere, and a repo that finally looks as good as the game feels.
+A browser-first, one-tap arcade flyer tuned for comfort instead of punishment.
 
-A browser-first Flappy Bird remix tuned for comfort instead of punishment.
-
-Calm Edition keeps the fast arcade loop, then softens the failure edges: slower pacing, gentler
+GlidieBirdie keeps the fast arcade loop, then softens the failure edges: slower pacing, gentler
 physics, readable visuals, full mobile controls, procedural audio with reverb, a forgiving Feather
 Shield, daily seeded runs, five living themes, 12 achievements, a Serene Postcard capture mode, and a
 small offline-ready PWA shell. No build step, no runtime dependency, no remote asset requirement.
 Just open the file and glide.
 
-[![Serene meadow golden-hour scene — the bird gliding peacefully between generous pipes in Flappy Bird Calm Edition.](docs/assets/hero-calm-meadow.jpg)](https://0thernes.github.io/flappy-bird-calm-edition/)
+[![Serene meadow golden-hour scene — the bird gliding peacefully between generous pipes in GlidieBirdie.](docs/assets/hero-calm-meadow.jpg)](https://0thernes.github.io/glidiebirdie/)
 
-[Play the live demo](https://0thernes.github.io/flappy-bird-calm-edition/) ·
+[Play the live demo](https://0thernes.github.io/glidiebirdie/) ·
 [Architecture guide](docs/architecture_master_blueprint.md) ·
 [Contributing](CONTRIBUTING.md) ·
 [Support](SUPPORT.md)
@@ -160,7 +156,7 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `SUPPORT.md` | Troubleshooting and where to get help |
 | `.github/` | CI workflow, Dependabot, `SECURITY.md`, issue templates, and Copilot guidance |
 | `.memory/` | Project notes for future maintainers and assistant sessions |
-| `LICENSE.txt` | AGPL-3.0-or-later license text |
+| `LICENSE.txt` | MIT license text |
 
 ## New Here? Read In This Order
 
@@ -191,6 +187,6 @@ If the game does not run as expected, start with [SUPPORT.md](SUPPORT.md).
 
 ## License
 
-AGPL-3.0-or-later. See [LICENSE.txt](LICENSE.txt).
+MIT. See [LICENSE.txt](LICENSE.txt).
 
-If you run a modified version on a public server, offer users the matching source code for that version.
+Use it, fork it, remix it, ship it — a short attribution notice is all that's asked.

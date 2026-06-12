@@ -1,7 +1,7 @@
 {
-  "name": "Flappy Bird — Calm Edition",
-  "short_name": "Flappy Calm",
-  "description": "A calm, accessible, dependency-free Flappy Bird canvas game.",
+  "name": "GlidieBirdie — a calm arcade game",
+  "short_name": "GlidieBirdie",
+  "description": "A calm, accessible, dependency-free one-tap arcade flyer.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -11,16 +11,22 @@
   "categories": ["games", "entertainment"],
   "icons": [
     {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='%23081120'/><text x='96' y='138' font-size='128' text-anchor='middle'>🐦</text></svg>",
+      "src": "docs/assets/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%23081120'/><text x='256' y='368' font-size='340' text-anchor='middle'>🐦</text></svg>",
+      "src": "docs/assets/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "docs/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
