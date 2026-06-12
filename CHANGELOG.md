@@ -13,6 +13,8 @@ All notable changes to this project are documented here.
 - Strict Content-Security-Policy plus absolute `og:`/`twitter:` share metadata in `index.html`.
 - `.github/dependabot.yml` to keep the SHA-pinned GitHub Actions current automatically.
 - Hands-free autonomous merge pipeline: branch protection (required CI, PR-gated, force-push and deletion blocked) plus a Dependabot auto-merge workflow. Changes land automatically once CI is green, with no human clicks, while preserving full PR, CI, and git history.
+- **Guardrail tamper-proofing** (`Guardrail check` workflow + `CODEOWNERS`): a required check that blocks any PR touching the project's own safety machinery (`.github/`, `tests/`, `AGENTS.md`, `CLAUDE.md`, `CODEOWNERS`, `package.json`) from auto-merging unless a human applies the `guardrail-approved` label. Closes the autonomous-agent "disable your own oversight" gap; Dependabot is exempt.
+- **Post-deploy canary** that probes the live GitHub Pages site after each deploy — rename-proof (reads the URL from the deployment event and checks structural sentinels) — and opens an issue if production returns an unhealthy game shell.
 
 ### Changed
 
