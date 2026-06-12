@@ -2706,18 +2706,16 @@ function pushScoreHistory(score) {
 
 function syncStatsAndAchievements(saveToStorage = false) {
   if (saveToStorage) {
-    writeStoredValue('zen-time-sec', Math.floor(state.zenTimeSec));
-    writeStoredValue('shields-saved-count', state.shieldsSavedCount);
-    writeStoredValue('runs-count', state.runsCount);
-    writeStoredValue('near-misses-count', state.nearMissesCount);
-    writeStoredValue('longest-survival-sec', Math.floor(state.longestSurvivalSec));
-    writeStoredValue('current-streak', state.currentStreak);
-    writeStoredValue('played-themes', JSON.stringify(Array.from(state.playedThemes)));
-    writeStoredValue('score-history', JSON.stringify(state.scoreHistory.slice(-50)));
-    writeStoredValue(
-      'unlocked-achievements',
-      JSON.stringify(Array.from(state.unlockedAchievements)),
-    );
+    writeStoredValue(SK.zenTime, Math.floor(state.zenTimeSec));
+    writeStoredValue(SK.shieldsSaved, state.shieldsSavedCount);
+    writeStoredValue(SK.runs, state.runsCount);
+    writeStoredValue(SK.nearMisses, state.nearMissesCount);
+    writeStoredValue(SK.longest, Math.floor(state.longestSurvivalSec));
+    writeStoredValue(SK.streak, state.currentStreak);
+    writeStoredValue(SK.lastPlayedDay, state.lastPlayedDay);
+    writeStoredValue(SK.playedThemes, JSON.stringify(Array.from(state.playedThemes)));
+    writeStoredValue(SK.scoreHistory, JSON.stringify(state.scoreHistory.slice(-50)));
+    writeStoredValue(SK.unlocked, JSON.stringify(Array.from(state.unlockedAchievements)));
   }
   if (dom.statZenMinutes) dom.statZenMinutes.textContent = (state.zenTimeSec / 60).toFixed(1);
   if (dom.statShieldsSaved) dom.statShieldsSaved.textContent = String(state.shieldsSavedCount);
@@ -2756,21 +2754,23 @@ function resetStats() {
   state.nearMissesCount = 0;
   state.longestSurvivalSec = 0;
   state.currentStreak = 0;
+  state.lastPlayedDay = 0;
   state.scoreHistory = [];
   state.unlockedAchievements = new Set();
   state.playedThemes = new Set([state.theme]);
-  // wipe storage
+  // wipe persisted stats + best (settings/theme are intentionally preserved)
   [
-    'zen-time-sec',
-    'shields-saved-count',
-    'runs-count',
-    'near-misses-count',
-    'longest-survival-sec',
-    'current-streak',
-    'score-history',
-    'unlocked-achievements',
-    'played-themes',
-    'flappy-best',
+    SK.zenTime,
+    SK.shieldsSaved,
+    SK.runs,
+    SK.nearMisses,
+    SK.longest,
+    SK.streak,
+    SK.lastPlayedDay,
+    SK.scoreHistory,
+    SK.unlocked,
+    SK.playedThemes,
+    SK.best,
   ].forEach((k) => {
     try {
       localStorage.removeItem(k);
@@ -2987,7 +2987,15 @@ function onScoreChanged() {
   state.calmMeter = Math.min(1.0, state.calmMeter + 0.04);
 }
 
+/** Handle for the delayed game-over "second wave" particle burst (cleared on
+ * restart so a quick R-press can't spray the previous death into the new run). */
+let deathWaveTimer = 0;
+
 function resetGame() {
+  if (deathWaveTimer) {
+    clearTimeout(deathWaveTimer);
+    deathWaveTimer = 0;
+  }
   state.phase = 'start';
   state.score = 0;
   state.frames = 0;
@@ -3100,12 +3108,20 @@ function gameOver() {
     // Extra theme-tinted celebration flecks for a more special quiet record
     spawnParticles(bird.x - 6, bird.y - 12, 9, getTheme().scoreParticle || '#ffd700', 4);
   }
-  writeStoredValue('flappy-best', state.best);
+  writeStoredValue(SK.best, state.best);
 
   pushScoreHistory(state.score);
   state.longestSurvivalSec = Math.max(state.longestSurvivalSec, state.runSec);
-  if (state.score >= 10) state.currentStreak++;
-  else state.currentStreak = 0;
+
+  // Calendar-day streak: a real "came back another day" loyalty signal, not the
+  // old per-session score gate. Increment only when today is the day after the
+  // last play; reset to 1 on any gap; no-op for extra runs the same day.
+  const today = dateSeed();
+  if (state.lastPlayedDay !== today) {
+    const yesterday = dateSeed(new Date(Date.now() - 86400000));
+    state.currentStreak = nextDayStreak(state.currentStreak, state.lastPlayedDay, today, yesterday);
+    state.lastPlayedDay = today;
+  }
 
   // Capture run qualities for the Afterglow reflection.
   // afterglowShieldUsed is set true in checkCollisions when a shield is consumed this run;
@@ -3117,8 +3133,11 @@ function gameOver() {
   stopMusic();
   spawnParticles(bird.x, bird.y, 18, '#ff4444', 5);
   spawnParticles(bird.x, bird.y, 12, '#ffaa00', 4);
-  // Second wave of particles, slightly delayed via direct spawn (audio clock unused for visuals)
-  setTimeout(() => {
+  // Second wave of particles, slightly delayed. Tracked + cleared on restart so a
+  // fast R-press never sprays the previous death into the fresh run (latent leak).
+  if (deathWaveTimer) clearTimeout(deathWaveTimer);
+  deathWaveTimer = setTimeout(() => {
+    deathWaveTimer = 0;
     if (state.phase !== 'gameOver') return;
     spawnParticles(bird.x, bird.y, 10, '#ffffff', 3);
     spawnParticles(bird.x, bird.y, 8, '#ff6666', 2.5);
@@ -3432,7 +3451,7 @@ function bindDrawerControls() {
     );
     if (dom.gravityVal) dom.gravityVal.textContent = GRAVITY_LABELS[state.gravitySetting];
     updateDerivedPhysics();
-    writeStoredValue('flappy-gravity', state.gravitySetting);
+    writeStoredValue(SK.gravity, state.gravitySetting);
   });
 
   dom.speedSlider?.addEventListener('input', (e) => {
@@ -3441,7 +3460,7 @@ function bindDrawerControls() {
     );
     if (dom.speedVal) dom.speedVal.textContent = SPEED_LABELS[state.speedSetting];
     updateDerivedPhysics();
-    writeStoredValue('flappy-speed', state.speedSetting);
+    writeStoredValue(SK.speed, state.speedSetting);
   });
 
   dom.musicVolumeSlider?.addEventListener('input', (e) => {
@@ -3450,7 +3469,7 @@ function bindDrawerControls() {
     );
     state.musicVolume = percent / 100;
     if (dom.musicVolumeVal) dom.musicVolumeVal.textContent = `${percent}%`;
-    writeStoredValue('flappy-music-volume', state.musicVolume);
+    writeStoredValue(SK.musicVolume, state.musicVolume);
     // adjust live without restarting the scheduler (volume is read each note)
   });
 
@@ -3460,7 +3479,7 @@ function bindDrawerControls() {
     );
     state.sfxVolume = percent / 100;
     if (dom.sfxVolumeVal) dom.sfxVolumeVal.textContent = `${percent}%`;
-    writeStoredValue('flappy-sfx-volume', state.sfxVolume);
+    writeStoredValue(SK.sfxVolume, state.sfxVolume);
   });
 
   dom.themeBtns.forEach((btn) => {
@@ -3471,7 +3490,7 @@ function bindDrawerControls() {
       applyTheme(state.theme);
       state.playedThemes.add(state.theme);
       syncStatsAndAchievements(true);
-      writeStoredValue('flappy-theme', state.theme);
+      writeStoredValue(SK.theme, state.theme);
       if (state.theme !== prevTheme) {
         activeWeather.length = 0;
         for (const p of weatherPool) p.active = false;
@@ -3484,7 +3503,7 @@ function bindDrawerControls() {
 
   dom.dailySeedToggle?.addEventListener('change', (e) => {
     state.dailySeedMode = /** @type {HTMLInputElement} */ (e.target).checked;
-    writeStoredValue('flappy-daily-seed', state.dailySeedMode);
+    writeStoredValue(SK.dailySeed, state.dailySeedMode);
     syncUiState();
     if (state.dailySeedMode) setSeededRNG(dateSeed());
     else setUnseededRNG();
@@ -3506,11 +3525,13 @@ function bindDrawerControls() {
 
   dom.shareBtn?.addEventListener('click', async () => {
     const score = state.best > 0 ? state.best : state.score;
-    const text = `I'm playing Flappy Bird — Calm Edition. Best score: ${score}. 🐦`;
+    // In Daily Seed mode, link the exact seed so a friend plays the same run.
+    const seedTag = state.dailySeedMode ? ` · daily seed #${dateSeed()}` : '';
+    const text = `GlidieBirdie — my calm best is ${score}.${seedTag} 🐦`;
     const url = location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Flappy Bird — Calm Edition', text, url });
+        await navigator.share({ title: 'GlidieBirdie', text, url });
         showToast('Shared.', 'default');
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(`${text} ${url}`);
@@ -3525,25 +3546,48 @@ function bindDrawerControls() {
 
   dom.fpsToggle?.addEventListener('change', (e) => {
     state.showFps = /** @type {HTMLInputElement} */ (e.target).checked;
-    writeStoredValue('flappy-fps', state.showFps);
+    writeStoredValue(SK.fps, state.showFps);
   });
 }
 
-// Tutorial overlay
+// Tutorial overlay — a real modal: focus moves in on show, Escape dismisses, and
+// Tab is pinned to the single action so keyboard/SR users can't wander into the
+// (visually obscured) background behind it.
 function bindTutorial() {
-  if (!dom.tutorialOverlay) return;
-  const seenTutorial = readStoredBool('flappy-tutorial-seen', false);
-  if (!seenTutorial) {
-    dom.tutorialOverlay.classList.add('show');
-    dom.tutorialOverlay.setAttribute('aria-hidden', 'false');
-  } else {
-    dom.tutorialOverlay.classList.remove('show');
-    dom.tutorialOverlay.setAttribute('aria-hidden', 'true');
+  const overlay = dom.tutorialOverlay;
+  if (!overlay) return;
+
+  function onKeydown(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      dismiss();
+      focusElement(canvas);
+    } else if (e.key === 'Tab') {
+      // Single-control modal → keep focus on the dismiss button (focus trap).
+      e.preventDefault();
+      focusElement(dom.tutorialDismiss);
+    }
   }
+
+  function dismiss() {
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.removeEventListener('keydown', onKeydown, true);
+    writeStoredValue(SK.tutorialSeen, true);
+  }
+
+  if (!readStoredBool(SK.tutorialSeen, false)) {
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.addEventListener('keydown', onKeydown, true);
+    focusElement(dom.tutorialDismiss); // move focus into the modal
+  } else {
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+
   dom.tutorialDismiss?.addEventListener('click', (e) => {
-    dom.tutorialOverlay?.classList.remove('show');
-    dom.tutorialOverlay?.setAttribute('aria-hidden', 'true');
-    writeStoredValue('flappy-tutorial-seen', true);
+    dismiss();
     focusElement(canvas);
     handleAction(e);
   });
@@ -3622,10 +3666,10 @@ function loop(timestamp = performance.now()) {
   } catch (err) {
     frameErrorCount++;
     if (frameErrorCount === 1 || frameErrorCount % 60 === 0) {
-      console.error('[Flappy] Frame error:', err);
+      console.error('[GlidieBirdie] Frame error:', err);
     }
     if (frameErrorCount > CONFIG.FRAME_ERROR_BURST_LIMIT) {
-      console.warn('[Flappy] Frame errors burst — cooling down');
+      console.warn('[GlidieBirdie] Frame errors burst — cooling down');
       frameErrorCooldownAt = state.elapsedSec + CONFIG.FRAME_ERROR_COOLDOWN_SEC;
       frameErrorCount = 0;
     }

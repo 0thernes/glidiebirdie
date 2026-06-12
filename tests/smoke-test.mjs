@@ -156,12 +156,14 @@ assert.match(
 // Persistence helpers (guarded)
 assert.match(
   textFiles.js,
-  /best:\s*readStoredNumber\(['"]flappy-best['"]/,
+  // Refactor-robust: assert `best` is read through the guarded helper, regardless of
+  // whether the key is a string literal or an SK.* storage-key constant.
+  /best:\s*readStoredNumber\(/,
   'best score must read through guarded helper',
 );
 assert.match(
   textFiles.js,
-  /zenTimeSec:\s*readStoredNumber\(['"]zen-time-sec['"]/,
+  /zenTimeSec:\s*readStoredNumber\(/,
   'stats must read through guarded helper',
 );
 

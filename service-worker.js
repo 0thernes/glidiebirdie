@@ -5,7 +5,7 @@
 /** @type {ServiceWorkerGlobalScope} */
 const sw = /** @type {any} */ (self);
 
-const CACHE_NAME = 'flappy-calm-v2.2.0';
+const CACHE_NAME = 'flappy-calm-v2.2.1';
 const APP_SHELL = Object.freeze([
   './',
   './index.html',

@@ -229,6 +229,36 @@ const assertions = `
 
   // Invariant: the delta-time clamp that makes collision tunnel-proof exists.
   __expect('dt clamp keeps simulation bounded', CONFIG.DT_MAX >= 1 && CONFIG.DT_MAX <= 3);
+
+  // Particle pool: under heavy churn it never exceeds its fixed capacity and the
+  // wrapping free-list never leaks an inactive slot into the active list.
+  (function () {
+    initObjectPools();
+    activeParticles.length = 0;
+    for (var k = 0; k < 50; k++) spawnParticles(100, 100, 30, '#fff', 3);
+    __expect('particle pool never exceeds capacity under churn',
+      activeParticles.length <= CONFIG.PARTICLE_POOL);
+    __expect('every particle in the active list is marked active',
+      activeParticles.every(function (p) { return p.active === true; }));
+  })();
+
+  // Storage corruption recovery: malformed JSON must fall back to safe defaults,
+  // never throw on boot.
+  localStorage.setItem('played-themes', '{not valid json');
+  __expect('readPlayedThemes recovers from malformed JSON',
+    readPlayedThemes() instanceof Set && readPlayedThemes().has('sunset'));
+  localStorage.setItem('score-history', 'garbage');
+  __expect('readScoreHistory recovers from malformed JSON',
+    Array.isArray(readScoreHistory()) && readScoreHistory().length === 0);
+  localStorage.setItem('unlocked-achievements', '[unterminated');
+  __expect('readUnlockedAchievements recovers from malformed JSON',
+    readUnlockedAchievements() instanceof Set);
+
+  // dt/dtSec stay coupled on a zero-elapsed frame (two RAF callbacks, same timestamp).
+  state.lastTimestamp = 1000;
+  loop(1000);
+  __expect('dtSec stays coupled to dt on a zero-elapsed frame',
+    Math.abs(state.dtSec - state.dt / 60) < 1e-9);
 })();
 `;
 

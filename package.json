@@ -1,6 +1,6 @@
 {
   "name": "flappy-bird-calm-edition",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "private": true,
   "description": "A cinematic, calm, accessible, dependency-free Flappy Bird with golden godrays, living bird character, and serene atmosphere. Browser + PWA, zero dependencies.",
   "type": "module",

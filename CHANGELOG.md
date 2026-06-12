@@ -26,8 +26,16 @@ All notable changes to this project are documented here.
 - Added the referenced `CODE_OF_CONDUCT.md` and removed the spent `SHIP-v2.2.md` and `docs/assets/pr-body-v2.2.md` release artifacts (the latter hardcoded a developer-machine path).
 - Aligned the VS Code Python-server launch URLs with the `127.0.0.1` serve bind.
 
+### Security
+
+- **Dependabot auto-merge now gates major version bumps.** Patch/minor updates still merge hands-free once CI is green; **major** bumps — the highest-risk supply-chain vector for a SHA-pinned action — are held and flagged for human review via `dependabot/fetch-metadata`. PR URLs pass through an env var instead of being interpolated into the shell step (script-injection hardening). (Multi-agent audit, adversarially verified.)
+
 ### Fixed
 
+- **Service worker** no longer surfaces a hard 4xx/5xx for an app-shell resource when a cached copy exists — it falls back to the last-known-good cache (and to `index.html` for navigations).
+- **`dtSec` stays coupled to `dt` on zero-elapsed frames** (two `requestAnimationFrame` callbacks at an identical timestamp); previously `dt` advanced while `dtSec` froze, drifting `state.time` vs `state.elapsedSec` and briefly stalling second-based cooldowns and the afterglow window.
+- **Mobile control bar centers correctly on notched / foldable phones** — a `fixed` element with both `left` and `right` set cannot be centered by `margin: 0 auto`; now uses `left: 50%` + `translateX(-50%)` with a safe-area-aware width.
+- Added engine tests for particle-pool churn, storage-corruption recovery, and the `dtSec` zero-frame invariant (17 → 23 assertions); the smoke test now derives the service-worker cache version from `package.json`; static checks gained an achievement id/check-count assertion.
 - Styled the toast notifications (achievement / share / Serene Postcard feedback); they previously rendered as unstyled default-flow elements because no CSS matched the injected `.toast` markup.
 - Synced the FPS-counter toggle's checked state on load so the switch no longer shows OFF while the overlay is ON after a reload.
 

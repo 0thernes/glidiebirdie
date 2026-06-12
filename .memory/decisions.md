@@ -12,7 +12,7 @@ All runtime audio is synthesized via Web Audio API oscillators. All runtime game
 
 ## Monolithic game.js
 
-The engine is one file (~2400 lines) by design. Splitting into modules would require a bundler or ES module imports, violating the zero-dependency commitment. Large monolithic files are fully accepted because a single file fits completely inside modern LLM context sizes, enabling clean, AI-native pairing.
+The engine is one file (~3600 lines) by design. Splitting into modules would require a bundler or ES module imports, violating the zero-dependency commitment. Large monolithic files are fully accepted because a single file fits completely inside modern LLM context sizes, enabling clean, AI-native pairing.
 
 `service-worker.js` is the only extra JavaScript file. It is not engine code. It only caches the static app shell for installed PWA use on localhost or HTTPS.
 
@@ -38,7 +38,7 @@ ARIA, reduced motion, keyboard navigation, and screen reader support are built i
 
 ## Theme system
 
-Four visual themes (sunset, midnight, rain, aurora) each define complete color palettes for bird, ground, pipes, sky, and weather. Themes are stored in `localStorage` and applied via CSS class on `document.body`. The consolidated `THEME_TABLE` constant carries all per-theme palettes (bird/ground/sky/pipe/trail/particles); `musicThemes` carries the per-theme arpeggios. New themes require entries in both.
+Five visual themes (sunset, midnight, rain, aurora, meadow) each define complete color palettes for bird, ground, pipes, sky, and weather. Themes are stored in `localStorage` and applied via CSS class on `document.body`. The consolidated `THEME_TABLE` constant carries all per-theme palettes (bird/ground/sky/pipe/trail/particles); `musicThemes` carries the per-theme arpeggios. New themes require entries in both.
 
 ## Object pooling for particles and weather
 
