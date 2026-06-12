@@ -5,7 +5,7 @@
       "name": "Launch Chrome (Python http.server)",
       "request": "launch",
       "type": "chrome",
-      "url": "http://localhost:8000",
+      "url": "http://127.0.0.1:8000",
       "webRoot": "${workspaceFolder}",
       "sourceMaps": false
     },
@@ -13,7 +13,7 @@
       "name": "Launch Edge (Python http.server)",
       "request": "launch",
       "type": "msedge",
-      "url": "http://localhost:8000",
+      "url": "http://127.0.0.1:8000",
       "webRoot": "${workspaceFolder}",
       "sourceMaps": false
     },

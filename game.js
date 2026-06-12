@@ -1,7 +1,7 @@
 'use strict';
 
 // ═══════════════════════════════════════════════════════════════════
-// FLAPPY BIRD — CALM EDITION (v2.2.0 — Parallel Elevation)
+// FLAPPY BIRD — CALM EDITION (v2.2.1 — Audit Hardening)
 // Cinematic hero assets, richer calm atmosphere, 12-build Superman polish.
 // Single-file engine. Zero dependencies. Mobile-first browser game.
 //
@@ -267,6 +267,86 @@ function setUnseededRNG() {
 }
 
 // ─── 4. STORAGE ────────────────────────────────────────────────────
+// Namespaced, versioned keys. The `gb:` prefix isolates GlidieBirdie data from
+// anything else on the origin, and the schema tag lets a migration run exactly
+// once. All persistence MUST go through SK.* — never a bare string — so the
+// storage-guard CI check can prove no legacy key leaks back in.
+const STORAGE_SCHEMA = '3';
+const SK = Object.freeze({
+  schema: 'gb:schema',
+  best: 'gb:best',
+  theme: 'gb:theme',
+  gravity: 'gb:gravity',
+  speed: 'gb:speed',
+  musicVolume: 'gb:music-volume',
+  sfxVolume: 'gb:sfx-volume',
+  dailySeed: 'gb:daily-seed',
+  fps: 'gb:fps',
+  tutorialSeen: 'gb:tutorial-seen',
+  zenTime: 'gb:zen-time-sec',
+  shieldsSaved: 'gb:shields-saved',
+  runs: 'gb:runs',
+  nearMisses: 'gb:near-misses',
+  longest: 'gb:longest-survival-sec',
+  streak: 'gb:streak',
+  lastPlayedDay: 'gb:last-played-day',
+  playedThemes: 'gb:played-themes',
+  scoreHistory: 'gb:score-history',
+  unlocked: 'gb:unlocked-achievements',
+});
+
+// One-time migration from the pre-rebrand key names (flappy-* / zen-* / bare) so
+// existing players keep their best score, settings, stats, and achievements
+// across the GlidieBirdie rename. Runs before the first read in `state`.
+const LEGACY_KEY_MAP = Object.freeze({
+  'flappy-best': SK.best,
+  'flappy-theme': SK.theme,
+  'flappy-gravity': SK.gravity,
+  'flappy-speed': SK.speed,
+  'flappy-music-volume': SK.musicVolume,
+  'flappy-sfx-volume': SK.sfxVolume,
+  'flappy-daily-seed': SK.dailySeed,
+  'flappy-fps': SK.fps,
+  'flappy-tutorial-seen': SK.tutorialSeen,
+  'zen-time-sec': SK.zenTime,
+  'shields-saved-count': SK.shieldsSaved,
+  'runs-count': SK.runs,
+  'near-misses-count': SK.nearMisses,
+  'longest-survival-sec': SK.longest,
+  'current-streak': SK.streak,
+  'played-themes': SK.playedThemes,
+  'score-history': SK.scoreHistory,
+  'unlocked-achievements': SK.unlocked,
+});
+
+function migrateLegacyStorage() {
+  try {
+    if (localStorage.getItem(SK.schema)) return; // already migrated on this device
+    for (const oldKey of Object.keys(LEGACY_KEY_MAP)) {
+      const newKey = LEGACY_KEY_MAP[oldKey];
+      const val = localStorage.getItem(oldKey);
+      if (val == null) continue;
+      if (localStorage.getItem(newKey) == null) localStorage.setItem(newKey, val);
+      localStorage.removeItem(oldKey);
+    }
+    localStorage.setItem(SK.schema, STORAGE_SCHEMA);
+  } catch {
+    /* private mode / quota — readers fall back to defaults */
+  }
+}
+
+/**
+ * Pure calendar-day streak transition. `today`/`yesterday` are YYYYMMDD ints
+ * from dateSeed(). Same day → unchanged; the day after the last play → +1;
+ * any gap (or first ever play) → 1. Unit-tested in tests/engine-test.mjs.
+ * @param {number} prevStreak @param {number} lastDay @param {number} today @param {number} yesterday
+ */
+function nextDayStreak(prevStreak, lastDay, today, yesterday) {
+  if (lastDay === today) return prevStreak;
+  if (lastDay === yesterday) return prevStreak + 1;
+  return 1;
+}
+
 /** @param {string} key @param {readonly string[]} choices @param {string} fallback */
 function readStoredChoice(key, choices, fallback) {
   try {
@@ -311,7 +391,7 @@ function readStoredBool(key, fallback) {
 
 function readPlayedThemes() {
   try {
-    const parsed = JSON.parse(localStorage.getItem('played-themes') || '["sunset"]');
+    const parsed = JSON.parse(localStorage.getItem(SK.playedThemes) || '["sunset"]');
     const themes = Array.isArray(parsed) ? parsed.filter((t) => THEMES.includes(t)) : [];
     return new Set(themes.length ? themes : ['sunset']);
   } catch {
@@ -321,7 +401,7 @@ function readPlayedThemes() {
 
 function readScoreHistory() {
   try {
-    const parsed = JSON.parse(localStorage.getItem('score-history') || '[]');
+    const parsed = JSON.parse(localStorage.getItem(SK.scoreHistory) || '[]');
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0).slice(-50);
   } catch {
@@ -331,7 +411,7 @@ function readScoreHistory() {
 
 function readUnlockedAchievements() {
   try {
-    const parsed = JSON.parse(localStorage.getItem('unlocked-achievements') || '[]');
+    const parsed = JSON.parse(localStorage.getItem(SK.unlocked) || '[]');
     return Array.isArray(parsed) ? new Set(parsed.filter((s) => typeof s === 'string')) : new Set();
   } catch {
     return new Set();
@@ -345,6 +425,9 @@ function writeStoredValue(key, value) {
     /* blocked */
   }
 }
+
+// Run the legacy→gb: migration once, before `state` performs its first reads.
+migrateLegacyStorage();
 
 // ─── 5. AUDIO ─────────────────────────────────────────────────────
 const AudioCtx = window.AudioContext || /** @type {any} */ (window).webkitAudioContext;
@@ -608,20 +691,20 @@ function stopMusic(fade = true) {
 const state = {
   phase: 'start', // 'start' | 'play' | 'gameOver'
   score: 0,
-  best: readStoredNumber('flappy-best', 0, 0),
+  best: readStoredNumber(SK.best, 0, 0),
   frames: 0,
   time: 0, // 60-fps-normalized accumulated dt
   elapsedSec: 0, // wall-clock seconds since boot (resets on game start)
   runSec: 0, // wall-clock seconds in current run
 
   // Customizer
-  theme: readStoredChoice('flappy-theme', THEMES, 'sunset'),
-  gravitySetting: readStoredLevel('flappy-gravity', 2),
-  speedSetting: readStoredLevel('flappy-speed', 2),
-  musicVolume: readStoredNumber('flappy-music-volume', 0.6, 0, 1),
-  sfxVolume: readStoredNumber('flappy-sfx-volume', 0.8, 0, 1),
-  dailySeedMode: readStoredBool('flappy-daily-seed', false),
-  showFps: readStoredBool('flappy-fps', false),
+  theme: readStoredChoice(SK.theme, THEMES, 'sunset'),
+  gravitySetting: readStoredLevel(SK.gravity, 2),
+  speedSetting: readStoredLevel(SK.speed, 2),
+  musicVolume: readStoredNumber(SK.musicVolume, 0.6, 0, 1),
+  sfxVolume: readStoredNumber(SK.sfxVolume, 0.8, 0, 1),
+  dailySeedMode: readStoredBool(SK.dailySeed, false),
+  showFps: readStoredBool(SK.fps, false),
 
   // Derived physics
   gravity: 0.052,
@@ -666,12 +749,14 @@ const state = {
   invincibilityTimer: 0,
 
   // Persistent stats
-  zenTimeSec: readStoredNumber('zen-time-sec', 0, 0),
-  shieldsSavedCount: readStoredNumber('shields-saved-count', 0, 0),
-  runsCount: readStoredNumber('runs-count', 0, 0),
-  nearMissesCount: readStoredNumber('near-misses-count', 0, 0),
-  longestSurvivalSec: readStoredNumber('longest-survival-sec', 0, 0),
-  currentStreak: readStoredNumber('current-streak', 0, 0),
+  zenTimeSec: readStoredNumber(SK.zenTime, 0, 0),
+  shieldsSavedCount: readStoredNumber(SK.shieldsSaved, 0, 0),
+  runsCount: readStoredNumber(SK.runs, 0, 0),
+  nearMissesCount: readStoredNumber(SK.nearMisses, 0, 0),
+  longestSurvivalSec: readStoredNumber(SK.longest, 0, 0),
+  currentStreak: readStoredNumber(SK.streak, 0, 0),
+  // Calendar-day streak bookkeeping: YYYYMMDD of the last day a run ended.
+  lastPlayedDay: readStoredNumber(SK.lastPlayedDay, 0, 0),
   playedThemes: readPlayedThemes(),
   scoreHistory: readScoreHistory(),
   unlockedAchievements: readUnlockedAchievements(),
@@ -2513,6 +2598,10 @@ function syncUiState() {
   if (dom.dailySeedToggle) {
     dom.dailySeedToggle.checked = state.dailySeedMode;
     dom.dailySeedToggle.setAttribute('aria-checked', String(state.dailySeedMode));
+  }
+  if (dom.fpsToggle) {
+    dom.fpsToggle.checked = state.showFps;
+    dom.fpsToggle.setAttribute('aria-checked', String(state.showFps));
   }
   if (dom.dailySeedStatus) {
     dom.dailySeedStatus.textContent = state.dailySeedMode

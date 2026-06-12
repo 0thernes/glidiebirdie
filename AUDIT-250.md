@@ -29,7 +29,7 @@ Scope: Flappy Bird - Calm Edition is a solo-built, open-source, dependency-free 
 - 021. [PASS] README accurately presents the product as a browser game.
 - 022. [PASS] MVP avoids excessive business-plan assumptions.
 - 023. [PASS] App size is tiny by modern browser-game standards.
-- 024. [PASS] 2,000+ lines in one game file is acceptable for this solo scope.
+- 024. [PASS] 3,500+ lines in one game file is acceptable for this solo scope.
 - 025. [PASS] Scope decisions are now judged against player value, not corporate theater.
 
 ## Browser And Phone User Experience

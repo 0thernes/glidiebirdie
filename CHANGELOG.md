@@ -21,6 +21,15 @@ All notable changes to this project are documented here.
 - Reworked the Zen Customizer theme selector into an auto-fit grid so all five themes sit cleanly without the old awkward wrapping.
 - Polished active theme buttons with a subtle lift and stronger theme-aware glow so selection feedback feels more intentional.
 - Updated Theme Explorer achievement progress to track all available themes dynamically.
+- Made `cspell.json` the single source of truth for spelling and removed the duplicate word list from `.vscode/settings.json` (the editor's Code Spell Checker reads `cspell.json` automatically), superseding the earlier "synced word lists" note.
+- Reworked the README: deduplicated the two merged drafts down to one, corrected the `npm run check` description to its real five steps, documented the `P`/`C` Serene Postcard keys in the Controls table, and added `AGENTS.md`, the test files, and `CODE_OF_CONDUCT.md` to the Repository Map.
+- Added the referenced `CODE_OF_CONDUCT.md` and removed the spent `SHIP-v2.2.md` and `docs/assets/pr-body-v2.2.md` release artifacts (the latter hardcoded a developer-machine path).
+- Aligned the VS Code Python-server launch URLs with the `127.0.0.1` serve bind.
+
+### Fixed
+
+- Styled the toast notifications (achievement / share / Serene Postcard feedback); they previously rendered as unstyled default-flow elements because no CSS matched the injected `.toast` markup.
+- Synced the FPS-counter toggle's checked state on load so the switch no longer shows OFF while the overlay is ON after a reload.
 
 ## [2.2.0] — Parallel Elevation (12-Build Superman Drop)
 
