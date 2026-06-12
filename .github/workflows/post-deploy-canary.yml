@@ -1,0 +1,54 @@
+name: Post-deploy canary
+
+# After GitHub Pages publishes, verify the LIVE site actually serves a healthy
+# game shell. Catches a change that auto-merged, deployed, and went live but is
+# broken or blank — the failure mode that matters most under autonomous merging.
+#
+# Rename-proof: it reads the live URL from the deployment event itself
+# (environment_url), so a repo/site rename does not break it, and it checks
+# structural sentinels (the canvas id + game.js) rather than branding text.
+# On failure it opens an issue so the breakage is visible, not buried in Actions.
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  canary:
+    if: ${{ github.event.deployment_status.state == 'success' && github.event.deployment_status.environment == 'github-pages' }}
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SITE_URL: ${{ github.event.deployment_status.environment_url }}
+      TARGET_URL: ${{ github.event.deployment_status.target_url }}
+    steps:
+      - name: Probe the live site
+        run: |
+          URL="${SITE_URL:-$TARGET_URL}"
+          echo "Probing live site: $URL"
+          ok=false
+          for i in 1 2 3 4 5; do
+            code=$(curl -fsSL -o page.html -w "%{http_code}" "$URL" 2>/dev/null || echo 000)
+            if [ "$code" = "200" ] && grep -q 'id="game"' page.html && grep -q 'game\.js' page.html; then
+              echo "Canary OK (attempt $i): HTTP 200 and the game shell (canvas + game.js) is present."
+              ok=true
+              break
+            fi
+            echo "Attempt $i: http=$code, shell-ok=false — retrying in 12s"
+            sleep 12
+          done
+          if [ "$ok" != "true" ]; then
+            echo "::error::Post-deploy canary FAILED — $URL did not return a healthy game shell."
+            exit 1
+          fi
+      - name: Open an issue if the live site is broken
+        if: ${{ failure() }}
+        run: |
+          URL="${SITE_URL:-$TARGET_URL}"
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "🚨 Post-deploy canary failed — live site unhealthy" \
+            --body "After the latest GitHub Pages deploy, the live site did not return a healthy game shell (HTTP 200 plus the canvas \`id=\"game\"\` and \`game.js\`). URL probed: $URL. Commit: ${{ github.sha }}. A recent auto-merged change may have broken production — review and revert if needed. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            || echo "Could not open an issue (non-fatal)."
