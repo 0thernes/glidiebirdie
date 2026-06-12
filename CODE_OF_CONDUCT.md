@@ -38,7 +38,7 @@ and whenever an individual is representing the project in public spaces.
 ## Reporting
 
 If you experience or witness unacceptable behavior, please report it privately to the project
-maintainer through a [GitHub private security advisory](https://github.com/0thernes/flappy-bird-calm-edition/security/advisories/new)
+maintainer through a [GitHub private security advisory](https://github.com/0thernes/glidiebirdie/security/advisories/new)
 or by opening a minimal issue asking for a private channel without posting sensitive details. All
 reports will be reviewed and handled with discretion.
 

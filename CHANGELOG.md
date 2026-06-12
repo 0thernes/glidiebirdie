@@ -2,6 +2,47 @@
 
 All notable changes to this project are documented here.
 
+## [3.0.0] — Rebrand, relicense, and a Gold-level de-risk pass
+
+Breaking, deliberate changes that remove the project's two existential liabilities
+and fix six further Gold-level issues. Existing players keep their saves via a
+one-time storage migration.
+
+### Changed — identity & licensing (the two liabilities)
+
+- **Renamed the game off a prior trademarked name → `GlidieBirdie`.** Every title,
+  heading, manifest field, URL, share string, console tag, and doc was updated. A
+  new CI **brand-guard** (`tests/brand-guard.mjs`) fails the build if the retired
+  mark ever reappears in a tracked file, so the rename can't silently regress.
+- **Relicensed AGPL-3.0-or-later → MIT.** For a small calm open-source arcade toy,
+  AGPL's network-copyleft actively repelled the forking/embedding it wants to invite.
+  A CI **license-guard** (`tests/license-guard.mjs`) pins `LICENSE.txt` + `package.json` to MIT.
+
+### Fixed — six Gold-level issues
+
+1. **Retention: real calendar-day streak.** The old "streak" was a per-session
+   score gate (`score >= 10`) with no date stored — the game literally couldn't tell
+   if you came back tomorrow. Now a true UTC day-streak (`lastPlayedDay` + pure,
+   unit-tested `nextDayStreak()`); `Iron Calm` rewards 3 days in a row.
+2. **Namespaced, versioned storage with migration.** All keys moved under a `gb:`
+   namespace via a single `SK` map; a one-time `migrateLegacyStorage()` carries
+   pre-rebrand `flappy-*` / `zen-*` / bare keys forward so saves survive the rename.
+3. **PWA stale-cache.** Service worker moved from cache-first (which pinned returning
+   players to a stale shell until the SW file itself changed) to **stale-while-revalidate**;
+   cache version is tied to `package.json` and verified in CI.
+4. **Tutorial overlay a11y.** Now a real modal: focus moves into it on show, `Escape`
+   dismisses, and `Tab` is trapped on the single action (`aria-modal` added).
+5. **Death-wave timer leak.** The delayed game-over particle burst is now a tracked,
+   cancellable timer — a fast `R`-restart can no longer spray the previous death into the new run.
+6. **Install & discovery surface.** Real raster **PNG home-screen icons** (180/192/512,
+   generated dependency-free by `tools/generate-icons.mjs`) replace the SVG data-URI
+   `apple-touch-icon` that iOS silently ignores; added `<link rel="canonical">`,
+   `robots.txt`, and `sitemap.xml`. A new **link-guard** asserts every local asset reference resolves.
+
+### Changed — presentation
+
+- Removed the "Superman Mode / 12 parallel Grok builds — LFG" badge and banner from the README.
+
 ## [Unreleased]
 
 ### Added

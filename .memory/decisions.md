@@ -72,9 +72,13 @@ The canvas backing buffer is sized by `devicePixelRatio` (clamped to 3) so Retin
 
 Web Audio routes: oscillator → master gain → [lowpass biquad → destination] + [convolver reverb → wet gain → destination]. The convolver buffer is procedurally generated (white noise with exponential decay). SFX sequences schedule on the audio clock (no `setTimeout` chains). Music start/stop uses gain ramps to avoid hard cuts.
 
-## AGPL-3.0-or-later license
+## MIT license
 
-The project uses a copyleft license. If a modified version is run on a public server, the source must be offered to users. This is a deliberate choice for a browser-based game that users interact with remotely.
+The project uses a permissive MIT license (changed from AGPL-3.0 in v3.0.0). For a small, calm, open-source arcade toy the goal is to be enjoyed, forked, embedded, and learned from with the least possible friction — AGPL's network-copyleft obligations actively repelled that. MIT keeps it maximally remixable; attribution is the only ask.
+
+## Name: GlidieBirdie (no trademarked name)
+
+The game was renamed in v3.0.0 to drop a prior trademarked name and remove all IP exposure. A CI brand-guard (`tests/brand-guard.mjs`) fails the build if that trademark ever reappears in tracked files, so the rename can't silently regress.
 
 ## GitHub Actions CI
 

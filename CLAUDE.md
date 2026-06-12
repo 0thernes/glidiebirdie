@@ -14,7 +14,7 @@ Read this first before making changes in the repo.
 
 ## What This Project Is
 
-A solo-built, browser-first Flappy Bird variant tuned for comfort and clarity.
+A solo-built, browser-first GlidieBirdie variant tuned for comfort and clarity.
 
 The runtime is intentionally simple:
 

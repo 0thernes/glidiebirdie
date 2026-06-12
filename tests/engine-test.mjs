@@ -244,15 +244,27 @@ const assertions = `
 
   // Storage corruption recovery: malformed JSON must fall back to safe defaults,
   // never throw on boot.
-  localStorage.setItem('played-themes', '{not valid json');
+  localStorage.setItem(SK.playedThemes, '{not valid json');
   __expect('readPlayedThemes recovers from malformed JSON',
     readPlayedThemes() instanceof Set && readPlayedThemes().has('sunset'));
-  localStorage.setItem('score-history', 'garbage');
+  localStorage.setItem(SK.scoreHistory, 'garbage');
   __expect('readScoreHistory recovers from malformed JSON',
     Array.isArray(readScoreHistory()) && readScoreHistory().length === 0);
-  localStorage.setItem('unlocked-achievements', '[unterminated');
+  localStorage.setItem(SK.unlocked, '[unterminated');
   __expect('readUnlockedAchievements recovers from malformed JSON',
     readUnlockedAchievements() instanceof Set);
+
+  // Storage migration: legacy keys are namespaced and the schema tag is set.
+  __expect('storage keys are namespaced under gb:', SK.best === 'gb:best' && SK.schema === 'gb:schema');
+  __expect('legacy map points old best key at the namespaced one',
+    LEGACY_KEY_MAP['flappy-best'] === SK.best);
+
+  // Calendar-day streak transition (the retention fix): same day no-ops, the
+  // next day increments, a gap resets, and a first-ever play starts at 1.
+  __expect('day streak: same day is a no-op', nextDayStreak(3, 20260612, 20260612, 20260611) === 3);
+  __expect('day streak: consecutive day increments', nextDayStreak(3, 20260611, 20260612, 20260611) === 4);
+  __expect('day streak: a gap resets to 1', nextDayStreak(5, 20260601, 20260612, 20260611) === 1);
+  __expect('day streak: first ever play is 1', nextDayStreak(0, 0, 20260612, 20260611) === 1);
 
   // dt/dtSec stay coupled on a zero-elapsed frame (two RAF callbacks, same timestamp).
   state.lastTimestamp = 1000;

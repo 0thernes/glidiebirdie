@@ -76,7 +76,7 @@ assert.match(
 // bump always invalidates the offline shell (no stale-cache after an update).
 assert.match(
   textFiles.serviceWorker,
-  new RegExp(`CACHE_NAME\\s*=\\s*["']flappy-calm-v${pkg.version.replace(/\./g, '\\.')}["']`),
+  new RegExp(`CACHE_NAME\\s*=\\s*["']glidiebirdie-v${pkg.version.replace(/\./g, '\\.')}["']`),
   `service worker cache version must match package.json version (${pkg.version})`,
 );
 for (const shellFile of [
