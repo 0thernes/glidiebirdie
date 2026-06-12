@@ -1,0 +1,15 @@
+# Guardrail paths — the project's own safety machinery.
+#
+# Changes here auto-request the owner's review AND are blocked from silent
+# auto-merge by the "Guardrail check" workflow, which requires a human to apply
+# the `guardrail-approved` label. This is the tamper-proofing: an autonomous
+# agent cannot weaken its own oversight (CI, tests, agent rules, the check
+# script) without a deliberate human action.
+#
+# See .github/workflows/guardrail-guard.yml.
+
+/.github/        @0thernes
+/tests/          @0thernes
+/AGENTS.md       @0thernes
+/CLAUDE.md       @0thernes
+/package.json    @0thernes
