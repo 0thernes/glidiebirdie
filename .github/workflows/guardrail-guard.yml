@@ -1,0 +1,51 @@
+name: Guardrail guard
+
+# Tamper-proofing for autonomous operation: a PR that changes the project's own
+# guardrails (CI workflows, tests, agent rules, the check script) must NOT
+# silently auto-merge. This required check fails on such PRs unless a human has
+# applied the `guardrail-approved` label — a deliberate human signal.
+#
+# Dependabot is exempt: its dependency/action bumps are gated separately by
+# dependabot-auto-merge.yml (which holds majors for review). The check needs no
+# checkout — it lists changed files via `gh pr diff`, so it has zero action deps.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  guardrail-check:
+    name: Guardrail check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require a human label for guardrail-file changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          ACTOR: ${{ github.event.pull_request.user.login }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          if [ "$ACTOR" = "dependabot[bot]" ]; then
+            echo "Dependabot PR — guardrail guard not applicable (gated by dependabot-auto-merge)."
+            exit 0
+          fi
+          CHANGED="$(gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only)"
+          echo "Changed files:"; echo "$CHANGED"
+          GUARDED="$(printf '%s\n' "$CHANGED" | grep -E '^(\.github/|tests/|AGENTS\.md|CLAUDE\.md|CODEOWNERS|package\.json)' || true)"
+          if [ -z "$GUARDED" ]; then
+            echo "No guardrail paths changed. OK."
+            exit 0
+          fi
+          echo "Guardrail paths changed:"; echo "$GUARDED"
+          case ",$LABELS," in
+            *,guardrail-approved,*)
+              echo "Human 'guardrail-approved' label is present — change allowed."
+              exit 0 ;;
+          esac
+          echo "::error::This PR changes guardrail files without the 'guardrail-approved' label."
+          echo "A human must review the change and apply the 'guardrail-approved' label before it can merge."
+          exit 1
