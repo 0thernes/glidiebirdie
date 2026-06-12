@@ -155,6 +155,17 @@ function checkAchievementIds(text) {
       seen.set(id, ln);
     }
   }
+
+  // Sanity: every achievement object should carry exactly one id and one check
+  // function. If the counts diverge, an entry lost its id or gained a stray check
+  // — a silent corruption the duplicate scan above would not surface.
+  const checkCount = (block.match(/\bcheck\s*:/g) || []).length;
+  if (seen.size > 0 && seen.size !== checkCount) {
+    errors.push(
+      `Achievement id/check count mismatch: ${seen.size} unique ids vs ${checkCount} check fns ` +
+        `(a malformed achievement entry)`,
+    );
+  }
 }
 
 // ── Check 3: degenerate self-comparisons ───────────────────────────────────

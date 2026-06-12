@@ -16,6 +16,8 @@ const textFiles = {
   claudeMd: await readFile('CLAUDE.md', 'utf8'),
 };
 
+const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+
 // Syntax check
 const syntax = spawnSync(process.execPath, ['--check', 'game.js'], { encoding: 'utf8' });
 assert.equal(syntax.status, 0, syntax.stderr || syntax.stdout);
@@ -70,10 +72,12 @@ assert.match(
   /serviceWorker[\s\S]*register\(["']\.\/service-worker\.js["']/,
   'service worker must register the local app shell',
 );
+// Dynamic: the service-worker cache version must track package.json so a release
+// bump always invalidates the offline shell (no stale-cache after an update).
 assert.match(
   textFiles.serviceWorker,
-  /CACHE_NAME\s*=\s*["']flappy-calm-v2\.2\.0["']/,
-  'service worker cache version must match release',
+  new RegExp(`CACHE_NAME\\s*=\\s*["']flappy-calm-v${pkg.version.replace(/\./g, '\\.')}["']`),
+  `service worker cache version must match package.json version (${pkg.version})`,
 );
 for (const shellFile of [
   './',
@@ -95,6 +99,13 @@ assert.match(textFiles.html, /id="fullscreenToggle"/, 'fullscreen toggle missing
 assert.match(textFiles.html, /id="dailySeedToggle"/, 'daily seed toggle missing');
 assert.match(textFiles.html, /id="resetStatsBtn"/, 'reset stats button missing');
 assert.match(textFiles.html, /id="audioTestBtn"/, 'audio test button missing');
+// Elements that game.js binds via getElementById must exist in the markup, or the
+// Share / FPS-counter / run-counter features silently no-op (audit: dead refs).
+assert.match(textFiles.html, /id="shareBtn"/, 'share button missing (game.js binds it)');
+assert.match(textFiles.html, /id="fpsToggle"/, 'FPS toggle missing (game.js binds it)');
+assert.match(textFiles.html, /id="sessionRun"/, 'session run display missing (game.js writes it)');
+assert.match(textFiles.html, /id="sparkline"/, 'sparkline canvas missing (game.js draws into it)');
+assert.match(textFiles.js, /function showToast\(/, 'showToast helper missing (toast feature)');
 assert.match(
   textFiles.js,
   /tutorialDismiss[\s\S]*handleAction\(e\)/,
@@ -145,12 +156,14 @@ assert.match(
 // Persistence helpers (guarded)
 assert.match(
   textFiles.js,
-  /best:\s*readStoredNumber\(['"]flappy-best['"]/,
+  // Refactor-robust: assert `best` is read through the guarded helper, regardless of
+  // whether the key is a string literal or an SK.* storage-key constant.
+  /best:\s*readStoredNumber\(/,
   'best score must read through guarded helper',
 );
 assert.match(
   textFiles.js,
-  /zenTimeSec:\s*readStoredNumber\(['"]zen-time-sec['"]/,
+  /zenTimeSec:\s*readStoredNumber\(/,
   'stats must read through guarded helper',
 );
 

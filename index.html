@@ -76,6 +76,7 @@
           <button class="ui-button postcard-action" id="postcardCopyBtn" type="button" title="Save this serene moment as PNG">📸 Copy</button>
           <button class="ui-button" id="muteToggle" type="button" aria-controls="game" aria-keyshortcuts="M" aria-pressed="false">🔊 Sound</button>
           <button class="ui-button" id="fullscreenToggle" type="button" aria-controls="game" aria-keyshortcuts="F" aria-pressed="false">Fullscreen</button>
+          <button class="ui-button" id="shareBtn" type="button">Share</button>
           <button class="ui-button" id="drawerToggle" type="button" aria-controls="customizerDrawer" aria-expanded="false" aria-pressed="false">Customize</button>
         </div>
       </div>
@@ -91,7 +92,7 @@
         ></canvas>
 
         <!-- Tutorial overlay: shown on first run, dismissable -->
-        <div id="tutorialOverlay" class="tutorial-overlay" aria-hidden="true" role="dialog" aria-label="How to play">
+        <div id="tutorialOverlay" class="tutorial-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="How to play">
           <div class="tutorial-card">
             <h3>How to play</h3>
             <ul>
@@ -220,6 +221,24 @@
           aria-describedby="dailySeedDescription dailySeedStatus"
         />
       </div>
+
+      <!-- Layout mirrors shadcn Field + Switch (field-switch example) -->
+      <div class="field-switch">
+        <div class="field-content">
+          <label class="field-label" id="fpsLabel" for="fpsToggle">Show FPS counter</label>
+          <p class="field-description" id="fpsDescription">
+            Overlays a small frames-per-second readout in the top-right of the playfield. Handy on low-end phones.
+          </p>
+        </div>
+        <input
+          type="checkbox"
+          id="fpsToggle"
+          class="switch"
+          role="switch"
+          aria-labelledby="fpsLabel"
+          aria-describedby="fpsDescription"
+        />
+      </div>
     </div>
 
     <div class="drawer-section">
@@ -250,6 +269,8 @@
           <p class="stat-label">Current Streak (≥10)</p>
         </div>
       </div>
+
+      <p class="session-run" id="sessionRun" aria-live="polite">Run #0</p>
 
       <div class="sparkline-wrap" aria-hidden="true">
         <canvas id="sparkline" width="200" height="32" aria-label="Recent score history sparkline"></canvas>

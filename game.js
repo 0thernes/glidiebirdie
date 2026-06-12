@@ -1,7 +1,7 @@
 'use strict';
 
 // ═══════════════════════════════════════════════════════════════════
-// FLAPPY BIRD — CALM EDITION (v2.2.0 — Parallel Elevation)
+// FLAPPY BIRD — CALM EDITION (v2.2.1 — Audit Hardening)
 // Cinematic hero assets, richer calm atmosphere, 12-build Superman polish.
 // Single-file engine. Zero dependencies. Mobile-first browser game.
 //
@@ -267,6 +267,86 @@ function setUnseededRNG() {
 }
 
 // ─── 4. STORAGE ────────────────────────────────────────────────────
+// Namespaced, versioned keys. The `gb:` prefix isolates GlidieBirdie data from
+// anything else on the origin, and the schema tag lets a migration run exactly
+// once. All persistence MUST go through SK.* — never a bare string — so the
+// storage-guard CI check can prove no legacy key leaks back in.
+const STORAGE_SCHEMA = '3';
+const SK = Object.freeze({
+  schema: 'gb:schema',
+  best: 'gb:best',
+  theme: 'gb:theme',
+  gravity: 'gb:gravity',
+  speed: 'gb:speed',
+  musicVolume: 'gb:music-volume',
+  sfxVolume: 'gb:sfx-volume',
+  dailySeed: 'gb:daily-seed',
+  fps: 'gb:fps',
+  tutorialSeen: 'gb:tutorial-seen',
+  zenTime: 'gb:zen-time-sec',
+  shieldsSaved: 'gb:shields-saved',
+  runs: 'gb:runs',
+  nearMisses: 'gb:near-misses',
+  longest: 'gb:longest-survival-sec',
+  streak: 'gb:streak',
+  lastPlayedDay: 'gb:last-played-day',
+  playedThemes: 'gb:played-themes',
+  scoreHistory: 'gb:score-history',
+  unlocked: 'gb:unlocked-achievements',
+});
+
+// One-time migration from the pre-rebrand key names (flappy-* / zen-* / bare) so
+// existing players keep their best score, settings, stats, and achievements
+// across the GlidieBirdie rename. Runs before the first read in `state`.
+const LEGACY_KEY_MAP = Object.freeze({
+  'flappy-best': SK.best,
+  'flappy-theme': SK.theme,
+  'flappy-gravity': SK.gravity,
+  'flappy-speed': SK.speed,
+  'flappy-music-volume': SK.musicVolume,
+  'flappy-sfx-volume': SK.sfxVolume,
+  'flappy-daily-seed': SK.dailySeed,
+  'flappy-fps': SK.fps,
+  'flappy-tutorial-seen': SK.tutorialSeen,
+  'zen-time-sec': SK.zenTime,
+  'shields-saved-count': SK.shieldsSaved,
+  'runs-count': SK.runs,
+  'near-misses-count': SK.nearMisses,
+  'longest-survival-sec': SK.longest,
+  'current-streak': SK.streak,
+  'played-themes': SK.playedThemes,
+  'score-history': SK.scoreHistory,
+  'unlocked-achievements': SK.unlocked,
+});
+
+function migrateLegacyStorage() {
+  try {
+    if (localStorage.getItem(SK.schema)) return; // already migrated on this device
+    for (const oldKey of Object.keys(LEGACY_KEY_MAP)) {
+      const newKey = LEGACY_KEY_MAP[oldKey];
+      const val = localStorage.getItem(oldKey);
+      if (val == null) continue;
+      if (localStorage.getItem(newKey) == null) localStorage.setItem(newKey, val);
+      localStorage.removeItem(oldKey);
+    }
+    localStorage.setItem(SK.schema, STORAGE_SCHEMA);
+  } catch {
+    /* private mode / quota — readers fall back to defaults */
+  }
+}
+
+/**
+ * Pure calendar-day streak transition. `today`/`yesterday` are YYYYMMDD ints
+ * from dateSeed(). Same day → unchanged; the day after the last play → +1;
+ * any gap (or first ever play) → 1. Unit-tested in tests/engine-test.mjs.
+ * @param {number} prevStreak @param {number} lastDay @param {number} today @param {number} yesterday
+ */
+function nextDayStreak(prevStreak, lastDay, today, yesterday) {
+  if (lastDay === today) return prevStreak;
+  if (lastDay === yesterday) return prevStreak + 1;
+  return 1;
+}
+
 /** @param {string} key @param {readonly string[]} choices @param {string} fallback */
 function readStoredChoice(key, choices, fallback) {
   try {
@@ -311,7 +391,7 @@ function readStoredBool(key, fallback) {
 
 function readPlayedThemes() {
   try {
-    const parsed = JSON.parse(localStorage.getItem('played-themes') || '["sunset"]');
+    const parsed = JSON.parse(localStorage.getItem(SK.playedThemes) || '["sunset"]');
     const themes = Array.isArray(parsed) ? parsed.filter((t) => THEMES.includes(t)) : [];
     return new Set(themes.length ? themes : ['sunset']);
   } catch {
@@ -321,7 +401,7 @@ function readPlayedThemes() {
 
 function readScoreHistory() {
   try {
-    const parsed = JSON.parse(localStorage.getItem('score-history') || '[]');
+    const parsed = JSON.parse(localStorage.getItem(SK.scoreHistory) || '[]');
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0).slice(-50);
   } catch {
@@ -331,7 +411,7 @@ function readScoreHistory() {
 
 function readUnlockedAchievements() {
   try {
-    const parsed = JSON.parse(localStorage.getItem('unlocked-achievements') || '[]');
+    const parsed = JSON.parse(localStorage.getItem(SK.unlocked) || '[]');
     return Array.isArray(parsed) ? new Set(parsed.filter((s) => typeof s === 'string')) : new Set();
   } catch {
     return new Set();
@@ -345,6 +425,9 @@ function writeStoredValue(key, value) {
     /* blocked */
   }
 }
+
+// Run the legacy→gb: migration once, before `state` performs its first reads.
+migrateLegacyStorage();
 
 // ─── 5. AUDIO ─────────────────────────────────────────────────────
 const AudioCtx = window.AudioContext || /** @type {any} */ (window).webkitAudioContext;
@@ -608,20 +691,20 @@ function stopMusic(fade = true) {
 const state = {
   phase: 'start', // 'start' | 'play' | 'gameOver'
   score: 0,
-  best: readStoredNumber('flappy-best', 0, 0),
+  best: readStoredNumber(SK.best, 0, 0),
   frames: 0,
   time: 0, // 60-fps-normalized accumulated dt
   elapsedSec: 0, // wall-clock seconds since boot (resets on game start)
   runSec: 0, // wall-clock seconds in current run
 
   // Customizer
-  theme: readStoredChoice('flappy-theme', THEMES, 'sunset'),
-  gravitySetting: readStoredLevel('flappy-gravity', 2),
-  speedSetting: readStoredLevel('flappy-speed', 2),
-  musicVolume: readStoredNumber('flappy-music-volume', 0.6, 0, 1),
-  sfxVolume: readStoredNumber('flappy-sfx-volume', 0.8, 0, 1),
-  dailySeedMode: readStoredBool('flappy-daily-seed', false),
-  showFps: readStoredBool('flappy-fps', false),
+  theme: readStoredChoice(SK.theme, THEMES, 'sunset'),
+  gravitySetting: readStoredLevel(SK.gravity, 2),
+  speedSetting: readStoredLevel(SK.speed, 2),
+  musicVolume: readStoredNumber(SK.musicVolume, 0.6, 0, 1),
+  sfxVolume: readStoredNumber(SK.sfxVolume, 0.8, 0, 1),
+  dailySeedMode: readStoredBool(SK.dailySeed, false),
+  showFps: readStoredBool(SK.fps, false),
 
   // Derived physics
   gravity: 0.052,
@@ -666,12 +749,14 @@ const state = {
   invincibilityTimer: 0,
 
   // Persistent stats
-  zenTimeSec: readStoredNumber('zen-time-sec', 0, 0),
-  shieldsSavedCount: readStoredNumber('shields-saved-count', 0, 0),
-  runsCount: readStoredNumber('runs-count', 0, 0),
-  nearMissesCount: readStoredNumber('near-misses-count', 0, 0),
-  longestSurvivalSec: readStoredNumber('longest-survival-sec', 0, 0),
-  currentStreak: readStoredNumber('current-streak', 0, 0),
+  zenTimeSec: readStoredNumber(SK.zenTime, 0, 0),
+  shieldsSavedCount: readStoredNumber(SK.shieldsSaved, 0, 0),
+  runsCount: readStoredNumber(SK.runs, 0, 0),
+  nearMissesCount: readStoredNumber(SK.nearMisses, 0, 0),
+  longestSurvivalSec: readStoredNumber(SK.longest, 0, 0),
+  currentStreak: readStoredNumber(SK.streak, 0, 0),
+  // Calendar-day streak bookkeeping: YYYYMMDD of the last day a run ended.
+  lastPlayedDay: readStoredNumber(SK.lastPlayedDay, 0, 0),
   playedThemes: readPlayedThemes(),
   scoreHistory: readScoreHistory(),
   unlockedAchievements: readUnlockedAchievements(),
@@ -2514,6 +2599,10 @@ function syncUiState() {
     dom.dailySeedToggle.checked = state.dailySeedMode;
     dom.dailySeedToggle.setAttribute('aria-checked', String(state.dailySeedMode));
   }
+  if (dom.fpsToggle) {
+    dom.fpsToggle.checked = state.showFps;
+    dom.fpsToggle.setAttribute('aria-checked', String(state.showFps));
+  }
   if (dom.dailySeedStatus) {
     dom.dailySeedStatus.textContent = state.dailySeedMode
       ? `On — shared seed #${dateSeed()}`
@@ -2617,18 +2706,16 @@ function pushScoreHistory(score) {
 
 function syncStatsAndAchievements(saveToStorage = false) {
   if (saveToStorage) {
-    writeStoredValue('zen-time-sec', Math.floor(state.zenTimeSec));
-    writeStoredValue('shields-saved-count', state.shieldsSavedCount);
-    writeStoredValue('runs-count', state.runsCount);
-    writeStoredValue('near-misses-count', state.nearMissesCount);
-    writeStoredValue('longest-survival-sec', Math.floor(state.longestSurvivalSec));
-    writeStoredValue('current-streak', state.currentStreak);
-    writeStoredValue('played-themes', JSON.stringify(Array.from(state.playedThemes)));
-    writeStoredValue('score-history', JSON.stringify(state.scoreHistory.slice(-50)));
-    writeStoredValue(
-      'unlocked-achievements',
-      JSON.stringify(Array.from(state.unlockedAchievements)),
-    );
+    writeStoredValue(SK.zenTime, Math.floor(state.zenTimeSec));
+    writeStoredValue(SK.shieldsSaved, state.shieldsSavedCount);
+    writeStoredValue(SK.runs, state.runsCount);
+    writeStoredValue(SK.nearMisses, state.nearMissesCount);
+    writeStoredValue(SK.longest, Math.floor(state.longestSurvivalSec));
+    writeStoredValue(SK.streak, state.currentStreak);
+    writeStoredValue(SK.lastPlayedDay, state.lastPlayedDay);
+    writeStoredValue(SK.playedThemes, JSON.stringify(Array.from(state.playedThemes)));
+    writeStoredValue(SK.scoreHistory, JSON.stringify(state.scoreHistory.slice(-50)));
+    writeStoredValue(SK.unlocked, JSON.stringify(Array.from(state.unlockedAchievements)));
   }
   if (dom.statZenMinutes) dom.statZenMinutes.textContent = (state.zenTimeSec / 60).toFixed(1);
   if (dom.statShieldsSaved) dom.statShieldsSaved.textContent = String(state.shieldsSavedCount);
@@ -2667,21 +2754,23 @@ function resetStats() {
   state.nearMissesCount = 0;
   state.longestSurvivalSec = 0;
   state.currentStreak = 0;
+  state.lastPlayedDay = 0;
   state.scoreHistory = [];
   state.unlockedAchievements = new Set();
   state.playedThemes = new Set([state.theme]);
-  // wipe storage
+  // wipe persisted stats + best (settings/theme are intentionally preserved)
   [
-    'zen-time-sec',
-    'shields-saved-count',
-    'runs-count',
-    'near-misses-count',
-    'longest-survival-sec',
-    'current-streak',
-    'score-history',
-    'unlocked-achievements',
-    'played-themes',
-    'flappy-best',
+    SK.zenTime,
+    SK.shieldsSaved,
+    SK.runs,
+    SK.nearMisses,
+    SK.longest,
+    SK.streak,
+    SK.lastPlayedDay,
+    SK.scoreHistory,
+    SK.unlocked,
+    SK.playedThemes,
+    SK.best,
   ].forEach((k) => {
     try {
       localStorage.removeItem(k);
@@ -2898,7 +2987,15 @@ function onScoreChanged() {
   state.calmMeter = Math.min(1.0, state.calmMeter + 0.04);
 }
 
+/** Handle for the delayed game-over "second wave" particle burst (cleared on
+ * restart so a quick R-press can't spray the previous death into the new run). */
+let deathWaveTimer = 0;
+
 function resetGame() {
+  if (deathWaveTimer) {
+    clearTimeout(deathWaveTimer);
+    deathWaveTimer = 0;
+  }
   state.phase = 'start';
   state.score = 0;
   state.frames = 0;
@@ -3011,12 +3108,20 @@ function gameOver() {
     // Extra theme-tinted celebration flecks for a more special quiet record
     spawnParticles(bird.x - 6, bird.y - 12, 9, getTheme().scoreParticle || '#ffd700', 4);
   }
-  writeStoredValue('flappy-best', state.best);
+  writeStoredValue(SK.best, state.best);
 
   pushScoreHistory(state.score);
   state.longestSurvivalSec = Math.max(state.longestSurvivalSec, state.runSec);
-  if (state.score >= 10) state.currentStreak++;
-  else state.currentStreak = 0;
+
+  // Calendar-day streak: a real "came back another day" loyalty signal, not the
+  // old per-session score gate. Increment only when today is the day after the
+  // last play; reset to 1 on any gap; no-op for extra runs the same day.
+  const today = dateSeed();
+  if (state.lastPlayedDay !== today) {
+    const yesterday = dateSeed(new Date(Date.now() - 86400000));
+    state.currentStreak = nextDayStreak(state.currentStreak, state.lastPlayedDay, today, yesterday);
+    state.lastPlayedDay = today;
+  }
 
   // Capture run qualities for the Afterglow reflection.
   // afterglowShieldUsed is set true in checkCollisions when a shield is consumed this run;
@@ -3028,8 +3133,11 @@ function gameOver() {
   stopMusic();
   spawnParticles(bird.x, bird.y, 18, '#ff4444', 5);
   spawnParticles(bird.x, bird.y, 12, '#ffaa00', 4);
-  // Second wave of particles, slightly delayed via direct spawn (audio clock unused for visuals)
-  setTimeout(() => {
+  // Second wave of particles, slightly delayed. Tracked + cleared on restart so a
+  // fast R-press never sprays the previous death into the fresh run (latent leak).
+  if (deathWaveTimer) clearTimeout(deathWaveTimer);
+  deathWaveTimer = setTimeout(() => {
+    deathWaveTimer = 0;
     if (state.phase !== 'gameOver') return;
     spawnParticles(bird.x, bird.y, 10, '#ffffff', 3);
     spawnParticles(bird.x, bird.y, 8, '#ff6666', 2.5);
@@ -3343,7 +3451,7 @@ function bindDrawerControls() {
     );
     if (dom.gravityVal) dom.gravityVal.textContent = GRAVITY_LABELS[state.gravitySetting];
     updateDerivedPhysics();
-    writeStoredValue('flappy-gravity', state.gravitySetting);
+    writeStoredValue(SK.gravity, state.gravitySetting);
   });
 
   dom.speedSlider?.addEventListener('input', (e) => {
@@ -3352,7 +3460,7 @@ function bindDrawerControls() {
     );
     if (dom.speedVal) dom.speedVal.textContent = SPEED_LABELS[state.speedSetting];
     updateDerivedPhysics();
-    writeStoredValue('flappy-speed', state.speedSetting);
+    writeStoredValue(SK.speed, state.speedSetting);
   });
 
   dom.musicVolumeSlider?.addEventListener('input', (e) => {
@@ -3361,7 +3469,7 @@ function bindDrawerControls() {
     );
     state.musicVolume = percent / 100;
     if (dom.musicVolumeVal) dom.musicVolumeVal.textContent = `${percent}%`;
-    writeStoredValue('flappy-music-volume', state.musicVolume);
+    writeStoredValue(SK.musicVolume, state.musicVolume);
     // adjust live without restarting the scheduler (volume is read each note)
   });
 
@@ -3371,7 +3479,7 @@ function bindDrawerControls() {
     );
     state.sfxVolume = percent / 100;
     if (dom.sfxVolumeVal) dom.sfxVolumeVal.textContent = `${percent}%`;
-    writeStoredValue('flappy-sfx-volume', state.sfxVolume);
+    writeStoredValue(SK.sfxVolume, state.sfxVolume);
   });
 
   dom.themeBtns.forEach((btn) => {
@@ -3382,7 +3490,7 @@ function bindDrawerControls() {
       applyTheme(state.theme);
       state.playedThemes.add(state.theme);
       syncStatsAndAchievements(true);
-      writeStoredValue('flappy-theme', state.theme);
+      writeStoredValue(SK.theme, state.theme);
       if (state.theme !== prevTheme) {
         activeWeather.length = 0;
         for (const p of weatherPool) p.active = false;
@@ -3395,7 +3503,7 @@ function bindDrawerControls() {
 
   dom.dailySeedToggle?.addEventListener('change', (e) => {
     state.dailySeedMode = /** @type {HTMLInputElement} */ (e.target).checked;
-    writeStoredValue('flappy-daily-seed', state.dailySeedMode);
+    writeStoredValue(SK.dailySeed, state.dailySeedMode);
     syncUiState();
     if (state.dailySeedMode) setSeededRNG(dateSeed());
     else setUnseededRNG();
@@ -3417,11 +3525,13 @@ function bindDrawerControls() {
 
   dom.shareBtn?.addEventListener('click', async () => {
     const score = state.best > 0 ? state.best : state.score;
-    const text = `I'm playing Flappy Bird — Calm Edition. Best score: ${score}. 🐦`;
+    // In Daily Seed mode, link the exact seed so a friend plays the same run.
+    const seedTag = state.dailySeedMode ? ` · daily seed #${dateSeed()}` : '';
+    const text = `GlidieBirdie — my calm best is ${score}.${seedTag} 🐦`;
     const url = location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Flappy Bird — Calm Edition', text, url });
+        await navigator.share({ title: 'GlidieBirdie', text, url });
         showToast('Shared.', 'default');
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(`${text} ${url}`);
@@ -3436,25 +3546,48 @@ function bindDrawerControls() {
 
   dom.fpsToggle?.addEventListener('change', (e) => {
     state.showFps = /** @type {HTMLInputElement} */ (e.target).checked;
-    writeStoredValue('flappy-fps', state.showFps);
+    writeStoredValue(SK.fps, state.showFps);
   });
 }
 
-// Tutorial overlay
+// Tutorial overlay — a real modal: focus moves in on show, Escape dismisses, and
+// Tab is pinned to the single action so keyboard/SR users can't wander into the
+// (visually obscured) background behind it.
 function bindTutorial() {
-  if (!dom.tutorialOverlay) return;
-  const seenTutorial = readStoredBool('flappy-tutorial-seen', false);
-  if (!seenTutorial) {
-    dom.tutorialOverlay.classList.add('show');
-    dom.tutorialOverlay.setAttribute('aria-hidden', 'false');
-  } else {
-    dom.tutorialOverlay.classList.remove('show');
-    dom.tutorialOverlay.setAttribute('aria-hidden', 'true');
+  const overlay = dom.tutorialOverlay;
+  if (!overlay) return;
+
+  function onKeydown(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      dismiss();
+      focusElement(canvas);
+    } else if (e.key === 'Tab') {
+      // Single-control modal → keep focus on the dismiss button (focus trap).
+      e.preventDefault();
+      focusElement(dom.tutorialDismiss);
+    }
   }
+
+  function dismiss() {
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.removeEventListener('keydown', onKeydown, true);
+    writeStoredValue(SK.tutorialSeen, true);
+  }
+
+  if (!readStoredBool(SK.tutorialSeen, false)) {
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.addEventListener('keydown', onKeydown, true);
+    focusElement(dom.tutorialDismiss); // move focus into the modal
+  } else {
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+
   dom.tutorialDismiss?.addEventListener('click', (e) => {
-    dom.tutorialOverlay?.classList.remove('show');
-    dom.tutorialOverlay?.setAttribute('aria-hidden', 'true');
-    writeStoredValue('flappy-tutorial-seen', true);
+    dismiss();
     focusElement(canvas);
     handleAction(e);
   });
@@ -3503,7 +3636,10 @@ function loop(timestamp = performance.now()) {
   const elapsedMs = timestamp - state.lastTimestamp;
   const rawDt = elapsedMs / CONFIG.FRAME_MS_60;
   state.dt = rawDt > 0 ? Math.min(rawDt, CONFIG.DT_MAX) : 1;
-  state.dtSec = Math.max(0, Math.min(elapsedMs / 1000, CONFIG.DT_MAX / 60));
+  // Keep dtSec consistent with dt on zero/negative-elapsed frames (two RAF callbacks
+  // at an identical timestamp). Otherwise dt would advance (=1) while dtSec froze (=0),
+  // drifting state.time vs state.elapsedSec and stalling second-based cooldowns/afterglow.
+  state.dtSec = elapsedMs > 0 ? Math.min(elapsedMs / 1000, CONFIG.DT_MAX / 60) : state.dt / 60;
   state.elapsedSec += state.dtSec;
   state.lastTimestamp = timestamp;
 
@@ -3530,10 +3666,10 @@ function loop(timestamp = performance.now()) {
   } catch (err) {
     frameErrorCount++;
     if (frameErrorCount === 1 || frameErrorCount % 60 === 0) {
-      console.error('[Flappy] Frame error:', err);
+      console.error('[GlidieBirdie] Frame error:', err);
     }
     if (frameErrorCount > CONFIG.FRAME_ERROR_BURST_LIMIT) {
-      console.warn('[Flappy] Frame errors burst — cooling down');
+      console.warn('[GlidieBirdie] Frame errors burst — cooling down');
       frameErrorCooldownAt = state.elapsedSec + CONFIG.FRAME_ERROR_COOLDOWN_SEC;
       frameErrorCount = 0;
     }

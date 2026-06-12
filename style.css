@@ -453,12 +453,15 @@
     .mobile-controls {
       display: grid;
       position: fixed;
-      left: max(1rem, env(safe-area-inset-left));
-      right: max(1rem, env(safe-area-inset-right));
+      /* Center via left:50% + translateX(-50%). A fixed element with BOTH left and
+         right set cannot be centered by `margin: 0 auto`, and the conflict misaligns
+         the bar on notched / foldable phones with asymmetric safe-area insets. */
+      left: 50%;
+      transform: translateX(-50%);
       bottom: max(0.75rem, env(safe-area-inset-bottom));
       z-index: 80;
-      width: min(420px, calc(100vw - 2rem));
-      margin: 0 auto;
+      width: min(420px, calc(100vw - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right)));
+      margin: 0;
       padding: 0.55rem;
       border: 1px solid rgba(238, 247, 255, 0.16);
       border-radius: 1.25rem;
@@ -919,6 +922,15 @@
     margin: 0.2rem 0 0;
   }
 
+  .session-run {
+    margin: 0.7rem 0 0.2rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text-2);
+    text-align: center;
+  }
+
   .achievements-list {
     display: flex;
     flex-direction: column;
@@ -995,5 +1007,72 @@
     outline: 3px solid var(--accent-1);
     outline-offset: 1px;
     border-radius: 4px;
+  }
+}
+
+/* Toast notifications — calm, non-intrusive feedback for achievements, share,
+   and Serene Postcard capture. Unlayered so they sit above all panels/drawer.
+   Animations are neutralized by the global prefers-reduced-motion rule above. */
+.toast-container {
+  position: fixed;
+  left: 50%;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: max-content;
+  max-width: min(92vw, 24rem);
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--radius-soft);
+  border: 1px solid var(--surface-stroke);
+  background: linear-gradient(180deg, var(--surface-1), var(--surface-2));
+  color: var(--text-1);
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: var(--shadow-1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  backdrop-filter: blur(14px) saturate(1.05);
+  opacity: 0;
+  transform: translateY(0.6rem);
+  animation: toastIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-achievement {
+  border-color: rgba(250, 204, 21, 0.45);
+  box-shadow: var(--shadow-1), 0 0 18px rgba(250, 204, 21, 0.18);
+}
+
+.toast-out {
+  animation: toastOut 0.4s ease forwards;
+}
+
+@keyframes toastIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@media (pointer: coarse), (max-width: 540px) {
+  /* Lift toasts above the fixed mobile control bar so they never overlap it. */
+  .toast-container {
+    bottom: calc(6.6rem + env(safe-area-inset-bottom));
   }
 }
