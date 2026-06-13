@@ -264,6 +264,13 @@ function setSeededRNG(seed) {
 function setUnseededRNG() {
   _rngFn = Math.random;
 }
+// Cosmetics (particles, weather) draw from an independent stream so their
+// theme / reduced-motion / dt-dependent draw counts never perturb the seeded
+// gameplay RNG used for pipe layout — this keeps daily-seed runs reproducible
+// across players regardless of their theme or motion settings.
+function cosmeticRng() {
+  return Math.random();
+}
 
 // ─── 4. STORAGE ────────────────────────────────────────────────────
 // Namespaced, versioned keys. The `gb:` prefix isolates GlidieBirdie data from
@@ -432,6 +439,7 @@ migrateLegacyStorage();
 const AudioCtx = window.AudioContext || /** @type {any} */ (window).webkitAudioContext;
 let audioCtx = /** @type {AudioContext | null} */ (null);
 let masterGain = /** @type {GainNode | null} */ (null);
+let musicGain = /** @type {GainNode | null} */ (null);
 let masterLowpass = /** @type {BiquadFilterNode | null} */ (null);
 let reverbConvolver = /** @type {ConvolverNode | null} */ (null);
 let reverbWetGain = /** @type {GainNode | null} */ (null);
@@ -464,6 +472,13 @@ function buildAudioGraph() {
   reverbWetGain = audioCtx.createGain();
   reverbWetGain.gain.value = CONFIG.REVERB_MIX;
 
+  // Dedicated music bus: music routes through musicGain → masterGain, so fading
+  // music in/out (startMusic/stopMusic) never touches the SFX path, which stays
+  // at unity gain. Fixes SFX being muted through the shared bus after stopMusic.
+  musicGain = audioCtx.createGain();
+  musicGain.gain.value = 1.0;
+  musicGain.connect(masterGain);
+
   // chain: source → masterGain → [masterLowpass → destination] + [reverbConvolver → reverbWet → destination]
   masterGain.connect(masterLowpass);
   masterLowpass.connect(audioCtx.destination);
@@ -493,9 +508,9 @@ function audioDestination() {
 }
 
 /** Schedule a tone at a specific AudioContext time. `volume` already scaled by channel. */
-function playToneAt(freq, duration, type, volume, startTime) {
+function playToneAt(freq, duration, type, volume, startTime, destNode) {
   if (!state.audioEnabled || !audioCtx) return;
-  const dest = audioDestination();
+  const dest = destNode || audioDestination();
   if (!dest) return;
   try {
     const osc = audioCtx.createOscillator();
@@ -631,13 +646,13 @@ function scheduleMusicAhead() {
     const transpose = section === 1 ? 1.05 : 1.0; // gentle pitch lift in B
     const baseFreq = notes[noteIdx] * transpose;
 
-    playToneAt(baseFreq, 0.22, theme.wave, 0.045 * state.musicVolume, musicNextNoteTime);
-    playToneAt(baseFreq / 2, 0.28, theme.subWave, 0.022 * state.musicVolume, musicNextNoteTime);
+    playToneAt(baseFreq, 0.22, theme.wave, 0.045 * state.musicVolume, musicNextNoteTime, musicGain);
+    playToneAt(baseFreq / 2, 0.28, theme.subWave, 0.022 * state.musicVolume, musicNextNoteTime, musicGain);
 
     // Ambient pad: slow drone on the tonic, scheduled every 4 notes
     if (musicIdx % 4 === 0) {
       const tonic = notes[0] / 2;
-      playToneAt(tonic, theme.interval * 4, 'sine', 0.012 * state.musicVolume, musicNextNoteTime);
+      playToneAt(tonic, theme.interval * 4, 'sine', 0.012 * state.musicVolume, musicNextNoteTime, musicGain);
     }
 
     if (state.theme === 'rain' && Math.random() < 0.35) {
@@ -647,6 +662,7 @@ function scheduleMusicAhead() {
         'sine',
         0.007 * state.musicVolume,
         musicNextNoteTime,
+        musicGain,
       );
     }
 
@@ -655,12 +671,12 @@ function scheduleMusicAhead() {
   }
 }
 
-function fadeMaster(target, durationSec) {
-  if (!audioCtx || !masterGain) return;
+function fadeMusic(target, durationSec) {
+  if (!audioCtx || !musicGain) return;
   const t = audioCtx.currentTime;
-  masterGain.gain.cancelScheduledValues(t);
-  masterGain.gain.setValueAtTime(masterGain.gain.value, t);
-  masterGain.gain.linearRampToValueAtTime(
+  musicGain.gain.cancelScheduledValues(t);
+  musicGain.gain.setValueAtTime(musicGain.gain.value, t);
+  musicGain.gain.linearRampToValueAtTime(
     Math.max(0.0001, target),
     t + Math.max(0.01, durationSec),
   );
@@ -675,7 +691,7 @@ function startMusic() {
   musicNextNoteTime = audioCtx.currentTime + 0.05;
   scheduleMusicAhead();
   musicSchedulerHandle = setInterval(scheduleMusicAhead, CONFIG.MUSIC_TICK_MS);
-  fadeMaster(1.0, CONFIG.MUSIC_FADE_SEC);
+  fadeMusic(1.0, CONFIG.MUSIC_FADE_SEC);
 }
 
 function stopMusic(fade = true) {
@@ -683,7 +699,7 @@ function stopMusic(fade = true) {
     clearInterval(musicSchedulerHandle);
     musicSchedulerHandle = null;
   }
-  if (fade) fadeMaster(0.0001, CONFIG.MUSIC_FADE_SEC * 0.5);
+  if (fade) fadeMusic(0.0001, CONFIG.MUSIC_FADE_SEC * 0.5);
 }
 
 // ─── 6. STATE ─────────────────────────────────────────────────────
@@ -1120,6 +1136,8 @@ const freeParticles = [];
 function spawnParticles(x, y, count, color, spread = 3) {
   const particleCount = state.reducedMotion ? Math.max(1, Math.ceil(count * 0.35)) : count;
   const particleSpread = state.reducedMotion ? spread * 0.45 : spread;
+  // Cosmetic spawner — never consume the seeded gameplay RNG (see cosmeticRng).
+  const rng = cosmeticRng;
   for (let spawned = 0; spawned < particleCount; spawned++) {
     const idx = freeParticles.pop();
     if (idx === undefined) break; // pool exhausted
@@ -1201,6 +1219,8 @@ function spawnWeatherParticle(
 function spawnWeatherParticles() {
   if (state.reducedMotion || state.phase !== 'play' || state.paused) return;
   const spawnChance = Math.min(0.42 * state.dt, 0.95);
+  // Cosmetic spawner — never consume the seeded gameplay RNG (see cosmeticRng).
+  const rng = cosmeticRng;
 
   if (state.theme === 'rain') {
     if (rng() < spawnChance) {
@@ -1529,7 +1549,7 @@ function updateBird() {
   bird.breath = calmGlide ? Math.sin(state.time * 0.065) * 0.016 : 0;
 
   // Living breath flecks — the world gently breathing with a calm glider
-  if (calmGlide && !state.reducedMotion && rng() < CONFIG.CALM_BREATH_PARTICLE_CHANCE * state.dt) {
+  if (calmGlide && !state.reducedMotion && cosmeticRng() < CONFIG.CALM_BREATH_PARTICLE_CHANCE * state.dt) {
     spawnParticles(
       bird.x - 2,
       bird.y + 10,
