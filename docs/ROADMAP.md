@@ -24,14 +24,14 @@ flowchart LR
     D11[Guardrail tamper-proofing]
     D12[Post-deploy canary]
     D13[Docs suite: inspection/arch/ERD/complexity/roadmap]
+    D14[Pool free-list → O(1) spawn]
+    D15[lineAt → O(log n) binary search]
   end
   subgraph DOING[🔧 In Progress]
     P1[Engine micro-optimizations]
     P2[Docs cross-linking]
   end
   subgraph NEXT[⏭ Next]
-    N1[Pool free-list O(1) spawn]
-    N2[lineAt offsets + binary search]
     N3[Cache per-pipe gradient]
     N4[Merge queue]
     N5[Verify --text-3 contrast]
@@ -60,7 +60,8 @@ flowchart LR
 | Real UTC day-streak | `nextDayStreak()` unit-tested |
 | Install/discovery surface | PNG icons, canonical, robots, sitemap |
 | Autonomous-safety pipeline | branch protection, auto-merge, **Guardrail check**, **post-deploy canary** |
-| Test/CI gates | static-checks, 23 engine assertions, smoke, typecheck, brand/license/link guards |
+| Test/CI gates | static-checks, 29 engine assertions, smoke, typecheck, brand/license/link guards |
+| DSA upgrades | pool free-list → O(1) spawn (PR #17); `lineAt` → O(log n) binary search (PR #14), both behavior-proven |
 | Documentation suite | this `docs/` set |
 
 ### 🔧 In Progress
@@ -72,11 +73,9 @@ flowchart LR
 
 | # | Item | Type | Why |
 |---|---|---|---|
-| 1 | Pool free-list → O(1) spawn | DSA | Removes the only worst-case probe; see `COMPLEXITY.md §5.1` |
-| 2 | `lineAt` → binary search | DSA | Removes the only super-linear tooling pattern; `COMPLEXITY.md §5.2` |
-| 3 | Cache per-pipe gradient | Perf | Fewer allocations / lower GC pressure |
-| 4 | Merge queue | CI/CD | Serialize concurrent agent merges (collision-proof) |
-| 5 | Verify `--text-3` contrast ≥ 4.5:1 | A11y | Close the last AA question |
+| 1 | Cache per-pipe gradient | Perf | Fewer allocations / lower GC pressure |
+| 2 | Merge queue | CI/CD | Serialize concurrent agent merges (collision-proof) |
+| 3 | Verify `--text-3` contrast ≥ 4.5:1 | A11y | Close the last AA question |
 
 ### 🗂 Backlog (valuable, larger or orchestrator-side)
 
