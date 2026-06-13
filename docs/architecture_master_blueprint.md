@@ -201,12 +201,22 @@ Before adding or changing behavior:
 5. Verify reduced-motion and keyboard behavior still work.
 6. Update `README.md` and this guide when the public shape of the project changes.
 
+## Companion Documents
+
+This guide is the prose reference. Its visual and structured companions:
+
+- [`DIAGRAMS.md`](DIAGRAMS.md) — Mermaid component, game-phase state machine, frame-loop sequence, audio graph, and persistence/daily-seed flow.
+- [`DATA-MODEL.md`](DATA-MODEL.md) — ERM/ERD of the persisted (`gb:*`) and runtime entities, plus the storage migration contract.
+- [`COMPLEXITY.md`](COMPLEXITY.md) — time/space complexity of every hot path (the DSA rationale behind the engine).
+- [`ROADMAP.md`](ROADMAP.md) — Now/Next/Later Kanban, shipped work, and the rejected-ideas icebox.
+- [`../AUDIT-500.md`](../AUDIT-500.md) — the 500-point / 25-section inspection.
+
 ## Recommended Reading Order
 
 If you are new to the repo, read these files in order:
 
 1. `README.md`
-2. `docs/architecture_master_blueprint.md`
+2. `docs/architecture_master_blueprint.md` (this file) → then its companions above
 3. `CONTRIBUTING.md`
 4. `CLAUDE.md`
 5. `tests/smoke-test.mjs`
