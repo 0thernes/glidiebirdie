@@ -2862,12 +2862,30 @@ const ACHIEVEMENTS = [
   },
 ];
 
-function checkAchievements() {
+// Cache the achievement DOM nodes once. checkAchievements() runs several times a
+// second (periodic stats sync + hot near-miss/shield events); the previous code
+// did 12 getElementById + 12 querySelector lookups *per call* — O(A) DOM hits on
+// a hot path. Building the lookup once turns each later call into O(A) Map reads
+// with zero DOM traversal. Lazy so it works regardless of markup-load timing.
+/** @type {Map<string, { el: HTMLElement, progressEl: Element | null }> | null} */
+let achElCache = null;
+function getAchievementEls() {
+  if (achElCache) return achElCache;
+  achElCache = new Map();
   for (const ach of ACHIEVEMENTS) {
     const el = document.getElementById(`ach${ach.id}`);
-    const progressEl = el?.querySelector('.achievement-progress');
-    if (progressEl) progressEl.textContent = ach.progress();
-    if (!el) continue;
+    if (el) achElCache.set(ach.id, { el, progressEl: el.querySelector('.achievement-progress') });
+  }
+  return achElCache;
+}
+
+function checkAchievements() {
+  const els = getAchievementEls();
+  for (const ach of ACHIEVEMENTS) {
+    const refs = els.get(ach.id);
+    if (refs?.progressEl) refs.progressEl.textContent = ach.progress();
+    if (!refs) continue;
+    const el = refs.el;
     const wasUnlocked = state.unlockedAchievements.has(ach.id);
     const isUnlocked = ach.check();
     if (isUnlocked && !wasUnlocked) {
