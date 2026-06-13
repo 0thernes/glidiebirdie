@@ -83,8 +83,16 @@ async function staleWhileRevalidate(request) {
   return Response.error();
 }
 
+// Resolved absolute URLs of the app shell, computed once. The previous code
+// rebuilt + linear-scanned this list on every fetch (O(n) per request); a Set
+// built lazily on first use makes each subsequent membership test O(1).
+let _shellUrlSet = /** @type {Set<string> | null} */ (null);
+
 /** @param {Request} request */
 function isAppShellRequest(request) {
   if (request.mode === 'navigate') return true;
-  return APP_SHELL.map((path) => new URL(path, sw.registration.scope).href).includes(request.url);
+  if (!_shellUrlSet) {
+    _shellUrlSet = new Set(APP_SHELL.map((path) => new URL(path, sw.registration.scope).href));
+  }
+  return _shellUrlSet.has(request.url);
 }
