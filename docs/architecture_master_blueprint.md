@@ -1,6 +1,6 @@
 # Architecture Guide
 
-This document explains how Calm Edition is actually built today. It is meant to help maintainers and AI assistants make safe changes without guessing.
+This document explains how GlidieBirdie is actually built today. It is meant to help maintainers and AI assistants make safe changes without guessing.
 
 ## Design Boundaries
 
@@ -122,7 +122,7 @@ The mobile control bar is part of the core product. Any gameplay change should s
 
 ## Audio Architecture
 
-Calm Edition generates all sound locally with Web Audio.
+GlidieBirdie generates all sound locally with Web Audio.
 
 The audio system is built around:
 

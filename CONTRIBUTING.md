@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Calm Edition.
+Thanks for helping improve GlidieBirdie.
 
 This repo prefers small, readable changes that keep the game calm, accessible, and easy to run from a plain static host.
 

@@ -23,7 +23,7 @@ Just open the file and glide.
 
 ## Why It Feels Better
 
-| Design goal | What Calm Edition does |
+| Design goal | What GlidieBirdie does |
 | --- | --- |
 | Softer difficulty | Larger pipe gaps, slower travel, gentler gravity, slower terminal fall, circle hitbox. |
 | Full mobile depth | On-screen Brake / Flap / Dive buttons on phones — full keyboard depth, no controls hidden. |

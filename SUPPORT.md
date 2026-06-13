@@ -1,6 +1,6 @@
 # Support
 
-Calm Edition is a small static browser game, so most problems are usually easy to isolate.
+GlidieBirdie is a small static browser game, so most problems are usually easy to isolate.
 
 ## Run The Game
 
