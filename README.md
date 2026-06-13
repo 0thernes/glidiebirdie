@@ -146,6 +146,12 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `tests/engine-test.mjs` | Headless engine behavioral tests |
 | `tests/smoke-test.mjs` | Syntax and surface-area smoke checks |
 | `docs/architecture_master_blueprint.md` | Calm, humble philosophy & technical architecture reference |
+| `docs/ARCHITECTURE.md` | System + engine architecture with diagrams (frame loop, rendering, audio, boot, invariants) |
+| `docs/DATA-MODEL.md` | ERM/ERD of the `gb:` storage layer, key schema, and legacy→`gb:` migration |
+| `docs/COMPLEXITY.md` | Time/space (Big-O) of every subsystem + the shipped DSA upgrades |
+| `docs/INSPECTION-500.md` | 500-point inspection (25 sections × 20), scored |
+| `docs/ROADMAP.md` | Kanban board (Done / Next / Backlog), cadence, definition of done |
+| `docs/README.md` | Documentation index |
 | `docs/assets/` | Cinematic hero + social preview images |
 | `AUDIT-250.md` | Canonical 250-point quality audit ledger |
 | `CHANGELOG.md` | Version history |
