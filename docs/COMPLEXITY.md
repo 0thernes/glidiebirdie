@@ -55,20 +55,22 @@ is effectively constant-time in practice. There is **no quadratic path anywhere 
 |---|---|
 | `static-checks` strip + brace scan | **O(N)** single pass over source |
 | `static-checks` duplicate-key map | O(N) with O(1) `Map` ops |
-| `static-checks` `lineAt(offset)` | **O(offset)** per call (re-scan) — see opportunity #2 |
+| `static-checks` `lineAt(offset)` | **O(log n)** — precomputed line offsets + binary search (was O(offset), PR #14) |
 | `engine-test` vm boot + assertions | O(boot) + O(#assertions), constants |
 | `smoke-test` regex assertions | O(file size) |
 
-## 5. Concrete DSA upgrades (opportunities)
+## 5. Concrete DSA upgrades
 
-These are genuine data-structure improvements. Impact is **low** today (small N) but they are the correct
-asymptotic forms and worth doing when the engine file stabilizes.
+Both upgrades below are now **implemented and verified** (5.1 in PR #17, 5.2 in PR #14). They are documented
+here as the asymptotic rationale.
 
-### 5.1 Pool free-list → strict O(1) spawn
+### 5.1 Pool free-list → strict O(1) spawn — ✅ implemented (PR #17)
 
-**Now:** a rotating `nextFreeParticle` index linearly probes for an inactive slot (worst case O(capacity)).
-**Upgrade:** maintain an explicit **free-list stack** of inactive indices. Spawn = `pop()` (O(1)); recycle
-on death = `push(idx)` (O(1)). Eliminates the probe entirely.
+**Before:** a rotating `nextFreeParticle` index linearly probed for an inactive slot (worst case O(capacity)).
+**Now:** an explicit **free-list stack** of inactive indices. Spawn = `pop()` (O(1)); recycle on death =
+`push(idx)` (O(1)) using each pooled object's own `idx`. The probe is eliminated. Proven leak-free by a
+count-conservation invariant harness: `freeParticles.length + activeParticles.length === PARTICLE_POOL`
+(and the weather equivalent) holds at all times, with unique active/free indices and no overlap.
 
 ```text
 freeList: number[]            // indices of inactive slots
