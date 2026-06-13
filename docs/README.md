@@ -4,6 +4,7 @@ Engineering documentation for a solo-built, zero-dependency, GitHub-Pages browse
 
 | Document | What it covers |
 |---|---|
+| [ENGINEERING-JOURNEY.md](ENGINEERING-JOURNEY.md) | End-to-end case study: Idea → Build → PoC → MVP → production-grade, plus the autonomous-agent governance model. Start here for the story. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System + engine structure, frame loop, rendering, audio, boot, invariants, extension points (with diagrams). |
 | [architecture_master_blueprint.md](architecture_master_blueprint.md) | Narrative runtime walkthrough for maintainers. |
 | [DATA-MODEL.md](DATA-MODEL.md) | ERM/ERD of the `gb:` localStorage layer, physical key schema, legacy→current migration, runtime state. |
