@@ -95,7 +95,7 @@ clean.
 
 1. [PASS] Per-frame work is O(P + Pa + W), all hard-capped → bounded (see `docs/COMPLEXITY.md`).
 2. [PASS] Per-frame steady state is allocation-free (no GC churn mid-run).
-3. [PASS] Object pools (220 particles / 120 weather) with O(1) free-list spawn.
+3. [PASS] Object pools (220 particles / 140 weather) with O(1) free-list spawn.
 4. [PASS] Particle/weather update uses in-place write-index compaction (no `splice`).
 5. [FIXED] `checkAchievements()` memoizes DOM nodes — O(A) once, not O(A) DOM hits per call.
 6. [FIXED] SW `isAppShellRequest()` uses a cached `Set` — O(1), not O(n) per fetch.

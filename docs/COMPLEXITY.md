@@ -8,7 +8,7 @@ bounded and allocation-free**, so the game holds 60 fps on a phone and never
 triggers GC stalls mid-run.
 
 Symbols: `P` = live pipes on screen (≈ 3–6), `Pa` = active particles (≤ 220),
-`W` = active weather (≤ 120), `A` = achievements (12), `T` = themes (5),
+`W` = active weather (≤ 140), `A` = achievements (12), `T` = themes (5),
 `E` = bird emotions (5), `H` = score-history length (≤ 50, sparkline uses ≤ 30).
 
 ---
