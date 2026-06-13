@@ -271,6 +271,72 @@ const assertions = `
   loop(1000);
   __expect('dtSec stays coupled to dt on a zero-elapsed frame',
     Math.abs(state.dtSec - state.dt / 60) < 1e-9);
+
+  // ── Live gameplay coverage (closes the 500-point inspection's testing fails) ──
+
+  // State machine: start → play → gameOver, with best + isNewBest side effects.
+  (function () {
+    state.phase = 'start'; state.paused = true; state.runsCount = 0;
+    startGame();
+    __expect('startGame transitions to play', state.phase === 'play' && state.paused === false);
+    __expect('startGame increments the run counter', state.runsCount === 1);
+    state.score = 7; state.best = 3; state.reducedMotion = true; state.afterglowActive = false;
+    gameOver();
+    __expect('gameOver transitions to gameOver', state.phase === 'gameOver');
+    __expect('gameOver records a new best', state.best === 7 && state.isNewBest === true);
+    state.reducedMotion = false;
+  })();
+
+  // Pipe spawning, scoring, and the 6-point speed ramp.
+  (function () {
+    play(); pipes.length = 0; state.score = 0; state.speedMultiplier = 1;
+    state.maxSpeedMultiplier = 1.18; state.dt = 1; state.pipeSpawnTimer = 0;
+    for (var i = 0; i < 6; i++) {
+      pipes.push({ x: bird.x - state.pipeWidth - 1, topHeight: 100, baseTopHeight: 100,
+        passed: false, isMoving: false, movePhase: 0, nearMissRecorded: false, shieldBubble: null });
+    }
+    updatePipes();
+    __expect('passing six pipes scores six points', state.score === 6);
+    __expect('speed multiplier ramps on the 6-point boundary', state.speedMultiplier > 1);
+  })();
+
+  // Moving pipe: topHeight oscillates within its vertical bounds over time.
+  (function () {
+    play(); pipes.length = 0; state.dt = 1; state.pipeSpawnTimer = 0;
+    var mp = { x: 320, topHeight: 150, baseTopHeight: 150, passed: true, isMoving: true,
+      movePhase: 0, nearMissRecorded: false, shieldBubble: null };
+    pipes.push(mp);
+    var h0 = mp.topHeight;
+    for (var i = 0; i < 30; i++) updatePipes();
+    __expect('a moving pipe oscillates its topHeight', mp.topHeight !== h0);
+    __expect('a moving pipe stays within its vertical bounds',
+      mp.topHeight >= 60 && mp.topHeight <= ground.y - state.gap - 60);
+  })();
+
+  // Shield bubble: spawns on the interval pipe and activates on contact.
+  (function () {
+    play(); pipes.length = 0; state.shieldActive = false;
+    pipeCounter = CONFIG.SHIELD_INTERVAL - 1;
+    spawnPipe();
+    var sp = pipes[pipes.length - 1];
+    __expect('a shield bubble spawns on the interval pipe', !!sp.shieldBubble);
+    bird.x = sp.x + state.pipeWidth / 2;
+    bird.y = sp.topHeight + state.gap / 2;
+    state.dt = 1;
+    updateShieldBubbles();
+    __expect('flying into a shield bubble activates the shield', state.shieldActive === true);
+    bird.x = CONFIG.BIRD_X;
+  })();
+
+  // Achievements: pure-predicate unlock + idempotent membership in the Set.
+  (function () {
+    play(); state.unlockedAchievements = new Set();
+    state.score = 1; checkAchievements();
+    __expect('FirstFlight unlocks at score 1', state.unlockedAchievements.has('FirstFlight'));
+    __expect('ZenMaster is still locked below 15', !state.unlockedAchievements.has('ZenMaster'));
+    state.score = 15; checkAchievements();
+    __expect('ZenMaster unlocks at score 15', state.unlockedAchievements.has('ZenMaster'));
+  })();
 })();
 `;
 
