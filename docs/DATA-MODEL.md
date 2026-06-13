@@ -93,7 +93,7 @@ erDiagram
   STATE ||--|| GROUND : owns
   STATE ||--o{ PIPE : "spawns (ring)"
   STATE ||--o{ PARTICLE : "pools (220)"
-  STATE ||--o{ WEATHER : "pools (120)"
+  STATE ||--o{ WEATHER : "pools (140)"
   PIPE ||--o| SHIELD_BUBBLE : "may carry"
   STATE ||--|| THEME : "applies (1 of 5)"
   STATE ||--o{ ACHIEVEMENT : "evaluates (12)"
@@ -140,7 +140,7 @@ erDiagram
 ## 3. Key invariants
 
 - **Single writer per key.** Only the `SK`-routed helpers mutate persisted state.
-- **Bounded pools.** `PARTICLE` ≤ 220, `WEATHER` ≤ 120 — fixed-capacity, no
+- **Bounded pools.** `PARTICLE` ≤ 220, `WEATHER` ≤ 140 — fixed-capacity, no
   per-frame allocation (see [`COMPLEXITY.md`](COMPLEXITY.md)).
 - **Achievements are pure.** `check()` / `progress()` are read-only functions of
   `STATE`; adding one is an array entry + matching `#ach<Id>` markup.

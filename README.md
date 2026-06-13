@@ -141,13 +141,23 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `style.css` | Layout, theme system, responsive rules, and accessibility styling |
 | `game.js` | Main engine file with all runtime logic |
 | `manifest.webmanifest` | Install metadata for PWA flows |
-| `service-worker.js` | Minimal offline app-shell cache |
+| `service-worker.js` | Stale-while-revalidate offline app-shell cache |
+| `robots.txt` / `sitemap.xml` | Crawl + discovery surface |
 | `tests/static-checks.mjs` | Static guards: duplicate keys/ids, self-comparisons |
-| `tests/engine-test.mjs` | Headless engine behavioral tests |
+| `tests/engine-test.mjs` | Headless engine behavioral tests (runs the real engine in a Node `vm`) |
 | `tests/smoke-test.mjs` | Syntax and surface-area smoke checks |
+| `tests/brand-guard.mjs` | Fails CI if the retired trademark reappears |
+| `tests/link-guard.mjs` | Fails CI if a referenced local asset is missing |
+| `tests/license-guard.mjs` | Fails CI if the license drifts off MIT |
+| `tools/generate-icons.mjs` | Dependency-free PNG install-icon generator (dev-only) |
 | `docs/architecture_master_blueprint.md` | Calm, humble philosophy & technical architecture reference |
-| `docs/assets/` | Cinematic hero + social preview images |
-| `AUDIT-250.md` | Canonical 250-point quality audit ledger |
+| `docs/DIAGRAMS.md` | Mermaid: component, phase state machine, frame loop, audio, data flow |
+| `docs/DATA-MODEL.md` | ERM/ERD of persisted + runtime entities, migration contract |
+| `docs/COMPLEXITY.md` | Time/space complexity (DSA) of every hot path |
+| `docs/ROADMAP.md` | Now/Next/Later Kanban + shipped + rejected-ideas icebox |
+| `docs/assets/` | Cinematic hero + social preview images, install icons |
+| `AUDIT-250.md` | 250-point quality audit ledger (v2 era) |
+| `AUDIT-500.md` | 500-point / 25-section professional inspection |
 | `CHANGELOG.md` | Version history |
 | `AGENTS.md` | Cross-tool AI assistant guidance + the protected merge flow |
 | `CLAUDE.md` | Claude-specific project context |
@@ -164,6 +174,12 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 2. `docs/architecture_master_blueprint.md` — the runtime layout.
 3. `CONTRIBUTING.md` — change boundaries and review expectations.
 4. `AGENTS.md` / `CLAUDE.md` — AI-assistant guardrails and the protected merge flow.
+
+**Deep dives:** [`docs/DIAGRAMS.md`](docs/DIAGRAMS.md) (visual architecture) ·
+[`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) (ERM/ERD + storage) ·
+[`docs/COMPLEXITY.md`](docs/COMPLEXITY.md) (DSA & time complexity) ·
+[`docs/ROADMAP.md`](docs/ROADMAP.md) (Kanban) ·
+[`AUDIT-500.md`](AUDIT-500.md) (500-point inspection).
 
 ## Browser Support
 
