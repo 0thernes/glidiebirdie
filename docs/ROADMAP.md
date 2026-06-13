@@ -26,15 +26,15 @@ flowchart LR
     D13[Docs suite: inspection/arch/ERD/complexity/roadmap]
     D14[Pool free-list → O(1) spawn]
     D15[lineAt → O(log n) binary search]
+    D16[--text-3 contrast verified ~7:1]
+    D17[ENGINEERING-JOURNEY + README doc links]
   end
   subgraph DOING[🔧 In Progress]
     P1[Engine micro-optimizations]
-    P2[Docs cross-linking]
   end
-  subgraph NEXT[⏭ Next]
+  subgraph NEXT[⏭ Deferred — decided]
     N3[Cache per-pipe gradient]
     N4[Merge queue]
-    N5[Verify --text-3 contrast]
   end
   subgraph BACKLOG[🗂 Backlog]
     B1[Property/fuzz tests]
@@ -62,20 +62,19 @@ flowchart LR
 | Autonomous-safety pipeline | branch protection, auto-merge, **Guardrail check**, **post-deploy canary** |
 | Test/CI gates | static-checks, 29 engine assertions, smoke, typecheck, brand/license/link guards |
 | DSA upgrades | pool free-list → O(1) spawn (PR #17); `lineAt` → O(log n) binary search (PR #14), both behavior-proven |
-| Documentation suite | this `docs/` set |
+| Documentation suite | this `docs/` set + `ENGINEERING-JOURNEY.md` + README cross-links |
+| A11y: `--text-3` contrast | Verified **~7:1** (above AA 4.5 and AAA 7) — no change needed |
 
 ### 🔧 In Progress
 
 - Engine micro-optimizations (the other agents are actively tuning `game.js`).
-- Cross-linking the docs from the README Repository Map.
 
-### ⏭ Next (highest leverage, low risk)
+### ⏭ Deferred — decided, with rationale
 
-| # | Item | Type | Why |
-|---|---|---|---|
-| 1 | Cache per-pipe gradient | Perf | Fewer allocations / lower GC pressure |
-| 2 | Merge queue | CI/CD | Serialize concurrent agent merges (collision-proof) |
-| 3 | Verify `--text-3` contrast ≥ 4.5:1 | A11y | Close the last AA question |
+| Item | Type | Decision |
+|---|---|---|
+| Cache per-pipe gradient | Perf | **Deferred.** The gradient is position-dependent (`createLinearGradient` at the pipe's absolute x), so the object can't be trivially reused across pipes — a real fix is an offscreen pipe-sprite cache. With ~4 pipes on screen (~8 gradients/frame) the benefit is negligible and not worth the complexity/risk in the actively-edited engine file. |
+| Merge queue | CI/CD | **Deferred.** Valuable for concurrent multi-agent merges, but adding it during the active churn risks stalling in-flight auto-merges, and `static-checks` already deterministically catches the collision class that actually occurred (duplicate keys/ids). Revisit when churn settles. |
 
 ### 🗂 Backlog (valuable, larger or orchestrator-side)
 
