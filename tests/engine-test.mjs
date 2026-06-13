@@ -337,6 +337,36 @@ const assertions = `
     state.score = 15; checkAchievements();
     __expect('ZenMaster unlocks at score 15', state.unlockedAchievements.has('ZenMaster'));
   })();
+
+  // Daily-seed determinism (the FAIL #154 fix): the seeded gameplay RNG drives
+  // pipe layout ONLY. Cosmetic spawners (particles, weather) draw from an
+  // independent stream, so the SAME seed must yield identical pipes regardless of
+  // theme or reduced-motion — even though those settings change how many cosmetic
+  // draws happen between pipe spawns.
+  (function () {
+    function layout(seed, theme, reduced) {
+      setSeededRNG(seed);
+      state.theme = theme; state.reducedMotion = reduced;
+      play(); pipes.length = 0; pipeCounter = 0; state.shieldActive = false;
+      state.score = 20; state.dt = 1;
+      var out = [];
+      for (var i = 0; i < 12; i++) {
+        spawnPipe();
+        var p = pipes[pipes.length - 1];
+        out.push(p.topHeight + '|' + (p.isMoving ? 1 : 0) + '|' + p.movePhase.toFixed(4));
+        // Cosmetic spawners fire between pipes — they must NOT perturb the seeded stream.
+        spawnParticles(100, 100, 8, '#fff', 3);
+        spawnWeatherParticles();
+      }
+      return out.join(',');
+    }
+    var a = layout(424242, 'sunset', false);
+    var b = layout(424242, 'meadow', true);
+    __expect('daily-seed pipe layout is identical across theme + reduced-motion', a === b);
+    __expect('a different daily seed yields a different pipe layout',
+      a !== layout(999001, 'sunset', false));
+    setUnseededRNG(); state.reducedMotion = false; state.theme = 'sunset'; pipes.length = 0;
+  })();
 })();
 `;
 
