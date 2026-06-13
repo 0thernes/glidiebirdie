@@ -14,13 +14,31 @@ import { readFile } from 'node:fs/promises';
 const FILE = 'game.js';
 const src = await readFile(FILE, 'utf8');
 
-/** Convert a character offset to a 1-based line number. */
+// Cached line-offset index: precompute newline positions once per source (O(n)),
+// then resolve any offset → line number with a binary search (O(log n)) instead of
+// the previous O(offset) re-scan. Behavior-identical to the old linear version;
+// the cache key (`text`) makes it correct even if called with different sources.
+let _lineSrc = null;
+let _lineStarts = [0];
+
+/** Convert a character offset to a 1-based line number (O(log n) via binary search). */
 function lineAt(text, index) {
-  let line = 1;
-  for (let i = 0; i < index && i < text.length; i++) {
-    if (text[i] === '\n') line++;
+  if (text !== _lineSrc) {
+    _lineSrc = text;
+    _lineStarts = [0];
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '\n') _lineStarts.push(i + 1);
+    }
   }
-  return line;
+  // Largest line-start offset that is <= index.
+  let lo = 0;
+  let hi = _lineStarts.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (_lineStarts[mid] <= index) lo = mid;
+    else hi = mid - 1;
+  }
+  return lo + 1;
 }
 
 /**
