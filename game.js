@@ -1076,8 +1076,10 @@ const MEADOW_POLLEN_COLORS = Object.freeze(['#fde68a', '#fef3c7', '#facc15']);
 function initObjectPools() {
   particlePool.length = 0;
   activeParticles.length = 0;
+  freeParticles.length = 0;
   for (let i = 0; i < CONFIG.PARTICLE_POOL; i++) {
     particlePool.push({
+      idx: i,
       x: 0,
       y: 0,
       vx: 0,
@@ -1088,11 +1090,14 @@ function initObjectPools() {
       size: 0,
       active: false,
     });
+    freeParticles.push(i);
   }
   weatherPool.length = 0;
   activeWeather.length = 0;
+  freeWeather.length = 0;
   for (let i = 0; i < CONFIG.WEATHER_POOL; i++) {
     weatherPool.push({
+      idx: i,
       x: 0,
       y: 0,
       vx: 0,
@@ -1105,33 +1110,30 @@ function initObjectPools() {
       phase: 0,
       active: false,
     });
+    freeWeather.push(i);
   }
 }
 
-let nextFreeParticle = 0;
+// Explicit free-list (a stack of inactive pool indices) → strict O(1) spawn,
+// replacing the previous rotating linear probe (worst case O(pool)). See COMPLEXITY.md 5.1.
+const freeParticles = [];
 function spawnParticles(x, y, count, color, spread = 3) {
   const particleCount = state.reducedMotion ? Math.max(1, Math.ceil(count * 0.35)) : count;
   const particleSpread = state.reducedMotion ? spread * 0.45 : spread;
-  let spawned = 0;
-  const start = nextFreeParticle;
-  for (let scan = 0; scan < particlePool.length; scan++) {
-    const idx = (start + scan) % particlePool.length;
+  for (let spawned = 0; spawned < particleCount; spawned++) {
+    const idx = freeParticles.pop();
+    if (idx === undefined) break; // pool exhausted
     const p = particlePool[idx];
-    if (!p.active) {
-      p.active = true;
-      p.x = x;
-      p.y = y;
-      p.vx = (rng() - 0.5) * particleSpread;
-      p.vy = (rng() - 0.5) * particleSpread;
-      p.life = 30 + rng() * 20;
-      p.maxLife = p.life;
-      p.color = color;
-      p.size = 2 + rng() * 3;
-      activeParticles.push(p);
-      nextFreeParticle = (idx + 1) % particlePool.length;
-      spawned++;
-      if (spawned >= particleCount) break;
-    }
+    p.active = true;
+    p.x = x;
+    p.y = y;
+    p.vx = (rng() - 0.5) * particleSpread;
+    p.vy = (rng() - 0.5) * particleSpread;
+    p.life = 30 + rng() * 20;
+    p.maxLife = p.life;
+    p.color = color;
+    p.size = 2 + rng() * 3;
+    activeParticles.push(p);
   }
 }
 
@@ -1144,8 +1146,12 @@ function updateParticles() {
     p.y += p.vy * dt;
     p.vy += 0.03 * dt;
     p.life -= dt;
-    if (p.life > 0) activeParticles[write++] = p;
-    else p.active = false;
+    if (p.life > 0) {
+      activeParticles[write++] = p;
+    } else {
+      p.active = false;
+      freeParticles.push(p.idx); // O(1) reclaim
+    }
   }
   activeParticles.length = write;
 }
@@ -1162,7 +1168,7 @@ function drawParticles() {
   ctx.globalAlpha = 1;
 }
 
-let nextFreeWeather = 0;
+const freeWeather = [];
 function spawnWeatherParticle(
   x,
   y,
@@ -1175,27 +1181,21 @@ function spawnWeatherParticle(
   color = '',
   phase = 0,
 ) {
-  const start = nextFreeWeather;
-  for (let scan = 0; scan < weatherPool.length; scan++) {
-    const idx = (start + scan) % weatherPool.length;
-    const p = weatherPool[idx];
-    if (!p.active) {
-      p.active = true;
-      p.x = x;
-      p.y = y;
-      p.vx = vx;
-      p.vy = vy;
-      p.type = type;
-      p.size = size;
-      p.length = length;
-      p.alpha = alpha;
-      p.color = color;
-      p.phase = phase;
-      activeWeather.push(p);
-      nextFreeWeather = (idx + 1) % weatherPool.length;
-      return;
-    }
-  }
+  const idx = freeWeather.pop();
+  if (idx === undefined) return; // pool exhausted
+  const p = weatherPool[idx];
+  p.active = true;
+  p.x = x;
+  p.y = y;
+  p.vx = vx;
+  p.vy = vy;
+  p.type = type;
+  p.size = size;
+  p.length = length;
+  p.alpha = alpha;
+  p.color = color;
+  p.phase = phase;
+  activeWeather.push(p);
 }
 
 function spawnWeatherParticles() {
@@ -1306,8 +1306,12 @@ function updateWeatherParticles() {
     } else {
       if (p.x < -10 || p.y > CONFIG.CANVAS_H + 10) keep = false;
     }
-    if (keep) activeWeather[write++] = p;
-    else p.active = false;
+    if (keep) {
+      activeWeather[write++] = p;
+    } else {
+      p.active = false;
+      freeWeather.push(p.idx); // O(1) reclaim
+    }
   }
   activeWeather.length = write;
 }
@@ -3050,8 +3054,6 @@ function resetGame() {
   nearestPipeCache = null;
 
   initObjectPools();
-  nextFreeParticle = 0;
-  nextFreeWeather = 0;
   stopMusic(false);
 
   if (state.dailySeedMode) setSeededRNG(dateSeed());
