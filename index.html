@@ -41,8 +41,9 @@
     <p id="srStatus" class="sr-only" aria-live="polite" aria-atomic="true">Ready to glide.</p>
     <p id="controlHelp" class="sr-only">
       On desktop: Space or click to flap, Shift to soften descent, Down Arrow to dive, Escape to pause,
-      M to mute, R to restart, F for fullscreen.
+      M to mute, R to restart, F for fullscreen, P for postcard, C to save a picture.
       On phone: use the on-screen Brake, Flap, and Dive buttons below the canvas.
+      With a gamepad: Cross or A flaps, left shoulder or left trigger brakes, right shoulder, right trigger, or D-pad down dives, Start pauses, Back mutes.
     </p>
 
     <header class="panel hero" id="heroPanel">
@@ -90,7 +91,7 @@
           role="application"
           aria-label="Interactive GlidieBirdie playfield"
           aria-describedby="controlHelp srStatus"
-          aria-keyshortcuts="Space ArrowUp ArrowDown Shift Escape KeyM KeyR KeyF"
+          aria-keyshortcuts="Space ArrowUp ArrowDown Shift Escape M R F P C"
         ></canvas>
 
         <!-- Tutorial overlay: shown on first run, dismissable -->
@@ -274,8 +275,9 @@
 
       <p class="session-run" id="sessionRun" aria-live="polite">Run #0</p>
 
+      <p id="scoreSummary" class="sr-only">No completed runs yet.</p>
       <div class="sparkline-wrap" aria-hidden="true">
-        <canvas id="sparkline" width="200" height="32" aria-label="Recent score history sparkline"></canvas>
+        <canvas id="sparkline" width="200" height="32"></canvas>
       </div>
 
       <button class="ui-button drawer-inline-btn danger" id="resetStatsBtn" type="button">Reset all stats</button>
@@ -405,6 +407,6 @@
   <!-- Toast container for achievement / share / serene moment feedback (calm, non-intrusive) -->
   <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
 
-  <script src="game.js" defer></script>
+  <script type="module" src="game.js"></script>
 </body>
 </html>

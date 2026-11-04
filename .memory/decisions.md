@@ -4,25 +4,25 @@ Architectural commitments made in this project.
 
 ## Zero dependencies
 
-No npm packages, no CDN links, no build step. The playable app shell is HTML, CSS, one game-engine JS file, the web manifest, and a tiny service worker. This keeps deployment trivial and eliminates supply-chain risk.
+No runtime npm packages, no CDN links, no build step. Dev dependencies (ESLint, Playwright, axe-core) are tooling only. The playable app shell is HTML, CSS, native ES modules, the web manifest, and a tiny service worker. GitHub Pages serves the modules directly.
 
 ## Procedural everything
 
 All runtime audio is synthesized via Web Audio API oscillators. All runtime game visuals are drawn via Canvas 2D. No runtime image files, audio files, or font files are needed. The game is entirely self-contained.
 
-## Monolithic game.js
+## Native ES modules
 
-The engine is one file (~3600 lines) by design. Splitting into modules would require a bundler or ES module imports, violating the zero-dependency commitment. Large monolithic files are fully accepted because a single file fits completely inside modern LLM context sizes, enabling clean, AI-native pairing.
+The engine lives in `src/` and is loaded by `game.js` with `type="module"`. There is no bundler. Modules import each other with explicit `.js` extensions so GitHub Pages can serve them. `src/hooks.js` breaks the one cycle between physics and the session lifecycle.
 
-`service-worker.js` is the only extra JavaScript file. It is not engine code. It only caches the static app shell for installed PWA use on localhost or HTTPS.
+`service-worker.js` caches every module plus the HTML, CSS, and manifest.
 
 ## Canvas over DOM for game world
 
 The bird, pipes, particles, and ground are canvas-rendered for performance. UI chrome (buttons, status text) is DOM-based for accessibility. Canvas elements are invisible to screen readers.
 
-## Delta-time physics
+## Fixed-step physics
 
-All motion is multiplied by `state.dt` (normalized to 60fps). This guarantees consistent behavior across 60Hz, 144Hz, and 240Hz displays. The `dt` cap at 3× prevents physics explosions after lag spikes.
+Simulation advances in exact 1/60 s steps on a 720 Hz integer tick grid (the least common multiple of 60 and 144). A hitch simulates at most five steps, then drops the backlog. Rendering interpolates with `view.alpha`. Inputs are queued by timestamp and applied on the step that covers them, so a daily-seed run does not depend on the display refresh rate.
 
 ## Emotion-driven rendering
 

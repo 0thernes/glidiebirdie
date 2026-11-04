@@ -1,11 +1,13 @@
 {
   "name": "glidiebirdie",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "private": true,
   "description": "GlidieBirdie — a cinematic, calm, accessible, dependency-free one-tap arcade flyer with golden godrays, a living bird character, and serene atmosphere. Browser + PWA, zero dependencies.",
   "type": "module",
   "scripts": {
-    "check": "node --check game.js && node --check service-worker.js && node tests/static-checks.mjs && node tests/brand-guard.mjs && node tests/link-guard.mjs && node tests/license-guard.mjs && node tests/engine-test.mjs && node tests/smoke-test.mjs",
+    "check": "node --check game.js && node --check service-worker.js && node --check src/config.js && node --check src/rng.js && node --check src/storage.js && node --check src/timestep.js && node --check src/input-queue.js && node --check src/state.js && node --check src/dom.js && node --check src/haptics.js && node --check src/hooks.js && node --check src/audio.js && node --check src/collision.js && node --check src/physics.js && node --check src/render.js && node --check src/achievements.js && node --check src/ui.js && node --check src/session.js && node --check src/input.js && node --check src/loop.js && node --check src/main.js && node --check src/index.js && node tests/static-checks.mjs && node tests/brand-guard.mjs && node tests/link-guard.mjs && node tests/license-guard.mjs && node tests/engine-test.mjs && node tests/determinism.mjs && node tests/smoke-test.mjs",
+    "lint": "eslint src game.js service-worker.js tests",
+    "test:browser": "playwright test",
     "typecheck": "npx -y -p typescript@5 tsc -p jsconfig.json && npx -y -p typescript@5 tsc --noEmit --allowJs --checkJs --target ES2020 --lib ES2020,WebWorker service-worker.js",
     "icons": "node tools/generate-icons.mjs",
     "serve": "python -m http.server 8000 --bind 127.0.0.1"
@@ -32,5 +34,12 @@
     "url": "https://github.com/0thernes/glidiebirdie/issues"
   },
   "homepage": "https://0thernes.github.io/glidiebirdie/",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@axe-core/playwright": "4.10",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.56",
+    "eslint": "^10.14.0",
+    "globals": "^15.15.0"
+  }
 }

@@ -292,6 +292,13 @@
 
   .lede,
   .stage-copy p,
+  .card p,
+  .microcopy {
+    user-select: text;
+  }
+
+  .lede,
+  .stage-copy p,
   .card p {
     max-width: 62ch;
     font-size: clamp(1rem, 0.96rem + 0.25vw, 1.08rem);
@@ -433,6 +440,10 @@
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
     touch-action: manipulation;
     transition: transform 80ms ease, background 120ms ease, box-shadow 120ms ease;
+  }
+  .m-btn:focus-visible {
+    outline: 3px solid var(--accent-1);
+    outline-offset: 3px;
   }
   .m-btn:active {
     transform: translateY(1px);

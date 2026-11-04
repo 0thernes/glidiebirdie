@@ -32,7 +32,7 @@ The runtime is intentionally simple:
 - Do not add runtime dependencies.
 - Do not add remote assets, hosted fonts, analytics, or CDN imports.
 - Do not add a backend or network data flow for gameplay state.
-- Do not split `game.js` into modules.
+- Do not add a bundler. The engine is native ES modules under `src/`, loaded by `game.js`.
 - Do not split `style.css` into multiple files.
 - Keep the service worker tiny and app-shell-focused.
 
@@ -72,7 +72,8 @@ If you change the public shape of the project, update the matching docs in the s
 
 | File | Purpose |
 | --- | --- |
-| `game.js` | Entire runtime engine |
+| `game.js` | Browser entry. Imports `src/main.js` |
+| `src/` | Engine modules: physics, collision, input, audio, render, storage, UI |
 | `index.html` | Semantic shell, canvas host, controls, tutorial, PWA metadata |
 | `style.css` | Layout, components, themes, accessibility styling |
 | `service-worker.js` | Minimal offline shell caching |

@@ -25,14 +25,15 @@ Those files explain the product boundaries, runtime structure, and guardrails th
 
 ## Working In Parallel (Multiple Agents Or Contributors)
 
-`game.js` is one large single-file engine, which makes it prone to merge
-collisions when several people — or several AI agents — edit it at once. The
+The engine is split across `src/*.js` native modules, which makes overlapping
+edits easier to review than one giant file, but `src/state.js` and `src/loop.js`
+are still shared. The
 duplicate-key bugs in earlier versions (two `meadow` theme blocks, two
 `ThemeExplorer` achievements) came from exactly this.
 
 To avoid it:
 
-- One contributor (or agent) per branch. Do not edit `game.js` directly on `main`.
+- One contributor (or agent) per branch. Do not edit the engine directly on `main`.
 - Rebase onto the latest `main` before starting work.
 - Run `npm run check` locally before opening a PR. The static checks
   (`tests/static-checks.mjs`) catch duplicate object keys, duplicate achievement
@@ -63,7 +64,7 @@ To avoid it:
 
 - Adding a build step.
 - Adding external assets or runtime dependencies.
-- Splitting `game.js` into modules.
+- Adding a bundler or build step for the `src/` modules.
 - Making the default game more stressful.
 - Removing accessibility behavior.
 - Mixing unrelated changes into one pull request.
