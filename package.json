@@ -36,9 +36,9 @@
   "homepage": "https://0thernes.github.io/glidiebirdie/",
   "license": "MIT",
   "devDependencies": {
-    "@axe-core/playwright": "4.10",
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "1.56",
+    "@playwright/test": "^1.64.1",
     "eslint": "^10.14.0",
     "globals": "^15.15.0"
   }
