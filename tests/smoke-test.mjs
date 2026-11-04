@@ -1,11 +1,16 @@
-import { access, readFile } from 'node:fs/promises';
+import { access, readdir, readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
+
+const srcNames = (await readdir('src')).filter((name) => name.endsWith('.js')).sort();
+const srcBundle = (
+  await Promise.all(srcNames.map((name) => readFile(`src/${name}`, 'utf8')))
+).join('\n');
 
 const textFiles = {
   html: await readFile('index.html', 'utf8'),
   css: await readFile('style.css', 'utf8'),
-  js: await readFile('game.js', 'utf8'),
+  js: `${await readFile('game.js', 'utf8')}\n${srcBundle}`,
   readme: await readFile('README.md', 'utf8'),
   gitignore: await readFile('.gitignore', 'utf8'),
   gitattributes: await readFile('.gitattributes', 'utf8'),
@@ -85,6 +90,7 @@ for (const shellFile of [
   './style.css',
   './game.js',
   './manifest.webmanifest',
+  ...srcNames.map((name) => `./src/${name}`),
 ]) {
   assert.match(
     textFiles.serviceWorker,

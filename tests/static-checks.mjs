@@ -9,10 +9,12 @@
 // Pure Node, no packages — runs in the existing CI with no install step.
 // Run: node tests/static-checks.mjs
 
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 
-const FILE = 'game.js';
-const src = await readFile(FILE, 'utf8');
+const files = ['game.js', 'service-worker.js'];
+for (const name of await readdir('src')) {
+  if (name.endsWith('.js')) files.push(`src/${name}`);
+}
 
 // Cached line-offset index: precompute newline positions once per source (O(n)),
 // then resolve any offset → line number with a binary search (O(log n)) instead of
@@ -205,10 +207,15 @@ function checkSelfCompare(stripped, original) {
   }
 }
 
-const stripped = stripNonCode(src);
-checkDuplicateKeys(stripped, src);
-checkAchievementIds(src);
-checkSelfCompare(stripped, src);
+let FILE = '';
+for (const file of files) {
+  FILE = file;
+  const src = await readFile(file, 'utf8');
+  const stripped = stripNonCode(src);
+  checkDuplicateKeys(stripped, src);
+  checkAchievementIds(src);
+  checkSelfCompare(stripped, src);
+}
 
 if (errors.length) {
   console.error(`Static checks FAILED (${errors.length}):`);

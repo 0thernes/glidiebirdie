@@ -9,9 +9,9 @@ name: Dependabot auto-merge
 # (a compromised/rogue action would otherwise land in CI with no eyes on it).
 #
 # Branch protection remains the safety gate: nothing red can land. fetch-metadata
-# is the official Dependabot action and is intentionally tag-pinned (@v2) — it is
-# maintained by GitHub's Dependabot team and is the documented tool for exactly
-# this gate; Dependabot keeps the tag current.
+# is the official Dependabot action and is SHA-pinned like every other action.
+# v3's only breaking change is the Node 24 Actions runtime, which ubuntu-latest
+# provides. The workflow still reads only `update-type`.
 
 on: pull_request
 
@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Fetch Dependabot metadata
         id: meta
-        uses: dependabot/fetch-metadata@v2
+        uses: dependabot/fetch-metadata@ffa630c65fa7e0ecfa0625b5ceda64399aea1b36 # v3.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 

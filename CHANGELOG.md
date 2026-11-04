@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## [3.1.0] — Fixed-step simulation and native modules
+
+- Simulation now advances in exact 1/60 s steps on a 720 Hz tick grid. 60 Hz and 144 Hz runs of the same seed and inputs produce the same trajectory. Rendering interpolates between steps.
+- The engine is native ES modules in `src/` (physics, collision, input, audio, render, storage, UI). `game.js` is the entry. No bundler, no runtime dependency. Saved `gb:` stats stay on schema 3.
+- Gamepad input: Cross/A flaps, shoulders and triggers brake and dive, Start pauses, Back mutes.
+- CI lints with ESLint, runs the determinism test, and runs Playwright 1.64 plus axe-core against WCAG 2.2 AA. Playwright 1.64 is required because GitHub's `ubuntu-latest` image is Ubuntu 26.04.
+- GitHub Actions are SHA-pinned, including `dependabot/fetch-metadata` at v3. `actions/checkout` 7.0.1 and `actions/setup-node` 7.0.0 are applied. See `RELEASING.md` for how a person cuts a version tag. This repo still does not create tags on its own.
+
 ## [3.0.0] — Rebrand, relicense, and a Gold-level de-risk pass
 
 Breaking, deliberate changes that remove the project's two existential liabilities

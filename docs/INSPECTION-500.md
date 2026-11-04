@@ -7,6 +7,8 @@ Calibrated to what this project actually is — a **solo-built, open-source, zer
 
 **Legend:** `✓ PASS` · `▲ NOTE` (acceptable, with context) · `→ OPP` (improvement opportunity) · `n/a` (out of scope).
 
+**Historical snapshot (v3.0.0).** The engine has since moved to native modules in `src/` with a fixed timestep. This ledger is not a description of the current tree.
+
 **Snapshot:** `glidiebirdie` v3.0.0 · MIT · `game.js` ≈ 3,390 LOC · zero runtime dependencies · 4 CI workflows · branch-protected, PR-gated, auto-merging main.
 
 **Headline score: 482 / 500 (96.4%) — Grade A.** The 18 non-PASS points are improvement opportunities, not defects; none is a correctness or security failure.

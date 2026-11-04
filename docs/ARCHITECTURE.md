@@ -8,12 +8,12 @@ A precise, diagram-backed walkthrough of how the game is built. Companion to
 
 ## 1. One-paragraph summary
 
-GlidieBirdie is a **single-file, zero-dependency, canvas-rendered browser game** plus a tiny PWA
+GlidieBirdie is a **zero-dependency, canvas-rendered browser game** plus a tiny PWA
 shell. There is no build step, no framework, and no backend. `index.html` is the semantic shell,
-`style.css` is all presentation, and `game.js` is the entire runtime engine — a `requestAnimationFrame`
-loop driving a fixed-timestep-normalized simulation over a single mutable `state` object, rendered to
-one DPR-scaled `<canvas>`. A `service-worker.js` adds offline/install behavior. Everything is delivered
-as static files on GitHub Pages.
+`style.css` is all presentation, and `game.js` loads native ES modules from `src/`. A fixed 60 Hz
+simulation (720 Hz tick grid, so 60 Hz and 144 Hz land on the same steps) advances a single mutable
+`state` object; rendering interpolates between steps. A `service-worker.js` caches the shell, including
+every module. Everything is delivered as static files on GitHub Pages.
 
 ## 2. Component map
 
@@ -22,11 +22,11 @@ graph TD
   subgraph Static Delivery (GitHub Pages)
     HTML[index.html<br/>semantic shell + DOM contract]
     CSS[style.css<br/>layout · themes · a11y]
-    JS[game.js<br/>engine ~3.4k LOC]
+    JS[game.js + src/*.js<br/>native ES modules]
     SW[service-worker.js<br/>offline shell]
     MAN[manifest.webmanifest<br/>install metadata]
   end
-  HTML -->|defer| JS
+  HTML -->|type=module| JS
   HTML -->|link| CSS
   HTML -->|link| MAN
   JS -->|register| SW
@@ -151,6 +151,6 @@ Linear, idempotent, and defensive (every DOM ref is optional-chained, so a missi
 ## 11. Constraints (architectural guardrails)
 
 - No build step, no runtime dependencies, no backend, no remote assets/fonts/CDN.
-- Do not split `game.js` or `style.css`.
+- Do not add a bundler. Keep `style.css` as one file. New engine code belongs in `src/`.
 - Keep the service worker tiny and app-shell-focused.
 - `main` is PR-gated; every change flows branch → PR → CI → auto-merge.

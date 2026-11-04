@@ -30,7 +30,7 @@ Just open the file and glide.
 | More player expression | Hold Brake (or `Shift`), hold Dive (or `↓`), and tune physics in the Zen Customizer. |
 | More delight | Meadow golden godrays + drifting pollen, five themes, reverb, ambient music, particle bursts, expressive bird emotions, cozy achievements, and Serene Postcard mode for shareable moments. |
 | Less punishment | Feather Shield absorbs one collision and gives the bird a graceful recovery moment. |
-| Better reliability | Delta-time physics + DPR-sharp canvas across 60Hz, 144Hz, 240Hz displays and Retina/4K phones. |
+| Better reliability | Fixed 60 Hz simulation with interpolation, so 60 Hz and 144 Hz displays share one trajectory. DPR-sharp canvas on Retina and 4K. |
 | Better inclusion | Keyboard + skip-link, ARIA live updates, reduced-motion, reduced-transparency, forced-colors. |
 | PWA-ready | Installable via Add-to-Home-Screen on iOS and Android. Offline app shell after first visit. |
 
@@ -42,7 +42,7 @@ breathes with the world. A bird with real emotions and eyes that look for safety
 No build step.
 
 This is what happens when you treat "calm" as a design material, not a marketing word. It is a small,
-solo, vibe-coded act of care: one HTML file, one CSS file, one engine in `game.js`, zero runtime
+solo, vibe-coded act of care: one HTML file, one CSS file, native ES modules in `src/`, zero runtime
 dependencies, and a deep commitment to accessibility and reduced-motion respect.
 
 ## Features
@@ -83,13 +83,15 @@ Then visit `http://localhost:8000`.
 npm run check
 ```
 
-That command runs five steps, with no dependencies to install:
+That command needs no install. It syntax-checks every module, then runs static checks, the engine tests (they import `src/`), the 60 Hz / 144 Hz determinism test, and the repo smoke test.
 
-- JavaScript syntax check for `game.js`
-- JavaScript syntax check for `service-worker.js`
-- Static checks (`tests/static-checks.mjs`) — duplicate object keys, duplicate achievement ids, self-comparisons
-- Engine behavioral tests (`tests/engine-test.mjs`) — physics, collision, emotion, RNG, and storage invariants
-- Repo smoke test (`tests/smoke-test.mjs`) — public surface and repo promises
+Lint, Playwright, and axe need the dev dependencies:
+
+```bash
+npm ci
+npm run lint
+npm run test:browser
+```
 
 A separate `npm run typecheck` runs ephemeral TypeScript over the `checkJs`-clean engine.
 
@@ -104,6 +106,11 @@ A separate `npm run typecheck` runs ephemeral TypeScript over the `checkJs`-clea
 | `M` | Mute or unmute |
 | `R` | Restart run |
 | `F` | Toggle fullscreen |
+| Gamepad Cross / A, or D-pad up | Flap |
+| Gamepad LB or left trigger | Brake |
+| Gamepad RB, right trigger, or D-pad down | Dive |
+| Gamepad Start | Pause |
+| Gamepad Back | Mute |
 | `P` | Serene Postcard mode (calm capture) |
 | `C` | Save the current frame as a PNG |
 
@@ -127,7 +134,7 @@ The project is intentionally small and flat:
 
 - `index.html` is the semantic shell, UI layout, mobile controls, drawer, and PWA metadata.
 - `style.css` owns layout, theme tokens, accessibility media queries, and component styling.
-- `game.js` contains the full runtime engine: physics, rendering, audio, input, persistence, and UI state.
+- `game.js` is the module entry. `src/` holds physics, collision, input (including gamepad), audio, rendering, storage, and UI.
 - `manifest.webmanifest` and `service-worker.js` provide installation and offline shell behavior.
 - `tests/` holds three dependency-free Node checks wired into `npm run check`.
 
@@ -139,7 +146,8 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | --- | --- |
 | `index.html` | Semantic shell, canvas, mobile controls, drawer, tutorial, and PWA metadata |
 | `style.css` | Layout, theme system, responsive rules, and accessibility styling |
-| `game.js` | Main engine file with all runtime logic |
+| `game.js` | Module entry. Calls `boot()` from `src/main.js` |
+| `src/` | Engine modules served as-is by GitHub Pages |
 | `manifest.webmanifest` | Install metadata for PWA flows |
 | `service-worker.js` | Minimal offline app-shell cache |
 | `tests/static-checks.mjs` | Static guards: duplicate keys/ids, self-comparisons |

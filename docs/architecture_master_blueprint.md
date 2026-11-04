@@ -9,7 +9,7 @@ These are the rules the runtime is built around:
 - No build step.
 - No runtime dependencies.
 - No backend or remote storage.
-- No module split for the game engine. `game.js` is intentionally the whole runtime.
+- Native ES modules only. `game.js` is the browser entry; the engine lives in `src/`. No bundler.
 - Static hosting must remain enough to run the project.
 - Accessibility, mobile play, and calm pacing are product requirements, not optional polish.
 
@@ -19,7 +19,8 @@ These are the rules the runtime is built around:
 | --- | --- | --- |
 | Document shell | `index.html` | Semantic structure, canvas host, toolbar, drawer, tutorial, install metadata |
 | Styling | `style.css` | Theme tokens, responsive layout, accessibility media queries, components |
-| Runtime engine | `game.js` | Physics, rendering, audio, input, persistence, UI state, achievements |
+| Runtime entry | `game.js` | Imports `src/main.js` and boots. GitHub Pages serves it as a module |
+| Engine modules | `src/*.js` | Physics, collision, input, audio, rendering, storage, UI, and the fixed-step loop |
 | Offline shell | `service-worker.js` | Cache the small app shell for localhost and HTTPS installs |
 | Install metadata | `manifest.webmanifest` | PWA name, icons, display mode, colors |
 | Validation | `tests/smoke-test.mjs` | Protect the public surface and repo promises |
