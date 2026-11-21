@@ -220,7 +220,10 @@
 
   @media (prefers-reduced-transparency: reduce) {
     .panel,
-    .customizer-drawer {
+    .customizer-drawer,
+    .tutorial-overlay,
+    .mobile-controls,
+    .toast {
       -webkit-backdrop-filter: none;
       backdrop-filter: none;
       background:

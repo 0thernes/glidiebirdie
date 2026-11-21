@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Calm Edition.
+Thanks for helping improve GlidieBirdie.
 
 This repo prefers small, readable changes that keep the game calm, accessible, and easy to run from a plain static host.
 
@@ -43,8 +43,8 @@ To avoid it:
 
 ## Before You Open A Pull Request
 
-1. Run `npm run check`.
-2. Open `index.html` or serve the repo locally.
+1. Run `npm run check` (and `npm run lint` / `npm run test:browser` if dev tooling is installed).
+2. Serve the repo locally over HTTP (`node tools/static-server.mjs 8000` — native ES modules require HTTP rather than `file://`).
 3. Test keyboard controls.
 4. Test the customizer drawer.
 5. Test the mobile control bar if you touched input or layout.

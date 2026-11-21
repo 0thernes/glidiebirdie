@@ -18,18 +18,19 @@ is effectively constant-time in practice. There is **no quadratic path anywhere 
 | `updateEmotion` | O(1) | O(1) | priority cascade over `state` |
 | `updatePipes` | O(P) | O(1) | move + pass-check + bounded shift-cull |
 | `updateShieldBubbles` | O(P) | O(1) | one distance test per pipe |
-| `spawnParticles` | amortized O(1) | O(1) | rotating free-index probe; worst case O(A) |
-| `updateParticles` | O(A) | O(1) | single-pass in-place compaction |
-| `spawn/updateWeather` | O(W) | O(1) | pooled, single-pass |
+| `spawnParticles` | **O(1)** | O(1) | explicit `freeParticles` index stack |
+| `updateParticles` | O(A) | O(1) | single-pass in-place compaction + O(1) free-list push |
+| `spawn/updateWeather` | O(W) | O(1) | explicit `freeWeather` stack + `clearWeatherPool()` reclaim |
 | `checkCollisions` | O(P) | O(1) | circle-vs-rect per pipe; **not** O(P·A) |
-| `draw` (cached path) | O(P + A + W) | O(1) | bird = one `drawImage` (sprite cache) |
-| `loop` overhead | O(1) | O(1) | dt math, scheduling |
+| `draw` (cached path) | O(P + A + W) | O(1) | bird = one `drawImage` (sprite cache); pipe gradient cached per pipe |
+| `loop` overhead | O(1) | O(1) | fixed 60 Hz step on 720 Hz tick grid |
 
 ## 2. Amortized / structural results
 
 - **Particle & weather pools:** pre-allocated once at boot → memory is **O(capacity)**, constant for the
-  whole session. Spawning scans from a rotating `nextFree*` index → **amortized O(1)**; the only worst
-  case is a full pool (O(capacity) probe), which is bounded and rare.
+  whole session. Spawning pops from explicit `freeParticles`/`freeWeather` index stacks → **strict O(1)**
+  with zero worst-case probe; `clearWeatherPool()` reclaims active weather slots in O(W) on theme switches
+  and reduced-motion toggles.
 - **Active-list compaction:** `updateParticles`/`updateWeather` write survivors forward in the same array
   in one pass → **O(n)** with **zero allocation** (no filter/splice garbage).
 - **Bird trail:** fixed-length **ring buffer**; per-frame shift is O(trailLen) with a constant trailLen.
@@ -80,10 +81,10 @@ recycle(idx): freeList.push(idx)
 
 Trade-off: one extra array of ints (O(capacity) space, already implied). Net: strictly O(1), no worst case.
 
-### 5.2 `lineAt` → precomputed offsets + binary search
+### 5.2 `lineAt` → precomputed offsets + binary search — ✅ implemented (PR #14)
 
-**Now:** each `lineAt(offset)` rescans from index 0 → O(offset); k errors → O(k·N).
-**Upgrade:** precompute a sorted array of newline offsets once (**O(N)**), then each lookup is a
+**Before:** each `lineAt(offset)` rescanned from index 0 → O(offset); k errors → O(k·N).
+**Now:** precomputed sorted array of newline offsets built once per source (**O(N)**), then each lookup is a
 **binary search → O(log N)**. Total k lookups: O(N + k·log N).
 
 ```text
@@ -94,11 +95,10 @@ lineAt(off) = upperBound(lineStarts, off)      // O(log N)
 Impact: negligible at current error counts (errors are rare), but it is the textbook fix and removes the
 only super-linear pattern in the tooling.
 
-### 5.3 Per-pipe gradient caching (perf, not asymptotic)
+### 5.3 Per-pipe gradient caching — ✅ implemented (PR #32)
 
-The pipe body `createLinearGradient` is rebuilt each frame per pipe (O(P) gradient objects/frame). Cache by
-`(theme, score-bracket)` and reuse → fewer allocations. Asymptotically still O(P) draw, but lower constant
-and GC pressure. Low priority (P is tiny).
+Each pipe caches its local horizontal gradient (`pipe._grad`, invalidated only when `getPipeScoreHue(state.score)`
+changes) and renders via `ctx.translate(x, 0)`, eliminating per-frame `createLinearGradient` churn in `drawPipe()`.
 
 ## 6. Why the engine is already fast
 

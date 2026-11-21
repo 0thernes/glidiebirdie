@@ -49,6 +49,8 @@ node_modules/
 dist/
 build/
 coverage/
+test-results/
+playwright-report/
 .parcel-cache/
 .vite/
 

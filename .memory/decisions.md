@@ -12,9 +12,9 @@ All runtime audio is synthesized via Web Audio API oscillators. All runtime game
 
 ## Native ES modules
 
-The engine lives in `src/` and is loaded by `game.js` with `type="module"`. There is no bundler. Modules import each other with explicit `.js` extensions so GitHub Pages can serve them. `src/hooks.js` breaks the one cycle between physics and the session lifecycle.
+The engine lives in `src/` and is loaded by `game.js` with `type="module"`. There is no bundler. Modules import each other with explicit `.js` extensions so GitHub Pages can serve them. `src/hooks.js` breaks cross-layer cycles (physics → session/achievements, ui ↔ input/session).
 
-`service-worker.js` caches every module plus the HTML, CSS, and manifest.
+`service-worker.js` caches every module plus the HTML, CSS, manifest, and install icons.
 
 ## Canvas over DOM for game world
 
@@ -42,7 +42,7 @@ Five visual themes (sunset, midnight, rain, aurora, meadow) each define complete
 
 ## Object pooling for particles and weather
 
-Pre-allocated pools of 220 particles and 120 weather objects avoid garbage collection pressure during gameplay. Objects are marked `active: true` when spawned and `active: false` when dead. The `activeParticles` and `activeWeather` arrays hold references to live objects. This keeps frame times consistent.
+Pre-allocated pools of 220 particles (`CONFIG.PARTICLE_POOL`) and 140 weather objects (`CONFIG.WEATHER_POOL`) avoid garbage collection pressure during gameplay. Explicit free-list index stacks (`freeParticles`, `freeWeather`) guarantee strict O(1) allocation and O(1) swap-compact reclamation, and `clearWeatherPool()` recycles active weather slots on theme switches and reduced-motion toggles. Objects are marked `active: true` when spawned and `active: false` when dead. The `activeParticles` and `activeWeather` arrays hold references to live objects. This keeps frame times consistent.
 
 ## Web Audio scheduler for music
 
@@ -70,7 +70,7 @@ The canvas backing buffer is sized by `devicePixelRatio` (clamped to 3) so Retin
 
 ## Audio graph
 
-Web Audio routes: oscillator → master gain → [lowpass biquad → destination] + [convolver reverb → wet gain → destination]. The convolver buffer is procedurally generated (white noise with exponential decay). SFX sequences schedule on the audio clock (no `setTimeout` chains). Music start/stop uses gain ramps to avoid hard cuts.
+Web Audio routes: SFX oscillator → `masterGain` (and music oscillator → `musicGain` → `masterGain`) → [lowpass biquad → destination] + [convolver reverb → wet gain → destination]. The dedicated `musicGain` bus allows `stopMusic()` to fade music independently without ducking active SFX (`sfxDie()`, `sfxNewBest()`). The convolver buffer is procedurally generated (white noise with exponential decay). SFX sequences schedule on the audio clock (no `setTimeout` chains). Music start/stop uses gain ramps to avoid hard cuts.
 
 ## MIT license
 
@@ -82,4 +82,4 @@ The game was renamed in v3.0.0 to drop a prior trademarked name and remove all I
 
 ## GitHub Actions CI
 
-CI is intentionally small. It checks out the repo, installs Node.js, and runs `npm run check`. No package install is needed because the game has zero dependencies.
+CI runs `npm ci`, `npm run lint` (ESLint), `npm run check` (syntax checks, static checks, brand/link/license guards, engine behavioral tests, 60 Hz / 144 Hz determinism test, smoke test), `npm run typecheck` (TypeScript `checkJs`), and `npm run test:browser` (Playwright + axe-core WCAG 2.2 AA). Runtime remains zero-dependency.

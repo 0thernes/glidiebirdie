@@ -2,12 +2,15 @@
 import { CONFIG } from './config.js';
 import { scheduleInput } from './input-queue.js';
 import { canvas, configureCanvasForDPR, dom } from './dom.js';
-import { activeWeather, bird, control, heldKeys, state, weatherPool } from './state.js';
+import { bird, control, heldKeys, state, syncLocomotion } from './state.js';
+import { clearWeatherPool } from './physics.js';
 import { ensureAudio } from './audio.js';
 import { syncStatsAndAchievements } from './achievements.js';
+import { hooks } from './hooks.js';
 import {
   captureSereneScreenshot,
   isDrawerOpen,
+  isTutorialOpen,
   setCustomizerOpen,
   syncUiState,
   toggleFullscreen,
@@ -64,6 +67,7 @@ export function shouldIgnoreGlobalShortcut(event) {
 
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
+  if (isTutorialOpen()) return;
 
   // Drawer focus trap
   if (isDrawerOpen() && e.key === 'Tab') {
@@ -73,9 +77,17 @@ window.addEventListener('keydown', (e) => {
 
   if (e.code === 'Escape') {
     if (isDrawerOpen()) setCustomizerOpen(false);
-    else togglePause();
+    else if (state.postcardMode) togglePostcard();
+    else if (state.afterglowActive) {
+      state.afterglowActive = false;
+      state.afterglowTimer = 0;
+      syncUiState();
+    } else togglePause();
     return;
   }
+
+  // Never hijack browser/OS shortcuts (Ctrl+C, Ctrl+R, Ctrl+F, Cmd+P, etc.)
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
 
   if (shouldIgnoreGlobalShortcut(e)) return;
   if (isDrawerOpen()) return;
@@ -103,6 +115,12 @@ window.addEventListener('keydown', (e) => {
     captureSereneScreenshot();
     return;
   }
+  if (e.code === 'Enter' && state.afterglowActive) {
+    state.afterglowActive = false;
+    state.afterglowTimer = 0;
+    syncUiState();
+    return;
+  }
   if (e.code === 'Space' || e.code === 'ArrowUp') handleAction(e);
 
   if (state.phase !== 'play' || state.paused) return;
@@ -112,13 +130,13 @@ window.addEventListener('keydown', (e) => {
 
 window.addEventListener('keyup', (e) => {
   heldKeys.delete(e.code);
-  if (e.code === 'ArrowDown') bird.isDiving = false;
-  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') bird.isBraking = false;
+  syncLocomotion();
 });
 
 canvas.addEventListener(
   'pointerdown',
   (e) => {
+    if (isTutorialOpen() || isDrawerOpen()) return;
     ensureAudio();
     handleAction(e);
   },
@@ -189,6 +207,10 @@ export function bindMobileControls() {
 // ─── 17. LIFECYCLE EVENTS ──────────────────────────────────────────
 export function pauseForPageLifecycle() {
   heldKeys.clear();
+  control.touchBrake = false;
+  control.touchDive = false;
+  control.padBrake = false;
+  control.padDive = false;
   bird.isBraking = false;
   bird.isDiving = false;
   if (state.phase === 'play' && !state.paused) togglePause(true);
@@ -231,8 +253,7 @@ if (typeof reducedMotionQuery.addEventListener === 'function') {
     state.reducedMotion = e.matches;
     if (e.matches) {
       state.shakeAmount = 0;
-      activeWeather.length = 0;
-      for (const p of weatherPool) p.active = false;
+      clearWeatherPool();
     }
   });
 }
@@ -242,18 +263,7 @@ if (reducedTransparencyQuery && typeof reducedTransparencyQuery.addEventListener
   });
 }
 
-// ─── 18. OFFLINE APP SHELL ─────────────────────────────────────────
-
-export function syncLocomotion() {
-  bird.isBraking =
-    heldKeys.has('ShiftLeft') ||
-    heldKeys.has('ShiftRight') ||
-    control.touchBrake ||
-    control.padBrake ||
-    control.scriptBrake;
-  bird.isDiving =
-    heldKeys.has('ArrowDown') || control.touchDive || control.padDive || control.scriptDive;
-}
+hooks.handleAction = handleAction;
 
 export const padDown = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
 
@@ -280,9 +290,25 @@ export function pollGamepad(timeMs) {
     const axes = pad.axes;
     if (axes && axes.length > 1 && axes[1] > 0.55) control.padDive = true;
   }
-  if (flap && !padDown[0]) scheduleInput(timeMs, 'flap');
-  if (pause && !padDown[9]) togglePause();
-  if (mute && !padDown[8]) toggleMute();
+  const modalOpen = isTutorialOpen() || isDrawerOpen();
+  if (modalOpen) {
+    control.padBrake = false;
+    control.padDive = false;
+  } else {
+    if (flap && !padDown[0]) {
+      if (state.phase === 'play' && !state.paused && !state.afterglowActive) {
+        if (state.audioEnabled) ensureAudio();
+        scheduleInput(timeMs, 'flap');
+      } else {
+        handleAction(null);
+      }
+    }
+    if (pause && !padDown[9]) {
+      if (state.postcardMode) togglePostcard();
+      else togglePause();
+    }
+    if (mute && !padDown[8]) toggleMute();
+  }
   padDown[0] = flap;
   padDown[8] = mute;
   padDown[9] = pause;

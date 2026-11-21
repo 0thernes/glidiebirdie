@@ -1,17 +1,16 @@
 /** Fixed-step loop. Simulation advances in 1/60 s ticks; rendering interpolates. */
 import { CONFIG } from './config.js';
-import { bird, control, ground, pipes, state, view } from './state.js';
+import { bird, control, ground, pipes, state, syncLocomotion, view } from './state.js';
 import { MAX_FRAME_STEPS, TICKS_PER_STEP, msToTicks } from './timestep.js';
 import { consumeInputs } from './input-queue.js';
-import { pollGamepad, syncLocomotion } from './input.js';
+import { pollGamepad } from './input.js';
 import { doFlap, updateBird, updateEmotion, updateParticles, updatePipes, updateShieldBubbles, updateWeatherParticles, spawnWeatherParticles, updateNearestPipeCache, checkCollisions } from './physics.js';
-import { draw, updateFpsCounter } from './render.js';
+import { draw, rebuildSkyCache, updateFpsCounter } from './render.js';
 import { syncStatsAndAchievements } from './achievements.js';
 import { syncUiState } from './ui.js';
-import { rebuildSkyCache } from './render.js';
 
 let frameErrorCount = 0;
-let frameErrorCooldownAt = 0;
+let frameErrorCooldownUntilMs = 0;
 /** @type {null | (() => void)} */
 let stepListener = null;
 
@@ -48,14 +47,26 @@ function stepSimulation(stepEndTick) {
   state.dtSec = 1 / 60;
   state.elapsedSec += state.dtSec;
   if (state.afterglowActive) {
-    state.afterglowTimer -= state.dt;
+    state.afterglowTimer -= state.dtSec;
     if (state.afterglowTimer <= 0) {
       state.afterglowActive = false;
       state.afterglowTimer = 0;
       syncUiState();
     }
   }
-  update();
+  if (state.phase === 'gameOver') {
+    // Decay impact shake/flashes and animate death/afterglow particles without running gameplay.
+    state.time += state.dt;
+    if (state.shakeAmount > 0) {
+      state.shakeAmount *= Math.pow(0.82, state.dt);
+      if (state.shakeAmount < 0.05) state.shakeAmount = 0;
+    }
+    if (state.newBestFlash > 0) state.newBestFlash = Math.max(0, state.newBestFlash - state.dtSec);
+    if (state.nearMissFlash > 0) state.nearMissFlash = Math.max(0, state.nearMissFlash - state.dtSec);
+    updateParticles();
+  } else {
+    update();
+  }
   if (stepListener) stepListener();
 }
 
@@ -95,7 +106,7 @@ function present(timestamp, wallSec) {
     bird.prevY = bird.y;
     bird.prevRotation = bird.rotation;
   }
-  if (state.elapsedSec < frameErrorCooldownAt) return;
+  if (timestamp < frameErrorCooldownUntilMs) return;
   updateFpsCounter(wallSec);
   try {
     draw();
@@ -106,7 +117,7 @@ function present(timestamp, wallSec) {
     }
     if (frameErrorCount > CONFIG.FRAME_ERROR_BURST_LIMIT) {
       console.warn('[GlidieBirdie] Frame errors burst — cooling down');
-      frameErrorCooldownAt = state.elapsedSec + CONFIG.FRAME_ERROR_COOLDOWN_SEC;
+      frameErrorCooldownUntilMs = timestamp + CONFIG.FRAME_ERROR_COOLDOWN_SEC * 1000;
       frameErrorCount = 0;
     }
   }
@@ -127,7 +138,7 @@ export function loop(timestamp = performance.now()) {
     pollGamepad(timestamp);
     const prevTick = msToTicks(state.lastTimestamp);
     const frameTick = msToTicks(timestamp);
-    const simulating = (state.phase === 'play' && !state.paused) || state.afterglowActive;
+    const simulating = (state.phase === 'play' && !state.paused) || state.phase === 'gameOver';
     if (!simulating || frameTick <= prevTick) {
       state.lastTimestamp = timestamp;
       view.alpha = 1;
@@ -143,9 +154,10 @@ export function loop(timestamp = performance.now()) {
       guard++;
     }
     state.lastTimestamp = timestamp;
+    const backlogDropped = stepIndex < target;
     const into = frameTick - stepIndex * TICKS_PER_STEP;
-    // On an exact step (60 Hz) show the state just integrated. Between steps, blend.
-    view.alpha = into <= 0 ? 1 : into / TICKS_PER_STEP;
+    // On an exact step (60 Hz) or hitch backlog drop, show the latest integrated state cleanly (never extrapolate > 1).
+    view.alpha = backlogDropped || into <= 0 ? 1 : Math.min(1, into / TICKS_PER_STEP);
     present(timestamp, wallSec);
   } finally {
     requestAnimationFrame(loop);
