@@ -2,27 +2,27 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [3.1.0] — Fixed-step simulation, native modules, and full audit
 
-### Fixed
-
-- **Game-over screen shake & death particles:** `src/loop.js` now decays `shakeAmount`, `newBestFlash`, `nearMissFlash`, and updates active particles during `gameOver` instead of freezing particles and shaking indefinitely.
-- **Afterglow timer & stats persistence:** `state.afterglowTimer` now decrements in seconds (`state.dtSec`) instead of frames (`state.dt`, which expired the 4.2 s reflection in ~70 ms), and `gameOver()` now persists stats, score history, streak, and end-of-run achievements unconditionally even when entering Afterglow.
-- **Weather pool free-list leak:** theme switches (`src/ui.js`) and `prefers-reduced-motion` toggles (`src/input.js`) now recycle active slots back onto `freeWeather` via `clearWeatherPool()`, preventing weather from permanently stalling after repeated switches.
-- **Serene Postcard bird pose & cleanup:** `drawPostcard()` now overrides the interpolated render `pose` (inside `try`/`finally`) so the postcard bird centers cleanly and level, `Escape` in postcard mode closes postcard without unpausing directly into gravity, and `resetGame()`/`gameOver()` always clear `state.postcardMode`.
-- **Achievements reload & reset:** previously unlocked run-scoped achievements stay visibly `.unlocked` across reloads, `checkAchievements()` persists once without recursive re-entry, and `resetStats()` clears `.unlocked` via the cached node map before re-rendering fresh progress counters.
-- **Input & gamepad parity:** gamepad `A`/`Cross` can now start runs, restart after game over, and resume from pause; tutorial modal blocks leaking global shortcuts; OS/browser modifier chords (`Ctrl+C`, `Ctrl+R`, `Ctrl+P`, `Ctrl+F`, `Cmd+...`) are no longer hijacked; page blur/visibility reset clears touch and gamepad holds.
-- **Audio & simulation polish:** `playToneAt()` skips zero-volume tones (preventing Web Audio `exponentialRampToValueAtTime` `RangeError`) and disconnects finished nodes; hitch recovery clamps `view.alpha` to `[0, 1]`; frame-error cooldown uses wall-clock timestamps; bird eye-tracking targets actual shield bubble/gap centers; near-miss checks pipe centers; meadow pollen renders in a single lightweight pass; screenshot downloads use `glidiebirdie-serene-*.png`.
-- **Service worker offline resilience:** app-shell matching ignores query/hash parameters (normalizing cache keys), keeps background revalidation alive via `event.waitUntil`, falls back to cached `index.html` on 4xx/5xx navigation errors, and caches the three PNG install icons.
-- **Tooling, security & docs:** replaced `python3 -m http.server` in `playwright.config.js` with cross-platform zero-dep `tools/static-server.mjs`, resolved 3 moderate `minimatch`/`eslint` devDependency vulnerabilities via `npm audit fix`, removed the orphaned `docs/assets/flappy-calm-edition-preview.png`, fixed all `markdownlint` and `cspell` findings, and aligned `README.md`, `.memory/`, and `docs/` with v3.1.0 native ES modules and actual `gb:` storage keys.
-
-## [3.1.0] — Fixed-step simulation and native modules
+### Added & Changed
 
 - Simulation now advances in exact 1/60 s steps on a 720 Hz tick grid. 60 Hz and 144 Hz runs of the same seed and inputs produce the same trajectory. Rendering interpolates between steps.
 - The engine is native ES modules in `src/` (physics, collision, input, audio, render, storage, UI). `game.js` is the entry. No bundler, no runtime dependency. Saved `gb:` stats stay on schema 3.
 - Gamepad input: Cross/A flaps, shoulders and triggers brake and dive, Start pauses, Back mutes.
 - CI lints with ESLint, runs the determinism test, and runs Playwright 1.64 plus axe-core against WCAG 2.2 AA. Playwright 1.64 is required because GitHub's `ubuntu-latest` image is Ubuntu 26.04.
 - GitHub Actions are SHA-pinned, including `dependabot/fetch-metadata` at v3. `actions/checkout` 7.0.1 and `actions/setup-node` 7.0.0 are applied. See `RELEASING.md` for how a person cuts a version tag. This repo still does not create tags on its own.
+
+### Fixed
+
+- **Game-over screen shake, particles & reduced motion:** `src/loop.js` now decays `shakeAmount`, `newBestFlash`, `nearMissFlash`, and updates active particles during `gameOver` instead of freezing particles and shaking indefinitely, while keeping decorative `state.time` frozen under `prefers-reduced-motion`.
+- **Afterglow timer & stats persistence:** `state.afterglowTimer` now decrements in seconds (`state.dtSec`) instead of frames (`state.dt`, which expired the 4.2 s reflection in ~70 ms), and `gameOver()` now persists stats, score history, streak, and end-of-run achievements unconditionally even when entering Afterglow.
+- **Weather pool free-list leak:** theme switches (`src/ui.js`) and `prefers-reduced-motion` toggles (`src/input.js`) now recycle active slots back onto `freeWeather` via `clearWeatherPool()`, preventing weather from permanently stalling after repeated switches.
+- **Serene Postcard bird pose & cleanup:** `drawPostcard()` now overrides the interpolated render `pose` (inside `try`/`finally`) so the postcard bird centers cleanly and level, `Escape` in postcard mode closes postcard without unpausing directly into gravity, and `resetGame()`/`gameOver()` always clear `state.postcardMode`.
+- **Achievements reload, reset & toast safety:** previously unlocked run-scoped achievements stay visibly `.unlocked` across reloads, `checkAchievements()` persists once without recursive re-entry, `resetStats()` clears per-run counters and `.unlocked` without immediately re-granting milestones from a finished run, and `showToast()` guards its cap loop cleanly.
+- **Input, accessibility & gamepad parity:** gamepad `A`/`Cross` can now start runs, restart after game over, and resume from pause; tutorial modal blocks leaking global shortcuts; OS/browser modifier chords (`Ctrl+C`, `Ctrl+R`, `Ctrl+P`, `Ctrl+F`, `Cmd+...`) are no longer hijacked; page blur/visibility reset clears touch and gamepad holds; `@media (prefers-reduced-transparency: reduce)` sits unlayered at the end of `style.css` so it reliably overrides `@layer components`.
+- **Audio & simulation polish:** `playToneAt()` skips zero-volume tones (preventing Web Audio `exponentialRampToValueAtTime` `RangeError`) and disconnects finished nodes; hitch recovery clamps `view.alpha` to `[0, 1]`; frame-error cooldown uses wall-clock timestamps; bird eye-tracking targets actual shield bubble/gap centers; near-miss checks pipe centers; meadow pollen renders in a single lightweight pass with `CONFIG.MEADOW_POLLEN_DETAIL_CAP`; screenshot downloads use `glidiebirdie-serene-*.png`.
+- **Service worker offline resilience:** app-shell matching ignores query/hash parameters (preferring normalized cache keys over legacy query-keyed entries), awaits `cache.put()` inside `event.waitUntil`, falls back to cached `index.html` on 4xx/5xx navigation errors, and caches the three PNG install icons.
+- **Tooling, security & docs:** replaced `python3 -m http.server` in `playwright.config.js` with cross-platform zero-dep `tools/static-server.mjs`, resolved 3 moderate `minimatch`/`eslint` devDependency vulnerabilities via `npm audit fix`, removed the orphaned `docs/assets/flappy-calm-edition-preview.png`, fixed all `markdownlint` and `cspell` findings, and aligned `README.md`, `.memory/`, and `docs/` with v3.1.0 native ES modules and actual `gb:` storage keys.
 
 ## [3.0.0] — Rebrand, relicense, and a Gold-level de-risk pass
 
