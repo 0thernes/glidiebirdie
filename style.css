@@ -218,19 +218,6 @@
     }
   }
 
-  @media (prefers-reduced-transparency: reduce) {
-    .panel,
-    .customizer-drawer,
-    .tutorial-overlay,
-    .mobile-controls,
-    .toast {
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-      background:
-        linear-gradient(180deg, rgba(9, 18, 35, 0.98), rgba(18, 30, 54, 0.99));
-    }
-  }
-
   .hero,
   .stage,
   .card {
@@ -1088,5 +1075,20 @@
   /* Lift toasts above the fixed mobile control bar so they never overlap it. */
   .toast-container {
     bottom: calc(6.6rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Placed unlayered at the end of the file so reduced-transparency
+   reliably overrides layered components (.panel, .mobile-controls,
+   .tutorial-overlay, .customizer-drawer) as well as unlayered .toast. */
+@media (prefers-reduced-transparency: reduce) {
+  .panel,
+  .customizer-drawer,
+  .tutorial-overlay,
+  .mobile-controls,
+  .toast {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: linear-gradient(180deg, rgba(9, 18, 35, 0.98), rgba(18, 30, 54, 0.99));
   }
 }

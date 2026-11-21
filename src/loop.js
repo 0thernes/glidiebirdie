@@ -56,7 +56,8 @@ function stepSimulation(stepEndTick) {
   }
   if (state.phase === 'gameOver') {
     // Decay impact shake/flashes and animate death/afterglow particles without running gameplay.
-    state.time += state.dt;
+    // Freeze decorative time under prefers-reduced-motion so stars/clouds do not animate.
+    if (!state.reducedMotion) state.time += state.dt;
     if (state.shakeAmount > 0) {
       state.shakeAmount *= Math.pow(0.82, state.dt);
       if (state.shakeAmount < 0.05) state.shakeAmount = 0;
