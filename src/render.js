@@ -314,7 +314,7 @@ export function drawWeatherParticles() {
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       ctx.fill();
-      if (activeWeather.length <= 64) {
+      if (activeWeather.length <= CONFIG.MEADOW_POLLEN_DETAIL_CAP) {
         ctx.fillStyle = 'rgba(255, 225, 150, 0.38)';
         for (let i = 0; i < 4; i++) {
           const a = i * (Math.PI / 2) + phase;

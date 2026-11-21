@@ -26,7 +26,7 @@ function writeStatsToStorage() {
   writeStoredValue(SK.unlocked, JSON.stringify(Array.from(state.unlockedAchievements)));
 }
 
-export function syncStatsAndAchievements(saveToStorage = false) {
+export function syncStatsAndAchievements(saveToStorage = false, allowGrant = true) {
   if (saveToStorage) {
     writeStatsToStorage();
   }
@@ -47,7 +47,7 @@ export function syncStatsAndAchievements(saveToStorage = false) {
       : 'No completed runs yet.';
   }
   drawSparkline();
-  checkAchievements();
+  checkAchievements(allowGrant);
 }
 
 export let lastHotPersistAtSec = -1e9;
@@ -96,9 +96,14 @@ export function resetStats() {
     } catch {}
   });
   state.best = 0;
-  // Clear unlocked styling via the cached achievement nodes, then re-sync so fresh progress counters render.
+  state.brakeUseCount = 0;
+  state.diveUseCount = 0;
+  state.runNearMisses = 0;
+  if (state.phase !== 'play') state.score = 0;
+  // Clear unlocked styling via the cached achievement nodes, then re-sync without re-granting
+  // milestones from the prior/current run.
   for (const { el } of getAchievementEls().values()) el.classList.remove('unlocked');
-  syncStatsAndAchievements(true);
+  syncStatsAndAchievements(true, false);
   announce('All stats and achievements reset.');
 }
 
@@ -196,13 +201,13 @@ export function getAchievementEls() {
   return achElCache;
 }
 
-export function checkAchievements() {
+export function checkAchievements(allowGrant = true) {
   const els = getAchievementEls();
   let newlyUnlocked = false;
   for (const ach of ACHIEVEMENTS) {
     const refs = els.get(ach.id);
     const wasUnlocked = state.unlockedAchievements.has(ach.id);
-    const isUnlocked = ach.check();
+    const isUnlocked = allowGrant && ach.check();
     if (refs?.progressEl) {
       refs.progressEl.textContent = wasUnlocked && !isUnlocked ? 'Unlocked' : ach.progress();
     }
@@ -256,7 +261,9 @@ export function showToast(text, type = 'default') {
   }, 2400);
   // Cap to 4 visible toasts to avoid stacking
   while (dom.toastContainer.children.length > 4) {
-    dom.toastContainer.firstElementChild?.remove();
+    const first = dom.toastContainer.firstElementChild;
+    if (!first) break;
+    first.remove();
   }
 }
 

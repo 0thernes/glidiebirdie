@@ -83,21 +83,24 @@ async function staleWhileRevalidate(event, request) {
   const cache = await caches.open(CACHE_NAME);
   const appShell = isAppShellRequest(request);
   const cleanKey = appShell ? normalizeShellUrl(request.url) : null;
-  const cached =
-    (await cache.match(request)) ||
-    (appShell ? await cache.match(request, { ignoreSearch: true }) : undefined);
+  // Prefer the normalized key so refreshed shell entries always supersede any legacy query-keyed entry.
+  const cached = appShell
+    ? (cleanKey ? await cache.match(cleanKey) : undefined) ||
+      (await cache.match(request)) ||
+      (await cache.match(request, { ignoreSearch: true }))
+    : await cache.match(request);
 
   const networkFetch = fetch(request)
-    .then((response) => {
+    .then(async (response) => {
       if (response && response.ok && appShell && cleanKey) {
-        // Clone before the page consumes the body; store under normalized URL key.
-        cache.put(cleanKey, response.clone()).catch(() => {});
+        // Clone before the page consumes the body; await cache write so event.waitUntil tracks it.
+        await cache.put(cleanKey, response.clone()).catch(() => {});
       }
       return response;
     })
     .catch(() => null);
 
-  // Keep SW alive until background refresh finishes when returning a cached hit.
+  // Keep SW alive until background refresh + cache write finish when returning a cached hit.
   if (cached) {
     event.waitUntil(networkFetch);
     return cached;

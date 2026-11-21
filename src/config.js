@@ -81,6 +81,7 @@ export const CONFIG = Object.freeze({
   MEADOW_LIGHT_ALPHA: 0.055,
   MEADOW_LIGHT_WAVE_SPEED: 0.012,
   MEADOW_LIGHT_VERTICAL: 0.18,
+  MEADOW_POLLEN_DETAIL_CAP: 64,
 
   // Living breath flecks — subtle serene atmosphere only when calmly gliding
   CALM_BREATH_PARTICLE_CHANCE: 0.009,
