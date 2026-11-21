@@ -12,7 +12,7 @@ Style, tone, and design choices for this project.
 
 - Functions: `camelCase`, descriptive, action-first (`doFlap`, `spawnParticles`, `checkCollisions`).
 - State properties: `camelCase`, nouns (`pipeSpawnTimer`, `speedMultiplier`).
-- Constants: Not formally defined, but magic numbers are grouped in the `state` object.
+- Constants: All tunable product constants live in the frozen `CONFIG` object in `src/config.js` (`UPPER_SNAKE_CASE`); mutable runtime values live in `src/state.js`.
 - DOM element IDs: `camelCase` with descriptive names (`pauseToggle`, `srStatus`).
 
 ## CSS
@@ -31,7 +31,7 @@ Style, tone, and design choices for this project.
 - `try/catch` around any API that can throw (`localStorage`, `AudioContext`).
 - No `var`. Use `const` and `let`.
 - No frameworks. Vanilla JS only.
-- `'use strict';` at the top of `game.js`.
+- ES modules (`type="module"`) are strict by default; keep `'use strict';` at the top of `service-worker.js`.
 
 ## Accessibility
 

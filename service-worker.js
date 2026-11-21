@@ -15,6 +15,9 @@ const APP_SHELL = Object.freeze([
   './style.css',
   './game.js',
   './manifest.webmanifest',
+  './docs/assets/icon-180.png',
+  './docs/assets/icon-192.png',
+  './docs/assets/icon-512.png',
   './src/achievements.js',
   './src/audio.js',
   './src/collision.js',
@@ -64,42 +67,51 @@ sw.addEventListener('fetch', (/** @type {FetchEvent} */ event) => {
   const url = new URL(request.url);
   if (url.origin !== sw.location.origin) return;
 
-  event.respondWith(staleWhileRevalidate(request));
+  event.respondWith(staleWhileRevalidate(event, request));
 });
 
 /**
  * Stale-while-revalidate: serve the cached copy instantly for snappy offline
- * loads, but ALWAYS kick off a background fetch that refreshes the cache so the
- * next load is current. This replaces the old cache-first strategy, which pinned
- * returning players to whatever shell was cached until the SW file itself changed
- * — i.e. permanently stale between releases. Now updates self-heal within one load.
+ * loads, and ALWAYS refresh the cache in the background (held open via
+ * `event.waitUntil`) so the next load is current. Query-string requests to
+ * app-shell URLs match ignoring search params and normalize cache keys so
+ * campaign/UTM parameters never cause offline misses or unbounded cache bloat.
+ * @param {FetchEvent} event
  * @param {Request} request
  */
-async function staleWhileRevalidate(request) {
+async function staleWhileRevalidate(event, request) {
   const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
+  const appShell = isAppShellRequest(request);
+  const cleanKey = appShell ? normalizeShellUrl(request.url) : null;
+  const cached =
+    (await cache.match(request)) ||
+    (appShell ? await cache.match(request, { ignoreSearch: true }) : undefined);
 
   const networkFetch = fetch(request)
     .then((response) => {
-      if (response && response.ok && isAppShellRequest(request)) {
-        // Clone before the page consumes the body.
-        cache.put(request, response.clone()).catch(() => {});
+      if (response && response.ok && appShell && cleanKey) {
+        // Clone before the page consumes the body; store under normalized URL key.
+        cache.put(cleanKey, response.clone()).catch(() => {});
       }
       return response;
     })
     .catch(() => null);
 
-  // Cached copy wins for latency; the background refresh updates it for next time.
-  if (cached) return cached;
+  // Keep SW alive until background refresh finishes when returning a cached hit.
+  if (cached) {
+    event.waitUntil(networkFetch);
+    return cached;
+  }
 
   const fresh = await networkFetch;
-  if (fresh) return fresh;
+  if (fresh && fresh.ok) return fresh;
 
-  // Offline cold-start for a route we never cached: fall back to the app shell.
+  // Offline or 4xx/5xx cold-start for a navigation route: fall back to the app shell.
   if (request.mode === 'navigate') {
     const fallback = await cache.match('./index.html');
     if (fallback) return fallback;
   }
+  if (fresh) return fresh;
   return Response.error();
 }
 
@@ -108,11 +120,19 @@ async function staleWhileRevalidate(request) {
 // built lazily on first use makes each subsequent membership test O(1).
 let _shellUrlSet = /** @type {Set<string> | null} */ (null);
 
+/** @param {string} rawUrl */
+function normalizeShellUrl(rawUrl) {
+  const cleanUrl = new URL(rawUrl);
+  cleanUrl.search = '';
+  cleanUrl.hash = '';
+  return cleanUrl.href;
+}
+
 /** @param {Request} request */
 function isAppShellRequest(request) {
   if (request.mode === 'navigate') return true;
   if (!_shellUrlSet) {
     _shellUrlSet = new Set(APP_SHELL.map((path) => new URL(path, sw.registration.scope).href));
   }
-  return _shellUrlSet.has(request.url);
+  return _shellUrlSet.has(normalizeShellUrl(request.url));
 }

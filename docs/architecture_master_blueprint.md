@@ -1,6 +1,6 @@
 # Architecture Guide
 
-This document explains how Calm Edition is actually built today. It is meant to help maintainers and AI assistants make safe changes without guessing.
+This document explains how GlidieBirdie is actually built today. It is meant to help maintainers and AI assistants make safe changes without guessing.
 
 ## Design Boundaries
 
@@ -25,46 +25,45 @@ These are the rules the runtime is built around:
 | Install metadata | `manifest.webmanifest` | PWA name, icons, display mode, colors |
 | Validation | `tests/smoke-test.mjs` | Protect the public surface and repo promises |
 
-## Runtime Layout Inside `game.js`
+## Runtime Layout Across `src/`
 
-The engine is organized in numbered sections. That ordering matters because later systems depend on earlier setup.
+The engine is split into small native ES modules under `src/` (loaded via `game.js` with no bundler):
 
-| Section | Purpose |
+| Module | Purpose |
 | --- | --- |
-| `1. CONFIG` | Central tuning constants and limits |
-| `2. DOM + DPR-AWARE CANVAS` | DOM references, canvas context, device-pixel-ratio setup |
-| `3. RNG` | Seeded random support for daily mode |
-| `4. STORAGE` | Guarded `localStorage` read and write helpers |
-| `5. AUDIO` | Web Audio graph, effects, and scheduler |
-| `6. STATE` | Shared mutable runtime state |
-| `7-9` | Theme tables, sprite caches, world object pools |
-| `10-11` | Physics update and rendering |
-| `12-19` | Drawer logic, stats, achievements, lifecycle, input, service worker, bindings |
-| `20-21` | Main loop and boot |
+| `src/config.js` | Central frozen tuning constants (`CONFIG`) and labels |
+| `src/rng.js` | Seeded `mulberry32` gameplay RNG and independent cosmetic RNG |
+| `src/storage.js` | Guarded `localStorage` helpers (`SK` `gb:` map + legacy migration) |
+| `src/timestep.js`, `src/input-queue.js` | 720 Hz tick grid and timestamped input queue |
+| `src/state.js` | Shared mutable runtime state, `THEME_TABLE`, bird/ground/pipe/pool state |
+| `src/dom.js`, `src/haptics.js`, `src/hooks.js` | Cached DOM handles, DPR canvas setup, haptics, cycle-breaking hooks |
+| `src/audio.js` | Web Audio graph (`masterGain`, `musicGain`, lowpass, reverb) and scheduler |
+| `src/collision.js`, `src/physics.js` | Circle-vs-rect collision, bird/pipe/shield/pool updates |
+| `src/render.js` | Offscreen sprite caches, interpolated world rendering, HUD, postcard |
+| `src/achievements.js`, `src/ui.js` | Stats, 12 milestones, toasts, sparkline, drawer, tutorial, theme switching |
+| `src/session.js`, `src/input.js` | Run lifecycle (`resetGame`, `startGame`, `gameOver`, afterglow) and keyboard/touch/gamepad input |
+| `src/loop.js`, `src/main.js` | Fixed 60 Hz simulation loop with interpolation and `boot()` wiring |
 
 ## Boot Sequence
 
-The runtime starts in a predictable order:
+The runtime starts in a predictable order inside `src/main.js`:
 
-1. Resolve DOM references and configure the canvas with `configureCanvasForDPR()`.
-2. Load stored preferences and stats through the guarded storage helpers.
-3. Rebuild cached art and theme-derived values.
-4. Bind drawer controls, tutorial behavior, keyboard input, and mobile controls.
-5. Register the service worker when the environment allows it.
-6. Start the requestAnimationFrame loop through `loop()`.
+1. Register `onDprChange(rebuildSpriteCaches)` and configure the canvas with `configureCanvasForDPR()`.
+2. Derive physics constants with `updateDerivedPhysics()` and initialize a clean start state via `resetGame()`.
+3. Bind drawer controls, mobile controls, and tutorial modal behavior.
+4. Register the service worker when served over HTTP(S).
+5. Sync initial UI state, wire toolbar buttons, and start the `requestAnimationFrame(loop)` loop.
 
 This matters because several systems expect derived physics, canvas size, and DOM references to exist before the first frame.
 
 ## Main Loop
 
-`loop()` is the heart of the runtime.
+`loop()` in `src/loop.js` is the heart of the runtime.
 
-- It computes frame timing from `performance.now()`.
-- It normalizes frame cost into `state.dt` and `state.dtSec`.
-- It calls `update()` before `draw()`.
-- It keeps gameplay consistent across 60Hz, 120Hz, 144Hz, and 240Hz displays.
-
-The project uses normalized delta time on purpose. New time-based behavior should use `state.dt` or `state.dtSec`, not raw frame assumptions.
+- It maps `performance.now()` timestamps onto a 720 Hz integer tick grid (the LCM of 60 and 144).
+- It advances simulation in exact 1/60 s steps (`dt = 1`, `dtSec = 1/60`), capped at `MAX_FRAME_STEPS = 5` per frame to prevent lag-spike tunneling.
+- It computes a clamped interpolation factor `view.alpha` in `[0, 1]` for smooth rendering between ticks.
+- It keeps gameplay deterministic and identical across 60 Hz, 120 Hz, 144 Hz, and 240 Hz displays.
 
 ## State Model
 
@@ -123,7 +122,7 @@ The mobile control bar is part of the core product. Any gameplay change should s
 
 ## Audio Architecture
 
-Calm Edition generates all sound locally with Web Audio.
+GlidieBirdie generates all sound locally with Web Audio.
 
 The audio system is built around:
 
@@ -185,11 +184,14 @@ The repo relies on lightweight checks instead of heavy tooling.
 
 `npm run check` currently validates:
 
-- syntax for `game.js`
-- syntax for `service-worker.js`
+- syntax for `game.js`, `service-worker.js`, and every module in `src/`
+- static checks (`tests/static-checks.mjs`)
+- brand, link, and license guards (`tests/brand-guard.mjs`, `tests/link-guard.mjs`, `tests/license-guard.mjs`)
+- headless engine behavioral invariants (`tests/engine-test.mjs`)
+- 60 Hz / 144 Hz trajectory determinism (`tests/determinism.mjs`)
 - repo promises through `tests/smoke-test.mjs`
 
-Documentation quality is validated separately with markdownlint and cspell.
+CI additionally runs ESLint (`npm run lint`), TypeScript `checkJs` (`npm run typecheck`), and Playwright + axe-core WCAG 2.2 AA browser tests (`npm run test:browser`). Documentation quality is validated with markdownlint and cspell.
 
 ## Safe Extension Checklist
 

@@ -17,7 +17,7 @@ export const state = {
   best: readStoredNumber(SK.best, 0, 0),
   frames: 0,
   time: 0, // 60-fps-normalized accumulated dt
-  elapsedSec: 0, // wall-clock seconds since boot (resets on game start)
+  elapsedSec: 0, // wall-clock seconds accumulated during active simulation
   runSec: 0, // wall-clock seconds in current run
 
   // Customizer
@@ -123,6 +123,18 @@ export const control = {
   scriptBrake: false,
   scriptDive: false,
 };
+
+/** Recompute bird braking/diving flags from all active input sources. */
+export function syncLocomotion() {
+  bird.isBraking =
+    heldKeys.has('ShiftLeft') ||
+    heldKeys.has('ShiftRight') ||
+    control.touchBrake ||
+    control.padBrake ||
+    control.scriptBrake;
+  bird.isDiving =
+    heldKeys.has('ArrowDown') || control.touchDive || control.padDive || control.scriptDive;
+}
 
 export const view = { alpha: 1 };
 

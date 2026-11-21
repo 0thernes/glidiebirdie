@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- **Game-over screen shake & death particles:** `src/loop.js` now decays `shakeAmount`, `newBestFlash`, `nearMissFlash`, and updates active particles during `gameOver` instead of freezing particles and shaking indefinitely.
+- **Afterglow timer & stats persistence:** `state.afterglowTimer` now decrements in seconds (`state.dtSec`) instead of frames (`state.dt`, which expired the 4.2 s reflection in ~70 ms), and `gameOver()` now persists stats, score history, streak, and end-of-run achievements unconditionally even when entering Afterglow.
+- **Weather pool free-list leak:** theme switches (`src/ui.js`) and `prefers-reduced-motion` toggles (`src/input.js`) now recycle active slots back onto `freeWeather` via `clearWeatherPool()`, preventing weather from permanently stalling after repeated switches.
+- **Serene Postcard bird pose & cleanup:** `drawPostcard()` now overrides the interpolated render `pose` (inside `try`/`finally`) so the postcard bird centers cleanly and level, `Escape` in postcard mode closes postcard without unpausing directly into gravity, and `resetGame()`/`gameOver()` always clear `state.postcardMode`.
+- **Achievements reload & reset:** previously unlocked run-scoped achievements stay visibly `.unlocked` across reloads, `checkAchievements()` persists once without recursive re-entry, and `resetStats()` clears `.unlocked` via the cached node map before re-rendering fresh progress counters.
+- **Input & gamepad parity:** gamepad `A`/`Cross` can now start runs, restart after game over, and resume from pause; tutorial modal blocks leaking global shortcuts; OS/browser modifier chords (`Ctrl+C`, `Ctrl+R`, `Ctrl+P`, `Ctrl+F`, `Cmd+...`) are no longer hijacked; page blur/visibility reset clears touch and gamepad holds.
+- **Audio & simulation polish:** `playToneAt()` skips zero-volume tones (preventing Web Audio `exponentialRampToValueAtTime` `RangeError`) and disconnects finished nodes; hitch recovery clamps `view.alpha` to `[0, 1]`; frame-error cooldown uses wall-clock timestamps; bird eye-tracking targets actual shield bubble/gap centers; near-miss checks pipe centers; meadow pollen renders in a single lightweight pass; screenshot downloads use `glidiebirdie-serene-*.png`.
+- **Service worker offline resilience:** app-shell matching ignores query/hash parameters (normalizing cache keys), keeps background revalidation alive via `event.waitUntil`, falls back to cached `index.html` on 4xx/5xx navigation errors, and caches the three PNG install icons.
+- **Tooling, security & docs:** replaced `python3 -m http.server` in `playwright.config.js` with cross-platform zero-dep `tools/static-server.mjs`, resolved 3 moderate `minimatch`/`eslint` devDependency vulnerabilities via `npm audit fix`, removed the orphaned `docs/assets/flappy-calm-edition-preview.png`, fixed all `markdownlint` and `cspell` findings, and aligned `README.md`, `.memory/`, and `docs/` with v3.1.0 native ES modules and actual `gb:` storage keys.
+
 ## [3.1.0] — Fixed-step simulation and native modules
 
 - Simulation now advances in exact 1/60 s steps on a 720 Hz tick grid. 60 Hz and 144 Hz runs of the same seed and inputs produce the same trajectory. Rendering interpolates between steps.
@@ -51,9 +65,9 @@ one-time storage migration.
 
 - Removed the "Superman Mode / 12 parallel Grok builds — LFG" badge and banner from the README.
 
-## [Unreleased]
+### Additional hardening shipped through 3.0.0
 
-### Added
+#### Added
 
 - Added a fifth `Meadow` theme with its own palette, music loop, theme-color metadata, and gentle drifting pollen flecks that respect `prefers-reduced-motion`.
 - Headless behavioral test harness (`tests/engine-test.mjs`) asserting physics, collision, emotion, RNG, and storage invariants — zero dependencies, wired into `npm run check`.
@@ -65,7 +79,7 @@ one-time storage migration.
 - **Guardrail tamper-proofing** (`Guardrail check` workflow + `CODEOWNERS`): a required check that blocks any PR touching the project's own safety machinery (`.github/`, `tests/`, `AGENTS.md`, `CLAUDE.md`, `CODEOWNERS`, `package.json`) from auto-merging unless a human applies the `guardrail-approved` label. Closes the autonomous-agent "disable your own oversight" gap; Dependabot is exempt.
 - **Post-deploy canary** that probes the live GitHub Pages site after each deploy — rename-proof (reads the URL from the deployment event and checks structural sentinels) — and opens an issue if production returns an unhealthy game shell.
 
-### Changed
+#### Changed
 
 - SHA-pinned the GitHub Actions (`checkout`, `setup-node`) to commit SHAs for supply-chain safety.
 - Consolidated the audit documentation down to a single canonical `AUDIT-250.md`.
@@ -77,11 +91,11 @@ one-time storage migration.
 - Added the referenced `CODE_OF_CONDUCT.md` and removed the spent `SHIP-v2.2.md` and `docs/assets/pr-body-v2.2.md` release artifacts (the latter hardcoded a developer-machine path).
 - Aligned the VS Code Python-server launch URLs with the `127.0.0.1` serve bind.
 
-### Security
+#### Security
 
 - **Dependabot auto-merge now gates major version bumps.** Patch/minor updates still merge hands-free once CI is green; **major** bumps — the highest-risk supply-chain vector for a SHA-pinned action — are held and flagged for human review via `dependabot/fetch-metadata`. PR URLs pass through an env var instead of being interpolated into the shell step (script-injection hardening). (Multi-agent audit, adversarially verified.)
 
-### Fixed
+#### Fixed
 
 - **Service worker** no longer surfaces a hard 4xx/5xx for an app-shell resource when a cached copy exists — it falls back to the last-known-good cache (and to `index.html` for navigations).
 - **`dtSec` stays coupled to `dt` on zero-elapsed frames** (two `requestAnimationFrame` callbacks at an identical timestamp); previously `dt` advanced while `dtSec` froze, drifting `state.time` vs `state.elapsedSec` and briefly stalling second-based cooldowns and the afterglow window.

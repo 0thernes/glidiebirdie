@@ -9,10 +9,10 @@ Tags and GitHub Releases are cut by a person. Nothing in CI creates a tag.
 3. Merge the change to `main`.
 4. On the commit you want to ship, create an annotated tag and push it:
 
-```bash
-git tag -a v3.1.0 -m "GlidieBirdie 3.1.0"
-git push origin v3.1.0
-```
+   ```bash
+   git tag -a v3.1.0 -m "GlidieBirdie 3.1.0"
+   git push origin v3.1.0
+   ```
 
 5. `.github/workflows/release.yml` runs on tags matching `v*` and opens a GitHub Release with generated notes. It does not move the tag and it does not publish anywhere else.
 

@@ -8,7 +8,7 @@ export default defineConfig({
     viewport: { width: 1280, height: 900 },
   },
   webServer: {
-    command: 'python3 -m http.server 4173 --bind 127.0.0.1',
+    command: 'node tools/static-server.mjs 4173',
     port: 4173,
     reuseExistingServer: false,
   },

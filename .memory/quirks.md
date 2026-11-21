@@ -10,21 +10,21 @@ This repo once had 50+ lines of live credentials inside `.gitignore`. The develo
 
 `.vscode/` previously contained `c_cpp_properties.json` and `launch.json` from an unrelated C++ project. The workspace folder is reused across projects. Always check `.vscode/` contents before assuming they match the current project.
 
-## Monolithic `game.js`
+## Native ES modules require HTTP(S)
 
-The entire game engine lives in one ~2400-line file. This is fully intentional for zero-dependency deployment, easy hacking, and optimization for modern AI coding tools. Use `grep_search` to find functions quickly.
+The engine is split into native ES modules under `src/` (loaded by `game.js`). Browsers block `file://` module loads via CORS, so serve locally with `node tools/static-server.mjs 8000` (or `python -m http.server 8000`).
 
 ## Service worker cache
 
-`service-worker.js` caches only the app shell. If a phone install looks stale, reload once while online. Bump `CACHE_NAME` whenever the shell changes.
+`service-worker.js` caches only the app shell using a `staleWhileRevalidate` strategy (matching query-string URLs cleanly and keeping background refreshes alive via `event.waitUntil`). `CACHE_NAME` tracks `package.json` `version` (enforced in CI by `tests/smoke-test.mjs`).
 
 ## AudioContext unlocking
 
 Browsers block AudioContext until a user gesture. The `ensureAudio()` call is scattered across input handlers. If audio stops working, check that `ensureAudio()` is being called on the relevant interaction.
 
-## `localStorage` best score
+## `localStorage` persistence & schema migration
 
-The best score is stored as a raw number with no schema version. If the key format ever changes, old data will silently become `NaN`. The `try/catch` handles private mode but not corruption.
+All storage keys are namespaced under `gb:` via the frozen `SK` map (`gb:schema`, `gb:best`, etc.) with `STORAGE_SCHEMA = '3'`. On boot, `migrateLegacyStorage()` transparently migrates legacy `flappy-*` keys once, and `readStoredNumber()` clamps numeric values and falls back cleanly on `NaN` or malformed JSON.
 
 ## Canvas hardcoded size
 

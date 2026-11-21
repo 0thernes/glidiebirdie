@@ -15,6 +15,13 @@ import {
 } from './state.js';
 
 const pose = { birdY: 0, birdRot: 0, groundOffset: 0 };
+const EMOTION_ICONS = Object.freeze({
+  calm: '😌',
+  happy: '😄',
+  scared: '😰',
+  determined: '😎',
+  dizzy: '😵',
+});
 const birdKeys = Object.create(null);
 const EMOTIONS = ['calm', 'happy', 'scared', 'determined', 'dizzy'];
 for (const theme of THEMES) {
@@ -71,6 +78,24 @@ function vignetteGradient() {
     vignetteGrad.addColorStop(1, 'rgba(0,0,0,0.28)');
   }
   return vignetteGrad;
+}
+let postcardVignetteGrad = null;
+function postcardVignetteGradient() {
+  if (!postcardVignetteGrad) {
+    const w = CONFIG.CANVAS_W;
+    const h = CONFIG.CANVAS_H;
+    postcardVignetteGrad = ctx.createRadialGradient(
+      w / 2,
+      h / 2.2,
+      80,
+      w / 2,
+      h / 2,
+      Math.max(w, h) * 0.72,
+    );
+    postcardVignetteGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    postcardVignetteGrad.addColorStop(1, 'rgba(4, 10, 22, 0.65)');
+  }
+  return postcardVignetteGrad;
 }
 const auroraGrads = [null, null, null];
 function auroraGradient(i) {
@@ -280,35 +305,26 @@ export function drawWeatherParticles() {
       ctx.globalAlpha = p.alpha;
       ctx.fillRect(p.x, p.y, p.size, p.size);
     } else if (p.type === 'pollen') {
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(Math.sin(state.time * 0.025 + p.phase) * 0.5);
-      ctx.fillStyle = p.color || '#fde68a';
-      ctx.globalAlpha = p.alpha;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, p.size, Math.max(0.8, p.size * 0.68), 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-      // Soft meadow pollen / petals — warm, organic, calm visual delight (flutter phase)
+      // Soft meadow pollen / petals — warm, organic, calm visual delight (flutter phase).
+      // Single pass without per-particle ctx.save()/translate()/rotate()/restore() churn.
+      const r = p.size * 0.58;
+      const phase = (p.x * 0.8 + p.y * 0.6 + state.time * 1.8) * 0.018;
       ctx.globalAlpha = p.alpha * 0.9;
-      const r = p.size * 0.52;
-      const phase = (p.x * 0.8 + p.y * 0.6 + state.time * 1.8) * 0.018; // gentle living flutter
-      // Core glow
-      ctx.fillStyle = 'rgba(249, 199, 79, 0.65)';
+      ctx.fillStyle = p.color || 'rgba(249, 199, 79, 0.72)';
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       ctx.fill();
-      // Four gentle petal lobes with phase rotation for organic meadow life (still cheap)
-      ctx.fillStyle = 'rgba(255, 225, 150, 0.38)';
-      for (let i = 0; i < 4; i++) {
-        const a = i * (Math.PI / 2) + phase;
-        const px = p.x + Math.cos(a) * r * 0.72;
-        const py = p.y + Math.sin(a) * r * 0.72;
-        ctx.beginPath();
-        ctx.arc(px, py, r * 0.58, 0, Math.PI * 2);
-        ctx.fill();
+      if (activeWeather.length <= 64) {
+        ctx.fillStyle = 'rgba(255, 225, 150, 0.38)';
+        for (let i = 0; i < 4; i++) {
+          const a = i * (Math.PI / 2) + phase;
+          const px = p.x + Math.cos(a) * r * 0.72;
+          const py = p.y + Math.sin(a) * r * 0.72;
+          ctx.beginPath();
+          ctx.arc(px, py, r * 0.56, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
-      // Tiny bright center spark for premium golden feel
       ctx.fillStyle = 'rgba(255, 250, 220, 0.75)';
       ctx.beginPath();
       ctx.arc(p.x, p.y, r * 0.28, 0, Math.PI * 2);
@@ -712,16 +728,15 @@ export function drawScore() {
   ctx.fillStyle = glowColor;
   ctx.strokeStyle = 'rgba(0,0,0,0.45)';
   ctx.lineWidth = 3;
-  ctx.font = 'bold 44px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.font = `bold 44px ${CONFIG.FONT_SANS}`;
   ctx.textAlign = 'center';
   ctx.strokeText(scoreLabel(), CONFIG.CANVAS_W / 2, 65);
   ctx.fillText(scoreLabel(), CONFIG.CANVAS_W / 2, 65);
 
   if (state.phase === 'play') {
-    ctx.font = '13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = `13px ${CONFIG.FONT_SANS}`;
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    const emo = { calm: '😌', happy: '😄', scared: '😰', determined: '😎', dizzy: '😵' };
-    ctx.fillText(emo[bird.emotion] || '', CONFIG.CANVAS_W / 2, 85);
+    ctx.fillText(EMOTION_ICONS[bird.emotion] || '', CONFIG.CANVAS_W / 2, 85);
   }
 }
 
@@ -799,21 +814,21 @@ export function drawPanel(title, subtitle, extra, options = /** @type {{newBest?
 
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
-  ctx.font = 'bold 30px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.font = `bold 30px ${CONFIG.FONT_SANS}`;
   ctx.fillText(title, CONFIG.CANVAS_W / 2, py + (options.newBest ? 60 : 50));
 
-  ctx.font = '17px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.font = `17px ${CONFIG.FONT_SANS}`;
   ctx.fillStyle = 'rgba(255,255,255,0.85)';
   wrapText(subtitle, CONFIG.CANVAS_W / 2, py + (options.newBest ? 92 : 86), 280, 22);
 
   if (state.best > 0) {
-    ctx.font = 'bold 20px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = `bold 20px ${CONFIG.FONT_SANS}`;
     ctx.fillStyle = '#ffd24d';
     ctx.fillText(`Best: ${state.best}`, CONFIG.CANVAS_W / 2, py + 155);
   }
 
   if (extra) {
-    ctx.font = '12px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = `12px ${CONFIG.FONT_SANS}`;
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     wrapText(extra, CONFIG.CANVAS_W / 2, py + 180, 285, 15);
   }
@@ -830,43 +845,42 @@ export function drawPostcard() {
   ctx.fillStyle = 'rgba(8, 17, 32, 0.55)';
   ctx.fillRect(0, 0, w, h);
 
-  // Gentle theme-tinted vignette
-  const grad = ctx.createRadialGradient(w / 2, h / 2.2, 80, w / 2, h / 2, Math.max(w, h) * 0.72);
-  grad.addColorStop(0, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(4, 10, 22, 0.65)');
-  ctx.fillStyle = grad;
+  // Gentle theme-tinted vignette (cached)
+  ctx.fillStyle = postcardVignetteGradient();
   ctx.fillRect(0, 0, w, h);
 
-  // Draw a larger, centered, calm bird (reuse palette, no trail/shield for serenity)
+  // Draw a larger, centered, calm bird using the active render pose (level flight)
   const bx = w / 2;
   const by = h * 0.42;
   const prevX = bird.x;
-  const prevY = bird.y;
-  const prevRot = bird.rotation;
-  bird.x = bx;
-  bird.y = by;
-  bird.rotation = 0; // serene, level flight
+  const prevPoseY = pose.birdY;
+  const prevPoseRot = pose.birdRot;
+  try {
+    bird.x = bx;
+    pose.birdY = by;
+    pose.birdRot = 0;
 
-  // Draw bird larger by temporarily scaling context around center
-  ctx.save();
-  ctx.translate(bx, by);
-  ctx.scale(1.35, 1.35);
-  ctx.translate(-bx, -by);
-  drawBird();
-  ctx.restore();
-
-  // Restore bird state
-  bird.x = prevX;
-  bird.y = prevY;
-  bird.rotation = prevRot;
+    // Draw bird larger by temporarily scaling context around center
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.scale(1.35, 1.35);
+    ctx.translate(-bx, -by);
+    drawBird();
+    ctx.restore();
+  } finally {
+    bird.x = prevX;
+    pose.birdY = prevPoseY;
+    pose.birdRot = prevPoseRot;
+  }
 
   // Gentle theme-colored floating particles (slow, peaceful)
   if (!state.reducedMotion) {
     ctx.save();
     ctx.globalAlpha = 0.7;
+    const t = performance.now() / 1400;
     for (let i = 0; i < 7; i++) {
       const px = w * (0.28 + ((i * 0.07) % 0.44));
-      const py = h * 0.58 + Math.sin(Date.now() / 1400 + i) * 18;
+      const py = h * 0.58 + Math.sin(t + i) * 18;
       ctx.fillStyle = theme.scoreParticle || theme.flapParticle || '#a5d8ff';
       ctx.beginPath();
       ctx.arc(px, py, 2.2 + (i % 3) * 0.4, 0, Math.PI * 2);
@@ -879,15 +893,15 @@ export function drawPostcard() {
   ctx.textAlign = 'center';
 
   ctx.fillStyle = '#f1f7ff';
-  ctx.font = 'bold 28px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.font = `bold 28px ${CONFIG.FONT_SANS}`;
   ctx.fillText('Serene Postcard', w / 2, h * 0.68);
 
   ctx.fillStyle = 'rgba(238, 247, 255, 0.85)';
-  ctx.font = '18px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.font = `18px ${CONFIG.FONT_SANS}`;
   ctx.fillText(`${themeName} • Score ${state.score}`, w / 2, h * 0.68 + 32);
 
   ctx.fillStyle = 'rgba(238, 247, 255, 0.55)';
-  ctx.font = '13px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.font = `13px ${CONFIG.FONT_SANS}`;
   ctx.fillText('P or Esc to close  •  Screenshot to share', w / 2, h * 0.68 + 58);
 
   // Subtle bottom accent line
@@ -1003,5 +1017,3 @@ export function pickGameOverTitle(score) {
   if (score >= 6) return 'Soft landing.';
   return 'The air welcomed you.';
 }
-
-// ─── 12. UI: drawer, mobile bar, focus trap, fullscreen, haptics ──

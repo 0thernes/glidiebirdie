@@ -28,12 +28,13 @@ flowchart LR
     D15[lineAt → O(log n) binary search]
     D16[--text-3 contrast verified ~7:1]
     D17[ENGINEERING-JOURNEY + README doc links]
+    D18[v3.1.0 fixed-step + native ES modules + ESLint/Playwright/axe]
+    D19[Per-pipe gradient cache]
   end
   subgraph DOING[🔧 In Progress]
-    P1[Engine micro-optimizations]
+    P1[Audit hardening & regression tests]
   end
   subgraph NEXT[⏭ Deferred — decided]
-    N3[Cache per-pipe gradient]
     N4[Merge queue]
   end
   subgraph BACKLOG[🗂 Backlog]
@@ -60,21 +61,21 @@ flowchart LR
 | Real UTC day-streak | `nextDayStreak()` unit-tested |
 | Install/discovery surface | PNG icons, canonical, robots, sitemap |
 | Autonomous-safety pipeline | branch protection, auto-merge, **Guardrail check**, **post-deploy canary** |
-| Test/CI gates | static-checks, 29 engine assertions, smoke, typecheck, brand/license/link guards |
-| DSA upgrades | pool free-list → O(1) spawn (PR #17); `lineAt` → O(log n) binary search (PR #14), both behavior-proven |
+| Test/CI gates | static-checks, 44+ engine assertions, 60/144 Hz determinism, smoke, ESLint, TypeScript, Playwright + axe-core WCAG 2.2 AA, brand/license/link guards |
+| DSA upgrades | pool free-list → O(1) spawn (PR #17); `lineAt` → O(log n) binary search (PR #14); per-pipe local gradient cache (PR #32) |
 | Documentation suite | this `docs/` set + `ENGINEERING-JOURNEY.md` + README cross-links |
 | A11y: `--text-3` contrast | Verified **~7:1** (above AA 4.5 and AAA 7) — no change needed |
+| Fixed-step + ES modules | v3.1.0 (PR #32): 60 Hz steps on 720 Hz grid, native `src/` modules, gamepad input |
 
 ### 🔧 In Progress
 
-- Engine micro-optimizations (the other agents are actively tuning `game.js`).
+- Comprehensive bug/audit hardening pass and regression test expansion.
 
 ### ⏭ Deferred — decided, with rationale
 
 | Item | Type | Decision |
 |---|---|---|
-| Cache per-pipe gradient | Perf | **Deferred.** The gradient is position-dependent (`createLinearGradient` at the pipe's absolute x), so the object can't be trivially reused across pipes — a real fix is an offscreen pipe-sprite cache. With ~4 pipes on screen (~8 gradients/frame) the benefit is negligible and not worth the complexity/risk in the actively-edited engine file. |
-| Merge queue | CI/CD | **Deferred.** Valuable for concurrent multi-agent merges, but adding it during the active churn risks stalling in-flight auto-merges, and `static-checks` already deterministically catches the collision class that actually occurred (duplicate keys/ids). Revisit when churn settles. |
+| Merge queue | CI/CD | **Deferred.** Valuable for concurrent multi-agent merges, but adding it during active churn risks stalling in-flight auto-merges, and `static-checks` already deterministically catches the collision class that actually occurred (duplicate keys/ids). Revisit when churn settles. |
 
 ### 🗂 Backlog (valuable, larger or orchestrator-side)
 

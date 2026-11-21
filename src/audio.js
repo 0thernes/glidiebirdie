@@ -75,7 +75,7 @@ export function audioDestination() {
 
 /** Schedule a tone at a specific AudioContext time. `volume` already scaled by channel. */
 export function playToneAt(freq, duration, type, volume, startTime, destNode) {
-  if (!state.audioEnabled || !audioCtx) return;
+  if (!state.audioEnabled || !audioCtx || volume <= 0.0001) return;
   const dest = destNode || audioDestination();
   if (!dest) return;
   try {
@@ -87,6 +87,14 @@ export function playToneAt(freq, duration, type, volume, startTime, destNode) {
     gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
     osc.connect(gain);
     gain.connect(dest);
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        gain.disconnect();
+      } catch {
+        /* already disconnected */
+      }
+    };
     osc.start(startTime);
     osc.stop(startTime + duration);
   } catch {
@@ -267,5 +275,3 @@ export function stopMusic(fade = true) {
   }
   if (fade) fadeMusic(0.0001, CONFIG.MUSIC_FADE_SEC * 0.5);
 }
-
-// ─── 6. STATE ─────────────────────────────────────────────────────

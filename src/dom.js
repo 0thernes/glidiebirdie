@@ -106,5 +106,3 @@ export function announce(message) {
     if (dom.srStatus) dom.srStatus.textContent = message;
   });
 }
-
-// ─── 3. RNG (seeded for daily mode) ────────────────────────────────

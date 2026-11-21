@@ -47,7 +47,7 @@ erDiagram
   }
   STREAK {
     int currentStreak
-    string lastPlayedDay "UTC YYYY-MM-DD"
+    int lastPlayedDay "UTC YYYYMMDD integer (0 = never)"
   }
   SCORE_HISTORY_ENTRY {
     int score
@@ -72,25 +72,26 @@ erDiagram
   }
 ```
 
-`ACHIEVEMENT_DEF` and `THEME_DEF` are **code-defined** (in `game.js`), not persisted; only the *instances*
+`ACHIEVEMENT_DEF` and `THEME_DEF` are **code-defined** (in `src/achievements.js` and `src/state.js`), not persisted; only the *instances*
 a player has earned/visited are stored. This keeps the persisted footprint tiny and forward-compatible.
 
 ## 2. Physical schema (`localStorage`, `gb:` namespace)
 
-All keys are addressed through the `SK` map and guarded helpers (clamp + NaN/JSON fallback + try/catch).
+All keys are addressed through the `SK` map in `src/storage.js` and guarded helpers (clamp + NaN/JSON fallback + try/catch).
 
 | Key | Type | Domain / constraint | Default |
 |---|---|---|---|
+| `gb:schema` | string | schema version sentinel | `"3"` |
 | `gb:best` | int | ≥ 0, monotonic | 0 |
 | `gb:zen-time-sec` | int | ≥ 0 | 0 |
-| `gb:shields-saved-count` | int | ≥ 0 | 0 |
-| `gb:runs-count` | int | ≥ 0 | 0 |
-| `gb:near-misses-count` | int | ≥ 0 | 0 |
+| `gb:shields-saved` | int | ≥ 0 | 0 |
+| `gb:runs` | int | ≥ 0 | 0 |
+| `gb:near-misses` | int | ≥ 0 | 0 |
 | `gb:longest-survival-sec` | int | ≥ 0 | 0 |
-| `gb:current-streak` | int | ≥ 0 | 0 |
-| `gb:last-played-day` | string | UTC `YYYY-MM-DD` | "" |
+| `gb:streak` | int | ≥ 0 | 0 |
+| `gb:last-played-day` | int | UTC `YYYYMMDD` (from `dateSeed()`) | 0 |
 | `gb:played-themes` | JSON string[] | subset of theme names | `["sunset"]` |
-| `gb:score-history` | JSON int[] | bounded (last N), each ≥ 0 | `[]` |
+| `gb:score-history` | JSON int[] | bounded (last 50), each ≥ 0 | `[]` |
 | `gb:unlocked-achievements` | JSON string[] | subset of achievement ids | `[]` |
 | `gb:theme` | enum | sunset\|midnight\|rain\|aurora\|meadow | sunset |
 | `gb:gravity` | int | 1–4 | 2 |
@@ -113,8 +114,8 @@ players keep their saves through the rename and namespacing.
 flowchart LR
   L1["flappy-best"] --> N1["gb:best"]
   L2["zen-time-sec"] --> N2["gb:zen-time-sec"]
-  L3["shields-saved-count"] --> N3["gb:shields-saved-count"]
-  L4["runs-count / near-misses-count / ..."] --> N4["gb:* (namespaced)"]
+  L3["shields-saved-count"] --> N3["gb:shields-saved"]
+  L4["runs-count / near-misses-count / current-streak"] --> N4["gb:runs / gb:near-misses / gb:streak"]
   L5["played-themes / score-history / unlocked-achievements"] --> N5["gb:* (JSON, validated)"]
   L6["flappy-theme / flappy-gravity / ..."] --> N6["gb:theme / gb:gravity / ..."]
 ```

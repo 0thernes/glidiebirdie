@@ -3,17 +3,27 @@ import { GRAVITY_LABELS, SPEED_LABELS, THEMES } from './config.js';
 import { dateSeed, setSeededRNG, setUnseededRNG } from './rng.js';
 import { SK, clampNumber, readStoredBool, writeStoredValue } from './storage.js';
 import { announce, canvas, dom } from './dom.js';
-import { activeWeather, bird, heldKeys, state, updateDerivedPhysics, weatherPool } from './state.js';
-import { ensureAudio, playSequence, playTone, startMusic, stopMusic } from './audio.js';
+import { state, syncLocomotion, updateDerivedPhysics } from './state.js';
+import { ensureAudio, playSequence, startMusic, stopMusic } from './audio.js';
+import { clearWeatherPool } from './physics.js';
 import { SPRITE_CACHE, rebuildSkyCache } from './render.js';
 import { drawSparkline, resetStats, showToast, syncStatsAndAchievements } from './achievements.js';
 import { hapticPulse } from './haptics.js';
-import { handleAction } from './input.js';
+import { hooks } from './hooks.js';
 
 export let drawerWasPlaying = false;
+let drawerFocusTimer = 0;
+
+hooks.clearDrawerResume = () => {
+  drawerWasPlaying = false;
+};
 
 export function isDrawerOpen() {
   return Boolean(dom.customizerDrawer?.classList.contains('open'));
+}
+
+export function isTutorialOpen() {
+  return Boolean(dom.tutorialOverlay?.classList.contains('show'));
 }
 
 export function setCustomizerOpen(isOpen, restoreFocus = true) {
@@ -46,10 +56,17 @@ export function setCustomizerOpen(isOpen, restoreFocus = true) {
     if (state.paused && state.phase === 'play') togglePause(false);
   }
 
+  if (drawerFocusTimer) {
+    clearTimeout(drawerFocusTimer);
+    drawerFocusTimer = 0;
+  }
+
   if (restoreFocus) {
     requestAnimationFrame(() => {
-      setTimeout(
+      drawerFocusTimer = setTimeout(
         () => {
+          drawerFocusTimer = 0;
+          if (isDrawerOpen() !== isOpen) return;
           if (isOpen) {
             if (
               document.activeElement instanceof HTMLElement &&
@@ -187,8 +204,7 @@ export function togglePause(forceValue) {
   if (state.paused) {
     stopMusic();
   } else {
-    bird.isBraking = heldKeys.has('ShiftLeft') || heldKeys.has('ShiftRight');
-    bird.isDiving = heldKeys.has('ArrowDown');
+    syncLocomotion();
     startMusic();
   }
   if (state.postcardMode) state.postcardMode = false; // exiting pause exits postcard too
@@ -238,7 +254,7 @@ export function captureSereneScreenshot() {
   try {
     const dataUrl = canvas.toDataURL('image/png');
     const link = document.createElement('a');
-    link.download = `flappy-calm-serene-${Date.now()}.png`;
+    link.download = `glidiebirdie-serene-${Date.now()}.png`;
     link.href = dataUrl;
     link.click();
     showToast('Serene moment captured.', 'default');
@@ -263,11 +279,15 @@ export function registerServiceWorker() {
 export function bindDrawerControls() {
   if (dom.gravitySlider) {
     dom.gravitySlider.value = String(state.gravitySetting);
-    if (dom.gravityVal) dom.gravityVal.textContent = GRAVITY_LABELS[state.gravitySetting];
+    const label = GRAVITY_LABELS[state.gravitySetting];
+    dom.gravitySlider.setAttribute('aria-valuetext', `${label} (${state.gravitySetting} of 4)`);
+    if (dom.gravityVal) dom.gravityVal.textContent = label;
   }
   if (dom.speedSlider) {
     dom.speedSlider.value = String(state.speedSetting);
-    if (dom.speedVal) dom.speedVal.textContent = SPEED_LABELS[state.speedSetting];
+    const label = SPEED_LABELS[state.speedSetting];
+    dom.speedSlider.setAttribute('aria-valuetext', `${label} (${state.speedSetting} of 4)`);
+    if (dom.speedVal) dom.speedVal.textContent = label;
   }
   if (dom.musicVolumeSlider) {
     dom.musicVolumeSlider.value = String(Math.round(state.musicVolume * 100));
@@ -289,7 +309,9 @@ export function bindDrawerControls() {
     state.gravitySetting = Math.round(
       clampNumber(Number(/** @type {HTMLInputElement} */ (e.target).value), 2, 1, 4),
     );
-    if (dom.gravityVal) dom.gravityVal.textContent = GRAVITY_LABELS[state.gravitySetting];
+    const label = GRAVITY_LABELS[state.gravitySetting];
+    dom.gravitySlider?.setAttribute('aria-valuetext', `${label} (${state.gravitySetting} of 4)`);
+    if (dom.gravityVal) dom.gravityVal.textContent = label;
     updateDerivedPhysics();
     writeStoredValue(SK.gravity, state.gravitySetting);
   });
@@ -298,7 +320,9 @@ export function bindDrawerControls() {
     state.speedSetting = Math.round(
       clampNumber(Number(/** @type {HTMLInputElement} */ (e.target).value), 2, 1, 4),
     );
-    if (dom.speedVal) dom.speedVal.textContent = SPEED_LABELS[state.speedSetting];
+    const label = SPEED_LABELS[state.speedSetting];
+    dom.speedSlider?.setAttribute('aria-valuetext', `${label} (${state.speedSetting} of 4)`);
+    if (dom.speedVal) dom.speedVal.textContent = label;
     updateDerivedPhysics();
     writeStoredValue(SK.speed, state.speedSetting);
   });
@@ -332,11 +356,12 @@ export function bindDrawerControls() {
       syncStatsAndAchievements(true);
       writeStoredValue(SK.theme, state.theme);
       if (state.theme !== prevTheme) {
-        activeWeather.length = 0;
-        for (const p of weatherPool) p.active = false;
+        clearWeatherPool();
         if (state.phase === 'play' && !state.paused) startMusic();
-        playTone(523, 0.12, 'sine', 0.08);
-        setTimeout(() => playTone(659, 0.15, 'sine', 0.06), 80);
+        playSequence([
+          [523, 0.12, 'sine', 0.08, 0.0],
+          [659, 0.15, 'sine', 0.06, 0.08],
+        ]);
       }
     });
   });
@@ -400,11 +425,13 @@ export function bindTutorial() {
   function onKeydown(e) {
     if (e.key === 'Escape') {
       e.preventDefault();
+      e.stopPropagation();
       dismiss();
       focusElement(canvas);
     } else if (e.key === 'Tab') {
       // Single-control modal → keep focus on the dismiss button (focus trap).
       e.preventDefault();
+      e.stopPropagation();
       focusElement(dom.tutorialDismiss);
     }
   }
@@ -447,7 +474,7 @@ export function bindTutorial() {
   dom.tutorialDismiss?.addEventListener('click', (e) => {
     dismiss();
     focusElement(canvas);
-    handleAction(e);
+    hooks.handleAction(e);
   });
 }
 

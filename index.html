@@ -75,8 +75,8 @@
         <div class="toolbar" role="group" aria-label="Game actions">
           <button class="ui-button" id="restartButton" type="button" aria-controls="game" aria-keyshortcuts="R">Restart</button>
           <button class="ui-button" id="pauseToggle" type="button" aria-controls="game" aria-keyshortcuts="Escape" aria-pressed="false">Pause</button>
-          <button class="ui-button" id="postcardButton" type="button" aria-controls="game" aria-keyshortcuts="P" title="Serene Postcard — capture a calm moment">🪶 Postcard</button>
-          <button class="ui-button postcard-action" id="postcardCopyBtn" type="button" title="Save this serene moment as PNG">📸 Copy</button>
+          <button class="ui-button" id="postcardButton" type="button" aria-controls="game" aria-keyshortcuts="P" aria-pressed="false" title="Serene Postcard — capture a calm moment">🪶 Postcard</button>
+          <button class="ui-button postcard-action" id="postcardCopyBtn" type="button" aria-keyshortcuts="C" title="Save this serene moment as PNG">📸 Copy</button>
           <button class="ui-button" id="muteToggle" type="button" aria-controls="game" aria-keyshortcuts="M" aria-pressed="false">🔊 Sound</button>
           <button class="ui-button" id="fullscreenToggle" type="button" aria-controls="game" aria-keyshortcuts="F" aria-pressed="false">Fullscreen</button>
           <button class="ui-button" id="shareBtn" type="button">Share</button>
@@ -129,6 +129,9 @@
           <li><kbd>M</kbd><span>Mute or unmute</span></li>
           <li><kbd>R</kbd><span>Fresh restart</span></li>
           <li><kbd>F</kbd><span>Fullscreen</span></li>
+          <li><kbd>P</kbd><span>Serene Postcard</span></li>
+          <li><kbd>C</kbd><span>Save PNG snapshot</span></li>
+          <li><kbd>Gamepad</kbd><span>A/Cross flap · LB/LT brake · RB/RT dive · Start pause</span></li>
         </ul>
       </article>
       <article class="panel card">
@@ -291,7 +294,7 @@
           <div class="achievement-details">
             <h4 class="achievement-title">First Flight</h4>
             <p class="achievement-desc">Successfully pass 1 pipe gap</p>
-            <p class="achievement-progress" aria-live="polite"></p>
+            <p class="achievement-progress"></p>
           </div>
           <span class="achievement-check" aria-hidden="true">✔</span>
         </div>

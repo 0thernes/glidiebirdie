@@ -1,16 +1,16 @@
 # Support
 
-Calm Edition is a small static browser game, so most problems are usually easy to isolate.
+GlidieBirdie is a small static browser game, so most problems are usually easy to isolate.
 
 ## Run The Game
 
-Open `index.html` directly, or serve the folder locally:
+Serve the folder locally over HTTP (native ES modules require HTTP(S) rather than `file://`):
 
 ```bash
-python -m http.server 8000
+node tools/static-server.mjs 8000
 ```
 
-Then visit `http://localhost:8000`.
+Then visit `http://127.0.0.1:8000`.
 
 ## Quick Checks Before Reporting A Problem
 

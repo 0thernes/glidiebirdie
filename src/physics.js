@@ -63,6 +63,19 @@ export function initObjectPools() {
   }
 }
 
+/**
+ * Recycle every active weather slot back onto `freeWeather` in O(|activeWeather|),
+ * preserving `freeWeather.length + activeWeather.length === CONFIG.WEATHER_POOL`.
+ */
+export function clearWeatherPool() {
+  for (let i = 0; i < activeWeather.length; i++) {
+    const p = activeWeather[i];
+    p.active = false;
+    freeWeather.push(p.idx);
+  }
+  activeWeather.length = 0;
+}
+
 // Explicit free-list (a stack of inactive pool indices) → strict O(1) spawn,
 // replacing the previous rotating linear probe (worst case O(pool)). See COMPLEXITY.md 5.1.
 export const freeParticles = [];
@@ -262,8 +275,8 @@ export function updateEmotion() {
   const nearPipe = sim.nearestPipeCache;
   const closeToEdge =
     nearPipe &&
-    (Math.abs(bird.y - nearPipe.topHeight) < 40 ||
-      Math.abs(bird.y - (nearPipe.topHeight + state.gap)) < 40);
+    (Math.abs(bird.y - nearPipe.topHeight) < CONFIG.EMOTION_PIPE_PROXIMITY ||
+      Math.abs(bird.y - (nearPipe.topHeight + state.gap)) < CONFIG.EMOTION_PIPE_PROXIMITY);
 
   if (state.phase === 'gameOver') bird.emotion = 'dizzy';
   else if (
@@ -277,8 +290,8 @@ export function updateEmotion() {
   else if (state.score >= CONFIG.EMOTION_DETERMINED_SCORE) bird.emotion = 'determined';
   else bird.emotion = 'calm';
 
-  if (bird.emotion === 'happy') bird.blush = Math.min(1, bird.blush + 0.1);
-  else bird.blush = Math.max(0, bird.blush - 0.05);
+  if (bird.emotion === 'happy') bird.blush = Math.min(1, bird.blush + 0.1 * state.dt);
+  else bird.blush = Math.max(0, bird.blush - 0.05 * state.dt);
 
   if (bird.emotion !== prev) bird.emotionTimer = CONFIG.EMOTION_HOLD_SEC * 60; // 60 dt-units = 1 second
   if (bird.emotionTimer > 0) bird.emotionTimer -= state.dt;
@@ -386,10 +399,10 @@ export function updateBird() {
   }
 
   if (shieldTarget && shieldTarget.shieldBubble) {
-    targetX = shieldTarget.x;
-    targetY = bird.y - 8; // slightly above center of bubble for "hopeful" look
+    targetX = shieldTarget.x + state.pipeWidth / 2;
+    targetY = shieldTarget.topHeight + state.gap / 2;
   } else if (nearPipe) {
-    targetX = nearPipe.x;
+    targetX = nearPipe.x + state.pipeWidth / 2;
     targetY = nearPipe.topHeight + state.gap / 2;
   }
 
@@ -567,7 +580,8 @@ export function checkCollisions() {
   // Near-miss
   for (const pipe of pipes) {
     if (pipe.passed) continue;
-    if (Math.abs(pipe.x - bird.x) > CONFIG.NEAR_MISS_X_WINDOW) continue;
+    const pipeCenterX = pipe.x + state.pipeWidth / 2;
+    if (Math.abs(pipeCenterX - bird.x) > CONFIG.NEAR_MISS_X_WINDOW) continue;
     const gapBottom = pipe.topHeight + state.gap;
     const topProximity = bird.y - bird.radius - pipe.topHeight;
     const botProximity = gapBottom - (bird.y + bird.radius);
@@ -596,6 +610,3 @@ export function onScoreChanged() {
   }
   state.calmMeter = Math.min(1.0, state.calmMeter + 0.04);
 }
-
-/** Handle for the delayed game-over "second wave" particle burst (cleared on
- * restart so a quick R-press can't spray the previous death into the new run). */

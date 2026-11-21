@@ -13,18 +13,22 @@ export function pushScoreHistory(score) {
   if (state.scoreHistory.length > 50) state.scoreHistory.shift();
 }
 
+function writeStatsToStorage() {
+  writeStoredValue(SK.zenTime, Math.floor(state.zenTimeSec));
+  writeStoredValue(SK.shieldsSaved, state.shieldsSavedCount);
+  writeStoredValue(SK.runs, state.runsCount);
+  writeStoredValue(SK.nearMisses, state.nearMissesCount);
+  writeStoredValue(SK.longest, Math.floor(state.longestSurvivalSec));
+  writeStoredValue(SK.streak, state.currentStreak);
+  writeStoredValue(SK.lastPlayedDay, state.lastPlayedDay);
+  writeStoredValue(SK.playedThemes, JSON.stringify(Array.from(state.playedThemes)));
+  writeStoredValue(SK.scoreHistory, JSON.stringify(state.scoreHistory.slice(-50)));
+  writeStoredValue(SK.unlocked, JSON.stringify(Array.from(state.unlockedAchievements)));
+}
+
 export function syncStatsAndAchievements(saveToStorage = false) {
   if (saveToStorage) {
-    writeStoredValue(SK.zenTime, Math.floor(state.zenTimeSec));
-    writeStoredValue(SK.shieldsSaved, state.shieldsSavedCount);
-    writeStoredValue(SK.runs, state.runsCount);
-    writeStoredValue(SK.nearMisses, state.nearMissesCount);
-    writeStoredValue(SK.longest, Math.floor(state.longestSurvivalSec));
-    writeStoredValue(SK.streak, state.currentStreak);
-    writeStoredValue(SK.lastPlayedDay, state.lastPlayedDay);
-    writeStoredValue(SK.playedThemes, JSON.stringify(Array.from(state.playedThemes)));
-    writeStoredValue(SK.scoreHistory, JSON.stringify(state.scoreHistory.slice(-50)));
-    writeStoredValue(SK.unlocked, JSON.stringify(Array.from(state.unlockedAchievements)));
+    writeStatsToStorage();
   }
   if (dom.statZenMinutes) dom.statZenMinutes.textContent = (state.zenTimeSec / 60).toFixed(1);
   if (dom.statShieldsSaved) dom.statShieldsSaved.textContent = String(state.shieldsSavedCount);
@@ -92,12 +96,9 @@ export function resetStats() {
     } catch {}
   });
   state.best = 0;
+  // Clear unlocked styling via the cached achievement nodes, then re-sync so fresh progress counters render.
+  for (const { el } of getAchievementEls().values()) el.classList.remove('unlocked');
   syncStatsAndAchievements(true);
-  // un-mark all achievement DOMs
-  document.querySelectorAll('.achievement-item').forEach((el) => el.classList.remove('unlocked'));
-  document.querySelectorAll('.achievement-progress').forEach((el) => {
-    el.textContent = '';
-  });
   announce('All stats and achievements reset.');
 }
 
@@ -197,13 +198,22 @@ export function getAchievementEls() {
 
 export function checkAchievements() {
   const els = getAchievementEls();
+  let newlyUnlocked = false;
   for (const ach of ACHIEVEMENTS) {
     const refs = els.get(ach.id);
-    if (refs?.progressEl) refs.progressEl.textContent = ach.progress();
-    if (!refs) continue;
-    const el = refs.el;
     const wasUnlocked = state.unlockedAchievements.has(ach.id);
     const isUnlocked = ach.check();
+    if (refs?.progressEl) {
+      refs.progressEl.textContent = wasUnlocked && !isUnlocked ? 'Unlocked' : ach.progress();
+    }
+    if (!refs) {
+      if (isUnlocked && !wasUnlocked) {
+        state.unlockedAchievements.add(ach.id);
+        newlyUnlocked = true;
+      }
+      continue;
+    }
+    const el = refs.el;
     if (isUnlocked && !wasUnlocked) {
       state.unlockedAchievements.add(ach.id);
       el.classList.add('unlocked');
@@ -222,11 +232,14 @@ export function checkAchievements() {
         : `Achievement unlocked: ${ach.name}.`;
       announce(unlockText);
       showToast(`🎉 ${ach.name}`, 'achievement');
-      syncStatsAndAchievements(true);
-    } else if (isUnlocked) {
+      newlyUnlocked = true;
+    } else if (wasUnlocked || isUnlocked) {
       el.classList.add('unlocked');
+    } else {
+      el.classList.remove('unlocked');
     }
   }
+  if (newlyUnlocked) writeStatsToStorage();
 }
 
 /** Lightweight visible toast (separate from the SR live region). */
@@ -261,9 +274,11 @@ export function drawSparkline() {
   const dpr = dprState.value;
   const w = Math.max(80, Math.floor(rect.width));
   const h = Math.max(28, Math.floor(rect.height));
-  if (c.width !== Math.round(w * dpr)) {
-    c.width = Math.round(w * dpr);
-    c.height = Math.round(h * dpr);
+  const targetW = Math.round(w * dpr);
+  const targetH = Math.round(h * dpr);
+  if (c.width !== targetW || c.height !== targetH) {
+    c.width = targetW;
+    c.height = targetH;
   }
   cx.setTransform(dpr, 0, 0, dpr, 0, 0);
   cx.clearRect(0, 0, w, h);
@@ -275,7 +290,16 @@ export function drawSparkline() {
     return;
   }
   const maxV = Math.max(1, ...data);
-  const step = data.length > 1 ? (w - 8) / (data.length - 1) : 0;
+  if (data.length === 1) {
+    const x = w / 2;
+    const y = h - 4 - (data[0] / maxV) * (h - 10);
+    cx.fillStyle = '#facc15';
+    cx.beginPath();
+    cx.arc(x, y, 2.5, 0, Math.PI * 2);
+    cx.fill();
+    return;
+  }
+  const step = (w - 8) / (data.length - 1);
   // Area fill
   cx.beginPath();
   cx.moveTo(4, h - 4);
@@ -310,7 +334,5 @@ export function drawSparkline() {
     cx.fill();
   }
 }
-
-// ─── 15. LIFECYCLE ─────────────────────────────────────────────────
 
 hooks.persistStatsHot = persistStatsHot;

@@ -90,6 +90,9 @@ export const CONFIG = Object.freeze({
   // Sunset golden motes — warm drifting dust for theme parity
   SUNSET_MOTE_CHANCE: 0.06,
   SUNSET_MOTE_ALPHA: 0.28,
+
+  // Canvas typography stack
+  FONT_SANS: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
 });
 
 export const THEMES = Object.freeze(['sunset', 'midnight', 'rain', 'aurora', 'meadow']);

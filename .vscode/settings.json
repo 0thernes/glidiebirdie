@@ -11,7 +11,7 @@
   "css.format.enable": true,
   "js/ts.format.semicolons": "insert",
   "js/ts.preferences.quoteStyle": "single",
-  "eslint.enable": false,
+  "eslint.enable": true,
   "liveServer.settings.port": 5500,
   "liveServer.settings.open": false,
   "js/ts.implicitProjectConfig.checkJs": true

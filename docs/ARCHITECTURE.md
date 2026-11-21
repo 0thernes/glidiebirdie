@@ -35,31 +35,28 @@ graph TD
   JS -->|synthesize| WA[(Web Audio graph)]
 ```
 
-## 3. Engine internal structure (`game.js`)
+## 3. Engine internal structure (`game.js` + `src/*.js`)
 
-The engine is organized into numbered, single-responsibility sections:
+The engine is organized into focused native ES modules under `src/` (no bundler):
 
 ```mermaid
 graph LR
-  CFG[CONFIG<br/>frozen tunables] --> STATE[state<br/>single source of truth]
-  STATE --> UPD{update systems}
-  UPD --> PHYS[physics/bird]
-  UPD --> PIPES[pipes/spawn/cull]
-  UPD --> FX[particles/weather pools]
-  UPD --> COLL[collision]
-  UPD --> EMO[emotion derive]
-  STATE --> DRAW{draw}
-  DRAW --> CACHE[sprite/sky caches]
-  DRAW --> HUD[score/HUD/modals]
-  LOOP[rAF loop<br/>dt normalize] --> UPD
+  CFG[src/config.js<br/>frozen tunables] --> STATE[src/state.js<br/>single source of truth]
+  STATE --> UPD{src/physics.js}
+  UPD --> PHYS[bird / emotion / eyes]
+  UPD --> PIPES[pipes / spawn / cull]
+  UPD --> FX[particles / weather pools]
+  UPD --> COLL[src/collision.js]
+  STATE --> DRAW{src/render.js}
+  DRAW --> CACHE[sprite / sky / pipe caches]
+  DRAW --> HUD[score / HUD / postcard / modals]
+  LOOP[src/loop.js<br/>fixed 60 Hz on 720 Hz grid] --> UPD
   LOOP --> DRAW
-  INPUT[input handlers] --> STATE
-  STORAGE[guarded storage helpers] --> STATE
+  INPUT[src/input.js + input-queue.js] --> STATE
+  STORAGE[src/storage.js] --> STATE
 ```
 
-**Section order:** CONFIG → DOM cache → RNG → STORAGE → AUDIO → STATE → THEME TABLES → SPRITE CACHE →
-WORLD (bird/ground/pipes/pools) → PHYSICS → RENDER → UI (drawer/mobile/focus-trap/fullscreen/haptics) →
-STATS → ACHIEVEMENTS → LIFECYCLE → INPUT → LIFECYCLE EVENTS → OFFLINE SHELL → CUSTOMIZER → LOOP → BOOT.
+**Module boundaries:** `src/config.js` → `src/rng.js` → `src/storage.js` → `src/timestep.js` / `src/input-queue.js` → `src/state.js` → `src/dom.js` / `src/haptics.js` / `src/hooks.js` → `src/audio.js` → `src/collision.js` → `src/physics.js` → `src/render.js` → `src/achievements.js` → `src/ui.js` → `src/session.js` → `src/input.js` → `src/loop.js` → `src/main.js` (loaded by `game.js`).
 
 ## 4. The frame loop (data flow per frame)
 
@@ -67,24 +64,25 @@ STATS → ACHIEVEMENTS → LIFECYCLE → INPUT → LIFECYCLE EVENTS → OFFLINE 
 sequenceDiagram
   participant rAF as requestAnimationFrame
   participant L as loop()
+  participant S as stepSimulation()
   participant U as update()
   participant D as draw()
   rAF->>L: timestamp
-  L->>L: dt = clamp((t - last)/16.667, ≤ DT_MAX)
-  L->>L: dtSec coupled to dt (zero-frame safe)
-  L->>U: if phase==play && !paused
-  U->>U: updateNearestPipeCache()
-  U->>U: updateBird() · updateEmotion()
-  U->>U: updatePipes() · updateShieldBubbles()
-  U->>U: spawn/update weather · particles
-  U->>U: checkCollisions()
-  L->>D: draw() (always)
-  D->>D: world (shake-wrapped) → HUD → modal
+  L->>L: pollGamepad() · map ms to 720 Hz tick grid
+  loop up to MAX_FRAME_STEPS (5) per frame
+    L->>S: step at 1/60 s (12 ticks, dt=1, dtSec=1/60)
+    S->>S: snapshotPrev() · consumeInputs() · syncLocomotion()
+    S->>U: if phase==play && !paused (or gameOver visual decay)
+    U->>U: updateNearestPipeCache() · updateBird() · updateEmotion()
+    U->>U: updatePipes() · updateShieldBubbles()
+    U->>U: spawn/update weather · particles · checkCollisions()
+  end
+  L->>D: view.alpha clamped to [0, 1] · draw()
+  D->>D: interpolated world (shake-wrapped) → HUD → modal / postcard
   L->>rAF: schedule next
 ```
 
-**Invariant:** `update()` only runs in active play; `draw()` always runs so menus/pause/gameover render.
-The `dt` clamp is **load-bearing** — it makes collision tunneling impossible at any frame rate or preset.
+**Invariant:** Gameplay physics only advance during active play in exact 1/60 s steps (`dt = 1`, `dtSec = 1/60`) on a 720 Hz grid; `gameOver` continues decaying shake/flashes/particles and the afterglow timer without advancing gameplay. Capping hitches at `MAX_FRAME_STEPS = 5` and clamping `view.alpha` to `[0, 1]` prevents collision tunneling and extrapolation jumps.
 
 ## 5. Rendering model
 
@@ -98,17 +96,16 @@ The `dt` clamp is **load-bearing** — it makes collision tunneling impossible a
 
 ```mermaid
 graph LR
-  OSC[oscillators<br/>per-tone] --> G[per-tone gain<br/>AD envelope]
-  G --> MG[masterGain]
+  SFX_OSC[SFX oscillators] --> MG[masterGain]
+  MUSIC_OSC[Music oscillators] --> MUG[musicGain] --> MG
   MG --> LP[lowpass]
   MG --> RV[convolver reverb]
   LP --> OUT[(destination)]
   RV --> WET[reverb wet gain] --> OUT
-  SCHED[lookahead scheduler<br/>audio sample clock] --> OSC
+  SCHED[lookahead scheduler<br/>audio sample clock] --> MUSIC_OSC
 ```
 
-Procedural only (no audio files). Music is scheduled on the **audio clock** (drift-free), SFX and music
-have **independent volume channels**, and the whole graph is lazily built on the first user gesture.
+Procedural only (no audio files). Music is scheduled on the **audio clock** (drift-free), routes through a dedicated `musicGain` bus so music fades never duck SFX, and the whole graph is lazily built on the first user gesture.
 
 ## 7. Persistence
 
@@ -119,10 +116,10 @@ pre-rebrand keys forward. The service-worker cache name is tied to `package.json
 
 ## 8. Boot sequence
 
-```
-configureCanvasForDPR()  → updateDerivedPhysics() → resetGame()
+```text
+onDprChange(rebuildSpriteCaches) → configureCanvasForDPR() → updateDerivedPhysics() → resetGame()
 → bindDrawerControls() → bindMobileControls() → bindTutorial()
-→ registerServiceWorker() → syncUiState() → attach lifecycle listeners
+→ registerServiceWorker() → syncUiState() → attach toolbar listeners
 → requestAnimationFrame(loop)
 ```
 

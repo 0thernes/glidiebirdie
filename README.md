@@ -12,7 +12,7 @@ GlidieBirdie keeps the fast arcade loop, then softens the failure edges: slower 
 physics, readable visuals, full mobile controls, procedural audio with reverb, a forgiving Feather
 Shield, daily seeded runs, five living themes, 12 achievements, a Serene Postcard capture mode, and a
 small offline-ready PWA shell. No build step, no runtime dependency, no remote asset requirement.
-Just open the file and glide.
+Serve it from any static host and glide.
 
 [![Serene meadow golden-hour scene — the bird gliding peacefully between generous pipes in GlidieBirdie.](docs/assets/hero-calm-meadow.jpg)](https://0thernes.github.io/glidiebirdie/)
 
@@ -23,7 +23,7 @@ Just open the file and glide.
 
 ## Why It Feels Better
 
-| Design goal | What Calm Edition does |
+| Design goal | What GlidieBirdie does |
 | --- | --- |
 | Softer difficulty | Larger pipe gaps, slower travel, gentler gravity, slower terminal fall, circle hitbox. |
 | Full mobile depth | On-screen Brake / Flap / Dive buttons on phones — full keyboard depth, no controls hidden. |
@@ -69,13 +69,13 @@ dependencies, and a deep commitment to accessibility and reduced-motion respect.
 
 ### Open the game
 
-Open `index.html` directly, or run a tiny local server:
+Because the engine loads native ES modules (`<script type="module">`), browsers require HTTP(S) rather than `file://`. Start a tiny local static server:
 
 ```bash
-python -m http.server 8000
+node tools/static-server.mjs 8000
 ```
 
-Then visit `http://localhost:8000`.
+(Or `python -m http.server 8000` if you prefer Python.) Then visit `http://127.0.0.1:8000`.
 
 ### Run the checks
 
@@ -83,7 +83,7 @@ Then visit `http://localhost:8000`.
 npm run check
 ```
 
-That command needs no install. It syntax-checks every module, then runs static checks, the engine tests (they import `src/`), the 60 Hz / 144 Hz determinism test, and the repo smoke test.
+That command needs no install. It syntax-checks every module, then runs static checks, brand/link/license guards, the engine tests (they import `src/`), the 60 Hz / 144 Hz determinism test, and the repo smoke test.
 
 Lint, Playwright, and axe need the dev dependencies:
 
@@ -136,7 +136,7 @@ The project is intentionally small and flat:
 - `style.css` owns layout, theme tokens, accessibility media queries, and component styling.
 - `game.js` is the module entry. `src/` holds physics, collision, input (including gamepad), audio, rendering, storage, and UI.
 - `manifest.webmanifest` and `service-worker.js` provide installation and offline shell behavior.
-- `tests/` holds three dependency-free Node checks wired into `npm run check`.
+- `tests/` holds dependency-free Node checks wired into `npm run check`, plus Playwright/axe-core E2E tests under `tests/e2e/`.
 
 For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md](docs/architecture_master_blueprint.md).
 
@@ -151,8 +151,15 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `manifest.webmanifest` | Install metadata for PWA flows |
 | `service-worker.js` | Minimal offline app-shell cache |
 | `tests/static-checks.mjs` | Static guards: duplicate keys/ids, self-comparisons |
-| `tests/engine-test.mjs` | Headless engine behavioral tests |
+| `tests/brand-guard.mjs` | Ensures retired trademarked terms never reappear |
+| `tests/link-guard.mjs` | Verifies every local HTML/manifest asset reference resolves |
+| `tests/license-guard.mjs` | Enforces MIT license consistency across `LICENSE.txt` and `package.json` |
+| `tests/engine-test.mjs` | Headless engine behavioral tests importing `src/` |
+| `tests/determinism.mjs` | Verifies identical 60 Hz and 144 Hz trajectories on fixed steps |
 | `tests/smoke-test.mjs` | Syntax and surface-area smoke checks |
+| `tests/e2e/smoke.spec.js` | Playwright browser and WCAG 2.2 AA axe-core checks |
+| `tools/` | Zero-dependency dev helpers (`static-server.mjs`, `generate-icons.mjs`) |
+| `RELEASING.md` | Manual tag and GitHub Release process |
 | `docs/architecture_master_blueprint.md` | Calm, humble philosophy & technical architecture reference |
 | `docs/ARCHITECTURE.md` | System + engine architecture with diagrams (frame loop, rendering, audio, boot, invariants) |
 | `docs/DATA-MODEL.md` | ERM/ERD of the `gb:` storage layer, key schema, and legacy→`gb:` migration |
