@@ -8,8 +8,13 @@
 #
 # See .github/workflows/guardrail-guard.yml.
 
-/.github/        @0thernes
-/tests/          @0thernes
-/AGENTS.md       @0thernes
-/CLAUDE.md       @0thernes
-/package.json    @0thernes
+/.github/              @0thernes
+/tests/                @0thernes
+/AGENTS.md             @0thernes
+/CLAUDE.md             @0thernes
+/package.json          @0thernes
+/package-lock.json     @0thernes
+/eslint.config.js      @0thernes
+/playwright.config.js  @0thernes
+/jsconfig.json         @0thernes
+/tools/static-server.mjs @0thernes

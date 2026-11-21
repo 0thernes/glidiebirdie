@@ -33,9 +33,9 @@ jobs:
             echo "Dependabot PR — guardrail guard not applicable (gated by dependabot-auto-merge)."
             exit 0
           fi
-          CHANGED="$(gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only)"
-          echo "Changed files:"; echo "$CHANGED"
-          GUARDED="$(printf '%s\n' "$CHANGED" | grep -E '^(\.github/|tests/|AGENTS\.md|CLAUDE\.md|CODEOWNERS|package\.json)' || true)"
+          CHANGED="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --paginate --jq '.[] | .filename, (.previous_filename // empty)')"
+          echo "Changed files (including rename sources):"; echo "$CHANGED"
+          GUARDED="$(printf '%s\n' "$CHANGED" | grep -E '^(\.github/|tests/|(AGENTS\.md|CLAUDE\.md|CODEOWNERS|package\.json|package-lock\.json|eslint\.config\.js|playwright\.config\.js|jsconfig\.json|tools/static-server\.mjs)$)' || true)"
           if [ -z "$GUARDED" ]; then
             echo "No guardrail paths changed. OK."
             exit 0

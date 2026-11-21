@@ -4,7 +4,11 @@ function audioParam() {
   return {
     value: 0,
     setValueAtTime() {},
-    exponentialRampToValueAtTime() {},
+    exponentialRampToValueAtTime(val) {
+      if (typeof val === 'number' && val <= 0) {
+        throw new RangeError('exponentialRampToValueAtTime requires a positive value');
+      }
+    },
     linearRampToValueAtTime() {},
     cancelScheduledValues() {},
     setTargetAtTime() {},
@@ -45,6 +49,8 @@ const ctx2d = new Proxy(
 );
 
 function el() {
+  const classes = new Set();
+  const childrenMap = new Map();
   const node = {
     style: {},
     dataset: {},
@@ -55,12 +61,32 @@ function el() {
     width: 200,
     height: 32,
     children: [],
+    parentNode: null,
+    get firstElementChild() {
+      return node.children[0] || null;
+    },
     classList: {
-      add() {},
-      remove() {},
-      toggle() {},
-      contains() {
-        return false;
+      add(...cs) {
+        for (const c of cs) classes.add(c);
+      },
+      remove(...cs) {
+        for (const c of cs) classes.delete(c);
+      },
+      toggle(c, force) {
+        if (force === undefined) {
+          if (classes.has(c)) {
+            classes.delete(c);
+            return false;
+          }
+          classes.add(c);
+          return true;
+        }
+        if (force) classes.add(c);
+        else classes.delete(c);
+        return Boolean(force);
+      },
+      contains(c) {
+        return classes.has(c);
       },
     },
     setAttribute() {},
@@ -71,11 +97,29 @@ function el() {
     addEventListener() {},
     removeEventListener() {},
     appendChild(child) {
+      if (child && typeof child === 'object') {
+        if (child.parentNode) child.remove();
+        child.parentNode = node;
+      }
       node.children.push(child);
+      return child;
     },
-    removeChild() {},
-    remove() {},
-    querySelector() {
+    removeChild(child) {
+      const idx = node.children.indexOf(child);
+      if (idx >= 0) {
+        node.children.splice(idx, 1);
+        if (child && typeof child === 'object') child.parentNode = null;
+      }
+      return child;
+    },
+    remove() {
+      if (node.parentNode) node.parentNode.removeChild(node);
+    },
+    querySelector(sel) {
+      if (sel === '.achievement-progress') {
+        if (!childrenMap.has(sel)) childrenMap.set(sel, el());
+        return childrenMap.get(sel);
+      }
       return null;
     },
     querySelectorAll() {
@@ -100,11 +144,15 @@ function el() {
 }
 
 const store = new Map();
+const elementsById = new Map();
 
 export function installBrowserStub() {
+  elementsById.clear();
   const documentStub = {
-    getElementById() {
-      return el();
+    getElementById(id) {
+      const key = String(id);
+      if (!elementsById.has(key)) elementsById.set(key, el());
+      return elementsById.get(key);
     },
     querySelector() {
       return el();

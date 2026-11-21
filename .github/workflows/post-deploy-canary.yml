@@ -28,16 +28,21 @@ jobs:
       - name: Probe the live site
         run: |
           URL="${SITE_URL:-$TARGET_URL}"
-          echo "Probing live site: $URL"
+          BASE="${URL%/}/"
+          echo "Probing live site: $BASE"
           ok=false
           for i in 1 2 3 4 5; do
-            code=$(curl -fsSL -o page.html -w "%{http_code}" "$URL" 2>/dev/null || echo 000)
-            if [ "$code" = "200" ] && grep -q 'id="game"' page.html && grep -q 'game\.js' page.html; then
-              echo "Canary OK (attempt $i): HTTP 200 and the game shell (canvas + game.js) is present."
+            code=$(curl -fsSL --connect-timeout 10 --max-time 15 -o page.html -w "%{http_code}" "$BASE" 2>/dev/null || echo 000)
+            js_code=$(curl -fsSI --connect-timeout 10 --max-time 15 -o /dev/null -w "%{http_code}" "${BASE}game.js" 2>/dev/null || echo 000)
+            main_code=$(curl -fsSI --connect-timeout 10 --max-time 15 -o /dev/null -w "%{http_code}" "${BASE}src/main.js" 2>/dev/null || echo 000)
+            css_code=$(curl -fsSI --connect-timeout 10 --max-time 15 -o /dev/null -w "%{http_code}" "${BASE}style.css" 2>/dev/null || echo 000)
+            man_code=$(curl -fsSI --connect-timeout 10 --max-time 15 -o /dev/null -w "%{http_code}" "${BASE}manifest.webmanifest" 2>/dev/null || echo 000)
+            if [ "$code" = "200" ] && [ "$js_code" = "200" ] && [ "$main_code" = "200" ] && [ "$css_code" = "200" ] && [ "$man_code" = "200" ] && grep -q 'id="game"' page.html && grep -q 'game\.js' page.html; then
+              echo "Canary OK (attempt $i): HTTP 200 across shell, native ES module entry (game.js + src/main.js), CSS, and manifest."
               ok=true
               break
             fi
-            echo "Attempt $i: http=$code, shell-ok=false — retrying in 12s"
+            echo "Attempt $i: html=$code js=$js_code main=$main_code css=$css_code manifest=$man_code — retrying in 12s"
             sleep 12
           done
           if [ "$ok" != "true" ]; then

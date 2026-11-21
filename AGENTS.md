@@ -20,7 +20,7 @@ The runtime is intentionally simple:
 
 - one HTML shell
 - one CSS file
-- one game engine file
+- native ES modules under `src/`, loaded by `game.js`
 - one small service worker
 - no build step
 - no runtime dependencies
@@ -46,7 +46,7 @@ The runtime is intentionally simple:
 4. CI (`Smoke check`) must pass: static-checks, engine tests, typecheck, smoke.
 5. The PR merges automatically once green — no human approval is required. Patch and minor Dependabot PRs auto-merge the same way; **major** Dependabot bumps are held for human review.
 
-**Guardrail changes are the exception.** A PR that touches the project's own safety machinery — anything under `.github/`, `tests/`, `AGENTS.md`, `CLAUDE.md`, `CODEOWNERS`, or `package.json` — will NOT auto-merge. The `Guardrail check` blocks it until a human reviews the change and applies the `guardrail-approved` label. Agents must never apply that label themselves; leave guardrail changes for the human.
+**Guardrail changes are the exception.** A PR that touches the project's own safety machinery — anything under `.github/`, `tests/`, `AGENTS.md`, `CLAUDE.md`, `CODEOWNERS`, `package.json`, `package-lock.json`, `eslint.config.js`, `playwright.config.js`, `jsconfig.json`, or `tools/static-server.mjs` — will NOT auto-merge. The `Guardrail check` blocks it until a human reviews the change and applies the `guardrail-approved` label. Agents must never apply that label themselves; leave guardrail changes for the human.
 
 Do not attempt to push to `main` directly; it will be rejected. Keep PRs small and single-purpose so the gate stays fast and merge collisions stay rare.
 

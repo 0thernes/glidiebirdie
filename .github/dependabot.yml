@@ -8,3 +8,12 @@ updates:
       interval: "monthly"
     commit-message:
       prefix: "ci"
+
+  # Keep devDependencies (ESLint, Playwright, axe-core) patched against CVEs.
+  # Runtime stays zero-dependency; major bumps remain held for human review.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "chore"

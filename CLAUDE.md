@@ -20,7 +20,7 @@ The runtime is intentionally simple:
 
 - one HTML shell
 - one CSS file
-- one game engine file
+- native ES modules under `src/`, loaded by `game.js`
 - one small service worker
 - no build step
 - no runtime dependencies

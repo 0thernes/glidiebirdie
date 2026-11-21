@@ -15,31 +15,43 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 const FORBIDDEN = new RegExp(['flappy', 'bird'].join('[\\s_-]?'), 'i');
+const FORBIDDEN_FILENAME = new RegExp(['flappy', '(?:bird|calm)'].join('[\\s_-]?'), 'i');
 
 const TEXT_EXT = new Set([
   '.md', '.js', '.mjs', '.cjs', '.json', '.html', '.htm', '.css',
   '.yml', '.yaml', '.txt', '.webmanifest', '.xml', '.svg',
 ]);
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage']);
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', 'test-results', 'playwright-report']);
 
 /** @param {string} dir */
-async function walk(dir, out = []) {
+async function walk(dir, textFiles = [], allPaths = []) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.git')) continue;
+    if (entry.name === '.git') continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       if (SKIP_DIRS.has(entry.name)) continue;
-      await walk(full, out);
-    } else if (TEXT_EXT.has(path.extname(entry.name).toLowerCase())) {
-      out.push(full);
+      allPaths.push(full);
+      await walk(full, textFiles, allPaths);
+    } else {
+      allPaths.push(full);
+      if (TEXT_EXT.has(path.extname(entry.name).toLowerCase())) {
+        textFiles.push(full);
+      }
     }
   }
-  return out;
+  return { textFiles, allPaths };
 }
 
 const root = process.cwd();
-const files = await walk(root);
+const { textFiles: files, allPaths } = await walk(root);
 const offenders = [];
+
+for (const file of allPaths) {
+  const rel = path.relative(root, file);
+  if (FORBIDDEN_FILENAME.test(path.basename(rel))) {
+    offenders.push(`${rel}: retired brand mark in filename`);
+  }
+}
 
 for (const file of files) {
   if ((await stat(file)).size > 2_000_000) continue; // skip anything huge/binary-ish
