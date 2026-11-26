@@ -1,4 +1,5 @@
 /** Timestamped input applied on simulation-step boundaries, not render frames. */
+import { CONFIG } from './config.js';
 import { msToTicks } from './timestep.js';
 
 /** @type {{tick:number, type:string}[]} */
@@ -6,9 +7,14 @@ const queue = [];
 
 /** @param {number} timeMs @param {string} type */
 export function scheduleInput(timeMs, type) {
+  if (!Number.isFinite(timeMs)) return;
   const tick = msToTicks(timeMs);
-  if (queue.length > 64) queue.shift();
+  while (queue.length >= CONFIG.INPUT_QUEUE_CAP) queue.shift();
   queue.push({ tick, type });
+}
+
+export function getInputQueueLength() {
+  return queue.length;
 }
 
 export function clearInputs() {

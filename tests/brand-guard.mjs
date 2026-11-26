@@ -21,7 +21,17 @@ const TEXT_EXT = new Set([
   '.md', '.js', '.mjs', '.cjs', '.json', '.html', '.htm', '.css',
   '.yml', '.yaml', '.txt', '.webmanifest', '.xml', '.svg',
 ]);
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', 'test-results', 'playwright-report']);
+const SKIP_DIRS = new Set([
+  'node_modules',
+  '.git',
+  '.lake',
+  '_site',
+  'dist',
+  'build',
+  'coverage',
+  'test-results',
+  'playwright-report',
+]);
 
 /** @param {string} dir */
 async function walk(dir, textFiles = [], allPaths = []) {

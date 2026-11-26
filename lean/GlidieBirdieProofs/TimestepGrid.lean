@@ -1,0 +1,59 @@
+module
+
+public import GlidieBirdieProofs.Spec
+
+/-!
+# GlidieBirdieProofs.TimestepGrid
+
+Machine-checked proofs of the 720 Hz fixed-step simulation tick grid (`src/timestep.js`, `src/loop.js`):
+  - Exact LCM(60, 144) = 720 and exact divisibility across all standard refresh rates (60/120/144/240/360/720 Hz)
+  - Exact step-count parity between 60 Hz and 144 Hz displays over any number of 1/12 s cycles
+  - Hitch backlog bound (`≤ MAX_FRAME_STEPS = 5`) and monotonicity
+  - Interpolation blend clamp `alpha ∈ [0, 1]` (scaled `[0, 12]`)
+-/
+
+namespace GlidieBirdie.Timestep
+
+public theorem lcm_60_144_eq_720 : Nat.lcm SIM_HZ HZ_144 = TICK_HZ := by
+  decide
+
+public theorem standard_rates_divide_720 :
+    TICK_HZ % 60 = 0 ∧ TICK_HZ % 120 = 0 ∧ TICK_HZ % 144 = 0 ∧
+    TICK_HZ % 240 = 0 ∧ TICK_HZ % 360 = 0 ∧ TICK_HZ % 720 = 0 := by
+  decide
+
+public theorem ticks_per_step_eq_12 : TICKS_PER_STEP = 12 ∧ TICKS_PER_144 = 5 := by
+  decide
+
+public theorem hz60_hz144_lcm_cycle_step_parity (cycles : Nat) :
+    totalStepsUniform (5 * cycles) TICKS_PER_STEP = totalStepsUniform (12 * cycles) TICKS_PER_144 ∧
+    totalStepsUniform (5 * cycles) TICKS_PER_STEP = 5 * cycles := by
+  simp only [totalStepsUniform, TICKS_PER_STEP, TICKS_PER_144, TICK_HZ, SIM_HZ, HZ_144]
+  omega
+
+public theorem steps_executed_bounded (prevTick frameTick : Nat) :
+    stepsExecuted prevTick frameTick ≤ MAX_FRAME_STEPS := by
+  simp only [stepsExecuted]
+  omega
+
+public theorem steps_executed_monotone (prevTick f1 f2 : Nat) (h : f1 ≤ f2) :
+    stepsExecuted prevTick f1 ≤ stepsExecuted prevTick f2 := by
+  simp only [stepsExecuted, TICKS_PER_STEP, TICK_HZ, SIM_HZ]
+  have hdiv : f1 / 12 ≤ f2 / 12 := Nat.div_le_div_right h
+  omega
+
+public theorem steps_executed_zero_when_nonadvancing (prevTick frameTick : Nat) (h : frameTick ≤ prevTick) :
+    stepsExecuted prevTick frameTick = 0 := by
+  simp only [stepsExecuted, TICKS_PER_STEP, TICK_HZ, SIM_HZ]
+  have hdiv : frameTick / 12 ≤ prevTick / 12 := Nat.div_le_div_right h
+  omega
+
+public theorem interp_alpha_bounded (frameTick stepIndex : Nat) (backlogDropped : Bool) :
+    alphaScaled frameTick stepIndex backlogDropped ≤ TICKS_PER_STEP := by
+  cases backlogDropped
+  · simp only [alphaScaled, Bool.false_eq_true, ↓reduceIte]
+    split <;> omega
+  · simp only [alphaScaled, ↓reduceIte]
+    omega
+
+end GlidieBirdie.Timestep

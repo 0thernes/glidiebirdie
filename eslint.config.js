@@ -3,7 +3,7 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['node_modules/**', 'docs/assets/**'],
+    ignores: ['node_modules/**', 'docs/assets/**', 'lean/.lake/**', 'paper/build/**', '_site/**'],
   },
   js.configs.recommended,
   {
@@ -19,7 +19,15 @@ export default [
     },
   },
   {
-    files: ['tests/**/*.mjs', 'tests/**/*.js', 'tools/**/*.mjs', 'eslint.config.js', 'playwright.config.js'],
+    files: [
+      'tests/**/*.mjs',
+      'tests/**/*.js',
+      'tools/**/*.mjs',
+      'scripts/**/*.mjs',
+      'examples/**/*.mjs',
+      'eslint.config.js',
+      'playwright.config.js',
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

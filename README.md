@@ -4,7 +4,11 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-2f855a)](LICENSE.txt)
 [![Vanilla JS](https://img.shields.io/badge/stack-vanilla%20JS-f7df1e)](game.js)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-0f766e)](package.json)
-[![Accessible Arcade](https://img.shields.io/badge/accessibility-first-2563eb)](README.md#accessibility)
+[![Accessible Arcade](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-2563eb)](README.md#accessibility)
+[![Lean 4.35.0](https://img.shields.io/badge/Lean%204.35.0-45%20proofs-7c3aed)](lean/README.md)
+[![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
+**Status:** Active (`v3.2.0`) · **Build Standard:** `v1.2.0` (`repo.yaml`) · **Epistemic Scope:** Verified browser-game engineering build (not peer reviewed; retires `0 / 1,900` open problems in `0thernes/unsolved-problems-mega-atlas`).
 
 A browser-first, one-tap arcade flyer tuned for comfort instead of punishment.
 
@@ -17,7 +21,11 @@ Serve it from any static host and glide.
 [![Serene meadow golden-hour scene — the bird gliding peacefully between generous pipes in GlidieBirdie.](docs/assets/hero-calm-meadow.jpg)](https://0thernes.github.io/glidiebirdie/)
 
 [Play the live demo](https://0thernes.github.io/glidiebirdie/) ·
-[Architecture guide](docs/architecture_master_blueprint.md) ·
+[Build White Paper (PDF)](dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf) ·
+[Lean 4 Blueprint](blueprint/index.html) ·
+[Claims Ledger](CLAIMS.md) ·
+[Limitations](LIMITATIONS.md) ·
+[Replication](REPLICATION.md) ·
 [Contributing](CONTRIBUTING.md) ·
 [Support](SUPPORT.md)
 
@@ -95,6 +103,40 @@ npm run test:browser
 
 A separate `npm run typecheck` runs ephemeral TypeScript over the `checkJs`-clean engine.
 
+## Usage & Examples
+
+### Run the deterministic simulation example
+
+```bash
+node examples/determinism_demo.mjs
+```
+
+### Run mutation testing, benchmarks, and Build Standard self-audit
+
+```bash
+npm run mutate      # 10/10 surgical mutants killed (100.0%)
+npm run benchmark   # 30 paired seeds (60 Hz vs 144 Hz -> results/benchmarks.json)
+npm run audit       # Build Standard v1.2.0 audit via scripts/Audit-Repo.ps1
+```
+
+### Formal Verification — Exact Lean 4.35.0 Axiom Audit (5-Second Proof)
+
+All **45 theorems** in [`lean/`](lean/README.md) compile with zero Mathlib, zero `sorryAx`, zero `native_decide`, and zero custom axioms (`lake build && lake build Challenge && lake env lean VerifyAxioms.lean && lake env leanchecker-paranoid --fresh Solution`). Headline outputs from `VerifyAxioms.lean`:
+
+```text
+'GlidieBirdie.Timestep.lcm_60_144_eq_720' does not depend on any axioms
+'GlidieBirdie.Timestep.hz60_hz144_lcm_cycle_step_parity' depends on axioms: [propext, Classical.choice, Quot.sound]
+'GlidieBirdie.Collision.distSqPointRect_minimality' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Collision.centered_bird_clears_every_valid_pipe' depends on axioms: [propext, Classical.choice, Quot.sound]
+'GlidieBirdie.Storage.dateSeedNat_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
+'GlidieBirdie.Pools.poolClearAll_conserves_and_empties' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Pools.queuePushMany_bounded' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Physics.mulberry32_golden_20261125' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.NonVacuity.nonvacuous_60_144_parity_witness' does not depend on any axioms
+```
+
+See the [Build White Paper](dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf), [Interactive Blueprint](blueprint/index.html), [`CLAIMS.md`](CLAIMS.md), [`LIMITATIONS.md`](LIMITATIONS.md), and [`REPLICATION.md`](REPLICATION.md) for the complete statement-fidelity audit, 30-seed benchmarks, and clean-clone instructions.
+
 ## Controls
 
 | Input | Action |
@@ -154,30 +196,42 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `tests/brand-guard.mjs` | Ensures retired trademarked terms never reappear |
 | `tests/link-guard.mjs` | Verifies every local HTML/manifest asset reference resolves |
 | `tests/license-guard.mjs` | Enforces MIT license consistency across `LICENSE.txt` and `package.json` |
-| `tests/engine-test.mjs` | Headless engine behavioral tests importing `src/` |
-| `tests/determinism.mjs` | Verifies identical 60 Hz and 144 Hz trajectories on fixed steps |
+| `tests/engine-test.mjs` | 69 headless engine behavioral tests importing `src/` |
+| `tests/property-and-metamorphic.mjs` | 8 property-based, metamorphic, failure-injection, differential & HTTP contract suites (2,500+ trials) |
+| `tests/determinism.mjs` | Verifies 180 identical 60 Hz and 144 Hz steps on the 720 Hz fixed tick grid |
 | `tests/smoke-test.mjs` | Syntax and surface-area smoke checks |
-| `tests/e2e/smoke.spec.js` | Playwright browser and WCAG 2.2 AA axe-core checks |
+| `tests/e2e/smoke.spec.js` | 7 Playwright browser and WCAG 2.2 AA axe-core checks |
+| `lean/` | 45 pure Lean 4.35.0 formal theorems (zero Mathlib, Palomar `Challenge`/`Solution`, 6-kernel comparator) |
+| `paper/` & `dist/` | Zero-warning 9-page AMS-LaTeX Build White Paper PDF and clean-room `arxiv_submission.tar.gz` |
+| `blueprint/index.html` | Interactive Lean 4 Proof Blueprint & Claims Dependency Map |
+| `scripts/` | Surgical mutation harness (`mutation-test.mjs`), 30-seed benchmarks (`benchmark.mjs`), Build Standard v1.2.0 audit scripts |
+| `examples/` | Runnable zero-dependency example (`determinism_demo.mjs`) |
 | `tools/` | Zero-dependency dev helpers (`static-server.mjs`, `generate-icons.mjs`) |
-| `RELEASING.md` | Manual tag and GitHub Release process |
+| `VERSION`, `repo.yaml`, `justfile` | Single version source (`3.2.0`), Build Standard v1.2.0 manifest, one-word task runner |
+| `CLAIMS.md`, `LIMITATIONS.md`, `REPLICATION.md` | Falsifiable claims ledger, honest epistemic scope (`0/1,900` Mega-Atlas), clean-clone replication |
+| `CITATION.cff`, `CITATION.bib`, `.zenodo.json` | Machine-readable scholarly citation & archival metadata |
+| `CHECKSUMS.sha256`, `data/MANIFEST.sha256` | Deterministic SHA-256 checksums for browser shell, benchmarks, PDF, and arXiv tarball |
+| `RELEASING.md`, `UPGRADING.md` | Release checklist and version upgrade guide |
 | `docs/architecture_master_blueprint.md` | Calm, humble philosophy & technical architecture reference |
 | `docs/ARCHITECTURE.md` | System + engine architecture with diagrams (frame loop, rendering, audio, boot, invariants) |
+| `docs/adr/` | Architecture Decision Records (`0001`–`0003`) |
+| `docs/benchmarks.md`, `docs/preregistration.md` | 30-seed paired benchmarks & pre-registered hypotheses |
+| `docs/threat-model.md`, `docs/operations.md` | Security boundary analysis, `/healthz`, backups, offsite mirror, and rollback |
+| `docs/configuration.md`, `docs/faq.md`, `docs/glossary.md` | Environment variables, FAQ, and canonical glossary |
+| `docs/run-log.md`, `docs/reviews/` | Chronological hardening audit trail and 10-class red-team review register |
 | `docs/DATA-MODEL.md` | ERM/ERD of the `gb:` storage layer, key schema, and legacy→`gb:` migration |
 | `docs/COMPLEXITY.md` | Time/space (Big-O) of every subsystem + the shipped DSA upgrades |
 | `docs/INSPECTION-500.md` | 500-point inspection (25 sections × 20), scored |
 | `docs/ROADMAP.md` | Kanban board (Done / Next / Backlog), cadence, definition of done |
 | `docs/README.md` | Documentation index |
-| `docs/assets/` | Cinematic hero + social preview images |
+| `docs/assets/`, `docs/media/` | Cinematic hero and OpenGraph social preview images |
 | `AUDIT-250.md` | Canonical 250-point quality audit ledger |
 | `CHANGELOG.md` | Version history |
-| `AGENTS.md` | Cross-tool AI assistant guidance + the protected merge flow |
-| `CLAUDE.md` | Claude-specific project context |
-| `CODE_OF_CONDUCT.md` | Calm, welcoming community guidelines tuned to this project's spirit |
-| `CONTRIBUTING.md` | Contributor workflow and change boundaries |
-| `SUPPORT.md` | Troubleshooting and where to get help |
-| `.github/` | CI workflow, Dependabot, `SECURITY.md`, issue templates, and Copilot guidance |
+| `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `llms.txt` | Canonical AI-assistant guidance (`CLAUDE.md`/`GEMINI.md` point to `AGENTS.md`) & LLM context bundles |
+| `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SUPPORT.md` | Community guidelines, contributor workflow, and troubleshooting |
+| `THIRD_PARTY_NOTICES.md`, `NOTICE`, `LICENSE.txt` | MIT license, CC BY 4.0 white-paper terms, and third-party dev-tool attributions |
+| `.github/` | Cross-platform CI, 6-kernel Lean CI, Tectonic paper CI, Pages deploy, release workflow, `SECURITY.md`, issue forms, and finding-class labels |
 | `.memory/` | Project notes for future maintainers and assistant sessions |
-| `LICENSE.txt` | MIT license text |
 
 ## New Here? Read In This Order
 

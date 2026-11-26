@@ -1,0 +1,13 @@
+name	color	description
+bug	d73a4a	Defect in program logic: code runs but diverges from specification
+error	b60205	Wrong artifact or failed execution outside program logic
+issue	fbca04	Weakness in something existing: unclear, inconsistent, or fragile
+problem	e99695	External obstacle blocking progress outside the repo's own code
+concern	f9d0c4	Latent risk that has not yet caused harm (security, legal, cost)
+dilemma	c5def5	Trade-off between valid options depending on owner priorities
+conflict	5319e7	Two requirements, sources, or rules directly contradict each other
+gap	0e8a16	Missing required file, feature, test, or documentation item
+hole	d93f0b	Missing check or safeguard allowing defects to slip through unnoticed
+blindspot	bfdadc	Unexamined user, platform, assumption, or failure mode
+accessibility	0075ca	Accessibility feedback, WCAG 2.2 AA, keyboard/SR/motion/contrast
+guardrail-approved	1d76db	Human review approval for guardrail/CI/test changes

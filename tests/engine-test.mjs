@@ -472,6 +472,18 @@ pipes.length = 0;
     state.unlockedAchievements.has('FirstFlight') === false,
   );
 
+  // Mid-run paused resetStats preserves live run score without immediately re-granting milestones.
+  startGame();
+  state.score = 15;
+  state.paused = true;
+  resetStats();
+  expect(
+    'mid-run paused resetStats keeps achievements locked despite non-zero live score',
+    state.score === 15 &&
+      state.unlockedAchievements.has('FirstFlight') === false &&
+      state.unlockedAchievements.has('ZenMaster') === false,
+  );
+
   startGame();
   state.reducedMotion = true;
   gameOver();

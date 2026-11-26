@@ -1,0 +1,63 @@
+{
+  "version": "3.2.0",
+  "generated_utc": "2026-11-26T02:39:54.458Z",
+  "environment": {
+    "node": "v25.8.2",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "design": {
+    "paired_seeds": 30,
+    "steps_per_seed": 180,
+    "refresh_rates_hz": [
+      60,
+      144
+    ],
+    "tick_grid_hz": 720,
+    "baseline": "naive variable-dt Euler (identical gravity/drag/flap constants)"
+  },
+  "determinism_comparison": {
+    "fixed_step_720hz_max_drift_px": {
+      "max": 0,
+      "median": 0,
+      "mean": 0,
+      "sd": 0,
+      "ci95": [
+        0,
+        0
+      ]
+    },
+    "variable_dt_baseline_max_drift_px": {
+      "max": 4.782546712206326,
+      "median": 3.85538597699081,
+      "mean": 3.9440297976647374,
+      "sd": 0.34783687548942643,
+      "ci95": [
+        3.81955797034679,
+        4.068501624982685
+      ]
+    },
+    "paired_wins_fixed_over_variable": 30,
+    "paired_losses": 0,
+    "exact_sign_test_p": 1.862645149230957e-9,
+    "holm_bonferroni_p": 3.725290298461914e-9
+  },
+  "step_latency_us": {
+    "hz60": {
+      "median": 8.82,
+      "p95": 15.88,
+      "budget_us_at_60hz": 16666.67,
+      "holm_bonferroni_p_under_budget": 3.725290298461914e-9
+    },
+    "hz144": {
+      "median": 14.79,
+      "p95": 31.86,
+      "budget_us_at_144hz": 6944.44
+    }
+  },
+  "pool_churn_10k_cycles": {
+    "elapsed_ms": 28.91,
+    "us_per_cycle": 2.89,
+    "conservation_violations": 0
+  }
+}

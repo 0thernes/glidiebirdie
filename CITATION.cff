@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+title: "GlidieBirdie: A Zero-Dependency, Fixed-Step 720 Hz Deterministic Browser Game Architecture with Procedural Web Audio, WCAG 2.2 AA Accessibility, and Lean 4 Verification"
+message: "If you cite or build upon GlidieBirdie's deterministic browser architecture, test harness, or Lean 4 formalization, please cite this metadata."
+type: software
+version: "3.2.0"
+date-released: "2026-11-25"
+license: MIT
+repository-code: "https://github.com/0thernes/glidiebirdie"
+url: "https://0thernes.github.io/glidiebirdie/"
+abstract: >-
+  Zero-runtime-dependency, no-bundler browser flyer built in 18 native ES2022 modules
+  on an exact 720 Hz fixed-step tick grid, paired with procedural Web Audio, WCAG 2.2 AA
+  accessibility, 45 zero-Mathlib Lean 4.35.0 formal theorems (Palomar Challenge/Solution),
+  10/10 surgical mutation testing, and an AMS-LaTeX Build White Paper. Developed with AI
+  engineering assistance under human direction; not peer reviewed.
+authors:
+  - family-names: "Donahue"
+    given-names: "Alexander Stephen"
+    orcid: "https://orcid.org/0009-0006-8168-9648"
+    affiliation: "Independent Researcher (0thernes project), Spokane, WA, USA"
+    email: "0_0@0thernes.art"
+keywords:
+  - fixed-step simulation
+  - deterministic game loop
+  - native ES modules
+  - browser game
+  - Lean 4
+  - formal verification
+  - accessibility
+  - WCAG 2.2 AA
+  - progressive web app

@@ -18,10 +18,19 @@ const textFiles = {
   serviceWorker: await readFile('service-worker.js', 'utf8'),
   workflow: await readFile('.github/workflows/ci.yml', 'utf8'),
   changelog: await readFile('CHANGELOG.md', 'utf8'),
+  agentsMd: await readFile('AGENTS.md', 'utf8'),
   claudeMd: await readFile('CLAUDE.md', 'utf8'),
+  versionFile: (await readFile('VERSION', 'utf8')).trim(),
+  citationCff: await readFile('CITATION.cff', 'utf8'),
 };
 
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+assert.equal(textFiles.versionFile, pkg.version, 'VERSION file must match package.json version');
+assert.match(
+  textFiles.citationCff,
+  new RegExp(`^version:\\s*["']?${pkg.version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']?`, 'm'),
+  'CITATION.cff version must match package.json version',
+);
 
 // Syntax check
 const syntax = spawnSync(process.execPath, ['--check', 'game.js'], { encoding: 'utf8' });
@@ -213,11 +222,12 @@ for (const marker of forbiddenSecretMarkers) {
   );
 }
 
-// README + CHANGELOG + CLAUDE.md sanity
+// README + CHANGELOG + AGENTS.md + CLAUDE.md sanity
 assert.match(textFiles.readme, /Customizer/i, 'README should mention the customizer');
 assert.match(textFiles.readme, /Feather Shield/i, 'README should mention the shield');
 assert.match(textFiles.changelog, /2\.0\.0/, 'CHANGELOG should include v2.0.0');
-assert.match(textFiles.claudeMd, /Hard rules/, 'CLAUDE.md should declare hard rules');
+assert.match(textFiles.agentsMd, /Hard Rules/i, 'AGENTS.md should declare hard rules');
+assert.match(textFiles.claudeMd, /@AGENTS\.md/, 'CLAUDE.md must import @AGENTS.md (Build Standard A32)');
 assert.match(textFiles.workflow, /npm run check/, 'CI must run npm run check');
 // Pin-agnostic: matches a version tag (@v4) or a SHA pin (@<40 hex>) so Dependabot bumps don't break this.
 assert.match(textFiles.workflow, /actions\/setup-node@\S+/, 'CI must configure Node.js');

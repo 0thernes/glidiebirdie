@@ -3,9 +3,12 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
+  id-token: write
+  attestations: write
 
 jobs:
   check:
@@ -30,11 +33,146 @@ jobs:
       - name: Run project checks
         run: npm run check
 
+      - name: Surgical mutation testing (10/10 mutants)
+        run: npm run mutate
+
       - name: Type check (ephemeral TypeScript — not a repo dependency)
         run: npm run typecheck
+
+      - name: Paired 30-seed benchmarks
+        run: npm run benchmark
+
+      - name: Upload benchmark JSON (report-only performance tracking)
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: glidiebirdie-benchmarks-json
+          path: results/benchmarks.json
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Browser and accessibility tests
         run: npm run test:browser
+
+  cross-platform:
+    name: Cross-Platform Checks (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install tooling
+        run: npm ci
+
+      - name: Core checks, mutation suite & runnable example
+        run: |
+          npm run check
+          npm run mutate
+          node examples/determinism_demo.mjs
+
+  lean-6kernel:
+    name: Pure Lean 4.35.0 — 45 Theorems & 6-Kernel Palomar Comparator
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install bubblewrap for Palomar multi-kernel sandbox
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap
+
+      - name: Install elan & pinned Lean 4.35.0 toolchain
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Build GlidieBirdieProofs, Solution & Challenge (zero sorry/native_decide)
+        working-directory: lean
+        run: |
+          lake build
+          lake build Challenge
+          lake env lean VerifyAxioms.lean > /tmp/lean4-audit.txt
+          cat /tmp/lean4-audit.txt
+          COUNT=$(grep -cE "depends on axioms:|does not depend on any axioms" /tmp/lean4-audit.txt)
+          echo "Audited theorem count: $COUNT"
+          test "$COUNT" -eq 45
+          if grep -E "sorryAx|ofReduceBool|trustCompiler" /tmp/lean4-audit.txt; then
+            echo "FORBIDDEN AXIOM DETECTED" >&2
+            exit 1
+          fi
+
+      - name: Run independent paranoid & 6-kernel comparator checks
+        working-directory: lean
+        run: |
+          lake env leanchecker --fresh Solution
+          lake env leanchecker-paranoid --fresh Solution
+          lake check --paranoid
+          lake comparator --config comparator.json --paranoid
+
+  paper-pdf:
+    name: AMS-LaTeX Build White Paper & Standalone arXiv Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Tectonic
+        run: |
+          curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+          sudo mv tectonic /usr/local/bin/tectonic
+
+      - name: Compile paper/main.tex
+        run: |
+          mkdir -p /tmp/paper-out
+          tectonic -X compile paper/main.tex --outdir /tmp/paper-out
+          ls -lh /tmp/paper-out/main.pdf
+
+      - name: Verify standalone dist/arxiv_submission.tar.gz compiles cleanly
+        run: |
+          mkdir -p /tmp/arxiv-test
+          tar -xzf dist/arxiv_submission.tar.gz -C /tmp/arxiv-test
+          tectonic -X compile /tmp/arxiv-test/main.tex --outdir /tmp/arxiv-test
+          ls -lh /tmp/arxiv-test/main.pdf
+
+      - name: Attest build provenance (SLSA, report-only)
+        uses: actions/attest-build-provenance@v4
+        continue-on-error: true
+        with:
+          subject-path: |
+            dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf
+            dist/arxiv_submission.tar.gz
+            CHECKSUMS.sha256
+
+  audit-and-security:
+    name: Build Standard v1.2.0 Audit & Report-Only Security Scans
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Build Standard v1.2.0 self-audit (report-only)
+        continue-on-error: true
+        run: bash scripts/audit-repo.sh .
+
+      - name: Secret scan via gitleaks (report-only)
+        continue-on-error: true
+        run: |
+          GITLEAKS_VER="8.21.2"
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VER}/gitleaks_${GITLEAKS_VER}_linux_x64.tar.gz" | tar -xz -C /tmp gitleaks
+          /tmp/gitleaks detect --source . --no-banner --redact
+
+      - name: Dependency vulnerability scan via npm audit (report-only)
+        continue-on-error: true
+        run: npm audit

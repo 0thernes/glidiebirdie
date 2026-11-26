@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented here.
 
+## [3.2.0] — Build Standard v1.2.0, 45 Pure Lean 4.35.0 Proofs & Build White Paper
+
+### Added
+
+- **Pure Lean 4.35.0 Formal Core (`lean/`):** 45 zero-Mathlib, `module`-scoped theorems across six modules (`TimestepGrid`, `CollisionGeometry`, `StorageStreak`, `PoolAndQueue`, `PhysicsBounds`, `NonVacuity`), isolated Palomar `Challenge.lean` / `Solution.lean` / `comparator.json` / `formalization.yaml`, `VerifyAxioms.lean` (zero `sorryAx`, zero `native_decide`, 10 zero-axiom theorems), and interactive [`blueprint/index.html`](blueprint/index.html).
+- **AMS-LaTeX Build White Paper (`paper/`, `dist/`):** Publication-grade build white paper compiled with Tectonic (`dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf`) plus standalone-verified `dist/arxiv_submission.tar.gz`, complete with TikZ module DAG, pgfplots 30-seed benchmark chart, Claims Ledger, and Statement-Fidelity Audit.
+- **Verification Ladder (`tests/property-and-metamorphic.mjs`, `scripts/mutation-test.mjs`, `scripts/benchmark.mjs`):** 2,500+ randomized `prop_check` trials, translation & axis-swap metamorphic tests, JS-vs-Lean `mulberry32` differential parity, `QuotaExceededError` failure injection, 16x concurrent HTTP contract/security tests, **10/10 (100.0%)** surgical mutation kill score, and 30-seed paired 60/144 Hz benchmarks (`0.000 px` max drift vs `4.783 px` variable-`dt` baseline, $p_{\text{Holm}} = 3.73 \times 10^{-9}$).
+- **Build Standard v1.2.0 Governance & Provenance:** Added `VERSION`, `repo.yaml`, `repo-standard.schema.json`, `CLAIMS.md`, `LIMITATIONS.md`, `REPLICATION.md`, `CITATION.cff`, `CITATION.bib`, `.zenodo.json`, `THIRD_PARTY_NOTICES.md`, `NOTICE`, `UPGRADING.md`, `justfile`, `.env.example`, `.gitleaks.toml`, `.github/labels.tsv`, `llms.txt`, `llms-full.txt`, `GEMINI.md`, `.cursor/rules/build-standard.mdc`, `examples/determinism_demo.mjs`, `docs/adr/0001..0003`, `docs/configuration.md`, `docs/operations.md`, `docs/faq.md`, `docs/glossary.md`, `docs/threat-model.md`, `docs/benchmarks.md`, `docs/preregistration.md`, `docs/run-log.md`, `docs/reviews/2026-11-25-redteam-hardening.md`, `data/MANIFEST.sha256`, `CHECKSUMS.sha256`, cross-platform/6-kernel/SLSA CI workflows, and `.github/workflows/pages.yml`.
+
+### Fixed
+
+- **Collision soundness (`src/collision.js`):** Guarded `circleHitsRect` against non-positive radii (`cr <= 0`), degenerate rectangles (`rw <= 0` or `rh <= 0`), and non-finite coordinates (`NaN`/`Infinity`).
+- **Input queue cap & `NaN` leak (`src/input-queue.js`, `src/timestep.js`):** Guarded `msToTicks` and `scheduleInput` against non-finite timestamps and fixed the off-by-one eviction cap (`> 64` -> `>= CONFIG.INPUT_QUEUE_CAP`).
+- **Storage allowlist & streak sanitization (`src/storage.js`, `src/config.js`):** Filtered `readUnlockedAchievements()` through canonical `ACHIEVEMENT_IDS`, sanitized negative/`NaN` `prevStreak` in `nextDayStreak()`, and guarded inverted bounds (`min > max`) in `clampNumber()`.
+- **Local static server hardening (`tools/static-server.mjs`):** Added `/healthz` JSON health probe, `HOST`/`PORT` env support, `realpath` symlink confinement, security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`), and `.pdf`/`.gz` MIME types.
+- **Mutation-exposed test holes (`tests/determinism.mjs`, `tests/engine-test.mjs`):** Asserted exact 180-step count in 3.0 s (`M03`) and added mid-run paused `resetStats()` regression test (`M09`).
+- **CodeQL alerts & R4 cleanup (`tests/smoke-test.mjs`, `.github/`):** Replaced unescaped dynamic `new RegExp` assertions with exact `CACHE_NAME` string comparison and parsed `APP_SHELL` `Set` checks (0 CodeQL alerts); removed R4-banned `.github/PULL_REQUEST_TEMPLATE.md`, `.github/copilot-instructions.md`, `.github/dependabot.yml`, and `.github/workflows/dependabot-auto-merge.yml` (keeping GitHub branch protection untouched for explicit owner control).
+
 ## [3.1.0] — Fixed-step simulation, native modules, and full audit
 
 ### Added & Changed

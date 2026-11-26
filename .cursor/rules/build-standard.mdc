@@ -1,0 +1,7 @@
+---
+description: GlidieBirdie v3.2.0 Build Standard v1.2.0 and architecture rules
+alwaysApply: true
+---
+
+Follow `AGENTS.md` (canonical project context) and `docs/build-standard.md` (Build Standard v1.2.0).
+Zero runtime dependencies, no bundler, native ES2022 modules under `src/`, single-file `style.css`, and machine-checked Lean 4.35.0 proofs under `lean/`.

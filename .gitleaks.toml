@@ -1,0 +1,14 @@
+title = "GlidieBirdie gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Exclude build-standard audit regex patterns and generated Lean/PDF build artifacts"
+paths = [
+  '''^scripts/Audit-Repo\.ps1$''',
+  '''^scripts/audit-repo\.sh$''',
+  '''^docs/build-standard\.md$''',
+  '''^lean/\.lake/''',
+  '''^paper/build/'''
+]
