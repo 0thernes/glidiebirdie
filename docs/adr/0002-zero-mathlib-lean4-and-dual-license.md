@@ -14,5 +14,5 @@ GlidieBirdie's critical invariants (720 Hz LCM grid, Euclidean circle-vs-rect pr
 
 ## Consequences
 
-- **Positive:** Full clean Lean build takes ~6 s with zero external cache downloads; every theorem audits strictly within `[propext, Classical.choice, Quot.sound]` (10 theorems use zero axioms).
+- **Positive:** Full clean Lean build takes ~6 s with zero external cache downloads; every theorem audits strictly within `[propext, Classical.choice, Quot.sound]` (17 theorems use zero axioms).
 - **Trade-off:** IEEE-754 floating-point canvas and Web Audio behavior stays outside the integer/UInt32 formal model and is verified empirically via Node/Playwright suites (documented in `LIMITATIONS.md`).

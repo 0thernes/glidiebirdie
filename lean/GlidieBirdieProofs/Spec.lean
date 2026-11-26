@@ -77,9 +77,10 @@ namespace GlidieBirdie.Collision
   decide (cr > 0 ∧ rw > 0 ∧ rh > 0 ∧ distSqPointRect cx cy rx ry rw rh < cr * cr)
 
 /-- Conservative integer top-pipe and bottom-pipe clearance predicate (`src/collision.js`).
-    Runtime `intersectsPipe` uses shrunken radius `0.82 * BIRD_R = 14.76 < 18`; by
-    `circleHitsRect_monotone_radius`, proving no collision at `cr = BIRD_R = 18` strictly
-    implies no collision at every smaller positive radius `0 < r' ≤ 18`. -/
+    Runtime `intersectsPipe` uses shrunken float radius `0.82 * 18 = 14.76 < 15 < 18`;
+    `circleHitsRect_monotone_radius` certifies integer-radius monotonicity (`0 < r1 ≤ r2`),
+    so clearance at `cr = BIRD_R = 18` strictly implies clearance at every positive integer
+    radius `1 ≤ r1 ≤ 18` (including `15`, which bounds `14.76` from above). -/
 @[expose] public def intersectsPipeInt (bx by_ cr px topH : Int) : Bool :=
   circleHitsRect bx by_ cr px 0 PIPE_W topH ||
   circleHitsRect bx by_ cr px (topH + PIPE_GAP) PIPE_W (GROUND_Y - (topH + PIPE_GAP))

@@ -136,6 +136,18 @@ All **55 theorems** in [`lean/`](lean/README.md) (47 core + 8 constructive adver
 
 See the [Build White Paper](dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf), [Interactive Blueprint](blueprint/index.html), [`CLAIMS.md`](CLAIMS.md), [`LIMITATIONS.md`](LIMITATIONS.md), and [`REPLICATION.md`](REPLICATION.md) for the complete statement-fidelity audit, 30-seed benchmarks, and clean-clone instructions.
 
+## Limitations & Literal vs. Metaphor
+
+See [`LIMITATIONS.md`](LIMITATIONS.md) for full details. In summary, GlidieBirdie retires **0 / 1,900** open problems in `0thernes/unsolved-problems-mega-atlas`, is not peer reviewed, and separates literal engineering claims from creative/flavor terminology:
+
+| Term in UI / Prose | Literal Reality |
+| --- | --- |
+| "60 Hz fixed-step on 720 Hz tick grid" | **Literal** — verified by Lean 4 (`TimestepGrid.lean`) and 30-seed paired benchmarks (`0.000 px` max hitch-free drift). |
+| "55 Lean 4.35.0 proofs across 6 kernels" | **Literal (discrete specs)** — machine-checked over exact integer/`UInt32` models, not IEEE-754 float64 canvas rendering or Web Audio DSP. |
+| "Automated WCAG 2.2 AA" | **Literal (automated scope)** — `0` axe-core violations across 4 interactive views; complements rather than replaces manual assistive-technology audits. |
+| "Five living themes" / "Expressive bird emotions" | **Metaphor / visual design** — procedural Canvas 2D palettes, particle presets, and deterministic state-driven sprite expressions (`calm`/`happy`/`scared`/`determined`/`dizzy`), not AI or biology. |
+| "Feather Shield" / "Serene Postcard" | **Metaphor / gameplay feature** — a boolean collision-absorption pickup and a paused canvas PNG export mode. |
+
 ## Controls
 
 | Input | Action |

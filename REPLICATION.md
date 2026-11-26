@@ -14,29 +14,35 @@ Any independent engineer or researcher can replicate every formal, empirical, an
 ```bash
 git clone https://github.com/0thernes/glidiebirdie.git
 cd glidiebirdie
+
+# 1. Verify tracked SHA-256 manifests BEFORE regenerating host-specific benchmarks
+sha256sum -c data/MANIFEST.sha256
+sha256sum -c CHECKSUMS.sha256
+
 npm ci
 
-# 1. Core syntax, static, brand, link, license, 12/12 citations, 69 engine, 8 property/contract, determinism, and smoke suites
+# 2. Core syntax, static, brand, link, license, 12/12 citations, 69 engine, 8 property/contract, determinism, and smoke suites
 npm run check
 
-# 2. Structured adversarial fuzzing (2,000 parser & HTTP static-server cases)
+# 3. Structured adversarial fuzzing (2,000 parser & HTTP static-server cases)
 npm run fuzz
 
-# 3. Baseline-gated surgical mutation testing (12/12 mutants must be KILLED)
+# 4. Baseline-gated surgical mutation testing (12/12 mutants must be KILLED)
 npm run mutate
 
-# 4. 30-seed counterbalanced 60 Hz vs 144 Hz determinism, 5,400 pure-step & 5x10k pool-churn benchmarks
+# 5. 30-seed counterbalanced 60 Hz vs 144 Hz determinism, 5,400 pure-step & 5x10k pool-churn benchmarks
+#    (Note: rewrites results/benchmarks.json with your local CPU/OS timings.)
 npm run benchmark
 
-# 5. Report-only ESLint & strict TypeScript (checkJs + WebWorker) checks
+# 6. Report-only ESLint & strict TypeScript (checkJs + WebWorker) checks
 npm run lint
 npm run typecheck
 
-# 6. Browser E2E + 4-view WCAG 2.2 AA accessibility tests (7 Playwright + axe-core tests)
+# 7. Browser E2E + 4-view WCAG 2.2 AA accessibility tests (7 Playwright + axe-core tests)
 npx playwright install --with-deps chromium
 npm run test:browser
 
-# 7. Pure Lean 4.35.0 formal core (55 theorems, zero sorry, zero Mathlib, 6-kernel comparator + negative tamper test)
+# 8. Pure Lean 4.35.0 formal core (55 theorems, zero sorry, zero Mathlib, 6-kernel comparator + negative tamper test)
 (
   cd lean
   lake build
@@ -51,26 +57,25 @@ npm run test:browser
 # On Linux with bubblewrap installed — live negative kernel tamper test (must exit 0 after rejecting sorry):
 bash lean/scripts/verify-negative-kernel.sh
 
-# 8. Build White Paper source AND standalone arXiv tarball verification
+# 9. Build White Paper source AND standalone arXiv tarball verification
 mkdir -p paper/build /tmp/arxiv-verify
 tectonic -X compile paper/main.tex --outdir paper/build --keep-intermediates
 tar -xzf dist/arxiv_submission.tar.gz -C /tmp/arxiv-verify
 tectonic -X compile /tmp/arxiv-verify/main.tex --outdir /tmp/arxiv-verify
 
-# 9. SHA-256 manifests and Build Standard v1.2.0 self-audit
-sha256sum -c data/MANIFEST.sha256
-sha256sum -c CHECKSUMS.sha256
+# 10. Build Standard v1.2.0 self-audit
 pwsh scripts/Audit-Repo.ps1 -Path .    # or: bash scripts/audit-repo.sh .
 ```
 
 ## Expected Replication Criteria
 
-1. `npm run check` exits `0` with `12/12` citations resolved, `69/69` engine assertions, `8/8` property/metamorphic/HTTP contract suites, `180` identical hitch-free steps at 60 Hz and 144 Hz, and `0` static/brand/link/license failures.
-2. `npm run fuzz` exits `0` across `2,000` adversarial cases (`1,500` parser/engine + `500` HTTP) with `0` crashes and `0` leaks.
-3. `npm run mutate` exits `0` after baseline verification with `12/12 (100.0%) killed, 0 survived, 0 runner errors`.
-4. `results/benchmarks.json` reports `fixed_step_60hz_on_720hz_grid_max_drift_px.max === 0`, `paired_wins_fixed_over_variable === 30`, `exact_sign_test_p <= 1e-8`, `individual_step_budget_violations_60hz === 0`, and `conservation_violations === 0`.
-5. `VerifyAxioms.lean` emits `55` lines strictly within `[propext, Classical.choice, Quot.sound]` (`0` `sorryAx`, `0` `ofReduceBool`, `0` custom axioms), `leanchecker` / `leanchecker-paranoid` / `lake comparator --paranoid` exit `0`, and `lean/scripts/verify-negative-kernel.sh` exits `0` (proving tampered proofs are rejected).
-6. Both `paper/main.tex` and the extracted standalone `dist/arxiv_submission.tar.gz` compile cleanly via Tectonic with `0` warnings.
+1. `sha256sum -c data/MANIFEST.sha256` and `sha256sum -c CHECKSUMS.sha256` pass cleanly on a fresh clone before regenerating `results/benchmarks.json`.
+2. `npm run check` exits `0` with `12/12` citations resolved, `69/69` engine assertions, `8/8` property/metamorphic/HTTP contract suites, `180` identical hitch-free steps at 60 Hz and 144 Hz, and `0` static/brand/link/license failures.
+3. `npm run fuzz` exits `0` across `2,000` adversarial cases (`1,500` parser/engine + `500` HTTP) with `0` crashes and `0` leaks.
+4. `npm run mutate` exits `0` after baseline verification with `12/12 (100.0%) killed, 0 survived, 0 runner errors`.
+5. `results/benchmarks.json` reports `fixed_step_60hz_on_720hz_grid_max_drift_px.max === 0`, `paired_wins_fixed_over_variable === 30`, `exact_sign_test_p <= 1e-8`, `pure_simulation_step_latency_us.median < 2000`, `individual_step_budget_violations_60hz === 0`, and `conservation_violations === 0`.
+6. `VerifyAxioms.lean` emits `55` lines strictly within `[propext, Classical.choice, Quot.sound]` (`0` `sorryAx`, `0` `ofReduceBool`, `0` custom axioms), `leanchecker` / `leanchecker-paranoid` / `lake comparator --paranoid` exit `0`, and `lean/scripts/verify-negative-kernel.sh` exits `0` (proving tampered proofs are rejected).
+7. Both `paper/main.tex` and the extracted standalone `dist/arxiv_submission.tar.gz` compile cleanly via Tectonic with `0` warnings.
 
 ## Replication Log
 

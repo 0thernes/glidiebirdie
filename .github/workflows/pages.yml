@@ -25,7 +25,6 @@ jobs:
           mkdir -p _site/docs _site/blueprint _site/dist
           cp index.html style.css game.js service-worker.js manifest.webmanifest robots.txt sitemap.xml _site/
           cp -r src _site/src
-          cp -r icons _site/icons
           cp -r docs/assets _site/docs/assets
           cp -r docs/media _site/docs/media
           cp -r blueprint/* _site/blueprint/

@@ -17,5 +17,5 @@
 - **Effect reporting:** Report raw win/loss ratio, median, p95, p99, max, mean, SD, and 95% confidence intervals plus every per-seed raw observation in `results/benchmarks.json`.
 - **Explicit directional falsification rules:**
   - **Refutes H1:** Any single seed showing `fixed_step_60hz_on_720hz_grid_max_drift_px.max > 0` or `p_Holm >= 0.01`.
-  - **Refutes H2:** Any single individual simulation step reaching or exceeding `16,666.67 µs` (`individual_step_budget_violations_60hz > 0` or `pure_simulation_step_latency_us.max >= 16666.67`) — **independently of two-sided sign-test significance** (preventing a small p-value in the wrong direction from passing H2).
+  - **Refutes H2:** Either `pure_simulation_step_latency_us.median >= 2000` OR any single individual simulation step reaching or exceeding `16,666.67 µs` (`individual_step_budget_violations_60hz > 0` or `pure_simulation_step_latency_us.max >= 16666.67`) — **independently of two-sided sign-test significance** (preventing a small p-value in the wrong direction from passing H2).
   - **Refutes H3:** Any single cycle showing `conservation_violations > 0`.

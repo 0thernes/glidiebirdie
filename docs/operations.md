@@ -8,21 +8,22 @@
 - **One-command rollback & live deployment recovery:**
 
   ```bash
-  # 1. Stage a coherent tagged snapshot (runtime shell + package manifests + VERSION) and verify
+  # 1. Stage browser runtime rollback to a prior tag, refresh CHECKSUMS.sha256, and run check/fuzz/mutate
   just rollback v3.1.0
 
-  # 2. Review diff (reconcile CITATION.cff if reverting across versions), commit, and push to main
+  # 2. Review staged diff, commit, and push to main (all modified files including CHECKSUMS.sha256 are staged)
   git status
   git commit -m "revert: rollback browser runtime shell to v3.1.0"
+  SHA="$(git rev-parse HEAD)"
   git push origin main
 
-  # 3. Verify live GitHub Pages deployment and post-deploy canary
-  gh run list --workflow pages.yml --limit 1
-  gh run list --workflow post-deploy-canary.yml --limit 1
-  curl -sfI https://0thernes.github.io/glidiebirdie/ | head -n 5
+  # 3. Wait for the Pages & canary workflows tied specifically to $SHA, then inspect the served shell
+  gh run list --workflow pages.yml --commit "$SHA" --limit 1
+  gh run list --workflow post-deploy-canary.yml --commit "$SHA" --limit 1
+  curl -sf https://0thernes.github.io/glidiebirdie/service-worker.js | grep -E "CACHE_NAME"
   ```
 
-  `just rollback` checks out a coherent release snapshot (`index.html`, `style.css`, `game.js`, `service-worker.js`, `manifest.webmanifest`, `src/`, `package.json`, `package-lock.json`, and `VERSION`) so `service-worker.js` `CACHE_NAME` stays consistent with `package.json` and `VERSION`, then runs syntax, engine, and determinism verification before you commit and push to trigger `.github/workflows/pages.yml`.
+  `just rollback` restores the browser runtime (`index.html`, `style.css`, `game.js`, `manifest.webmanifest`, `src/`) from the target tag while preserving `v3.2.0`'s `package.json`, `VERSION`, `service-worker.js` cache lock, and CI script interface (`check`/`fuzz`/`mutate`), refreshes and stages `CHECKSUMS.sha256`, and validates the full local test suite before committing and pushing to trigger `.github/workflows/pages.yml`. For a complete repository-wide rollback of a single bad merge commit, use `git revert <commit-sha>`.
 
 ## 2. Observability Basics (Local Static Server & Browser Runtime)
 

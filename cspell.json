@@ -233,7 +233,10 @@
     "zizmor",
     "unvalidated",
     "hmiss",
-    "unmutated"
+    "unmutated",
+    "checksummed",
+    "untampered",
+    "Untampered"
   ],
   "ignorePaths": [
     "LICENSE*",

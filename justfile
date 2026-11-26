@@ -58,9 +58,10 @@ deploy:
   @echo "GlidieBirdie deploys directly as static files via .github/workflows/pages.yml on push to main."
 
 rollback tag="v3.1.0":
-  @echo "Staging coherent rollback snapshot to tagged release {{tag}}..."
-  git checkout "{{tag}}" -- index.html style.css game.js service-worker.js manifest.webmanifest src package.json package-lock.json
-  printf '%s\n' "{{tag}}" | sed 's/^v//' > VERSION
-  @echo "Verifying rolled-back shell syntax and core engine tests..."
-  node --check game.js && node --check service-worker.js && node tests/engine-test.mjs && node tests/determinism.mjs
-  @echo "Coherent rollback staged. Update CITATION.cff if needed, commit, push to main, and verify GitHub Pages + canary."
+  @echo "Staging browser runtime rollback to tagged release {{tag}} while preserving v3.2.0 CI/verification interface..."
+  git checkout "{{tag}}" -- index.html style.css game.js manifest.webmanifest src
+  @echo "Regenerating CHECKSUMS.sha256 for the rolled-back browser shell..."
+  node -e "import('node:fs').then(async fs => { const { createHash } = await import('node:crypto'); const lines = fs.readFileSync('CHECKSUMS.sha256','utf8').trim().split(/\r?\n/); const out = lines.map(l => { const rel = l.split('  ')[1]; const h = createHash('sha256').update(fs.readFileSync(rel)).digest('hex'); return h + '  ' + rel; }); fs.writeFileSync('CHECKSUMS.sha256', out.join('\n') + '\n'); });"
+  git add index.html style.css game.js manifest.webmanifest src CHECKSUMS.sha256
+  npm run check && npm run fuzz && npm run mutate
+  @echo "Rollback staged, checksummed, and verified across check/fuzz/mutate. Review git diff, commit, push to main, and verify Pages + canary."
