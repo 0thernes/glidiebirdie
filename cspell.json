@@ -227,7 +227,13 @@
     "trav",
     "fpackage",
     "cpackage",
-    "Ettinger"
+    "Ettinger",
+    "untimed",
+    "Untimed",
+    "zizmor",
+    "unvalidated",
+    "hmiss",
+    "unmutated"
   ],
   "ignorePaths": [
     "LICENSE*",

@@ -5,10 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Minimum workflow-level scope; Pages deployment scopes are isolated to jobs.deploy.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -26,16 +25,23 @@ jobs:
           mkdir -p _site/docs _site/blueprint _site/dist
           cp index.html style.css game.js service-worker.js manifest.webmanifest robots.txt sitemap.xml _site/
           cp -r src _site/src
+          cp -r icons _site/icons
           cp -r docs/assets _site/docs/assets
+          cp -r docs/media _site/docs/media
           cp -r blueprint/* _site/blueprint/
           cp dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf _site/dist/
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: _site
 
   deploy:
+    permissions:
+      contents: read
+      # Required strictly by actions/deploy-pages.
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -44,4 +50,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

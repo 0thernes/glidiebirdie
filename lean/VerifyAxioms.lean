@@ -3,12 +3,12 @@ import GlidieBirdieProofs
 /-!
 # GlidieBirdie v3.2.0 — Standalone Axiom Audit (`VerifyAxioms.lean`)
 
-Runs `#print axioms` on all 45 machine-checked theorems across all 6 pure Lean 4.35.0
+Runs `#print axioms` on all 55 machine-checked theorems across all 7 pure Lean 4.35.0
 modules. Every declaration MUST depend strictly on `[propext, Classical.choice, Quot.sound]`
 (or zero axioms) with zero `sorryAx`, `Lean.ofReduceBool`, `Lean.trustCompiler`, or custom axioms.
 -/
 
--- Module 1: TimestepGrid (8)
+-- Module 1: TimestepGrid (9)
 #print axioms GlidieBirdie.Timestep.lcm_60_144_eq_720
 #print axioms GlidieBirdie.Timestep.standard_rates_divide_720
 #print axioms GlidieBirdie.Timestep.ticks_per_step_eq_12
@@ -17,8 +17,9 @@ modules. Every declaration MUST depend strictly on `[propext, Classical.choice, 
 #print axioms GlidieBirdie.Timestep.steps_executed_monotone
 #print axioms GlidieBirdie.Timestep.steps_executed_zero_when_nonadvancing
 #print axioms GlidieBirdie.Timestep.interp_alpha_bounded
+#print axioms GlidieBirdie.Timestep.steps_executed_no_drop_under_60_ticks
 
--- Module 2: CollisionGeometry (8)
+-- Module 2: CollisionGeometry (9)
 #print axioms GlidieBirdie.Collision.clampInt_bounds
 #print axioms GlidieBirdie.Collision.clampInt_minimizes_sq_dist
 #print axioms GlidieBirdie.Collision.distSqPointRect_nonneg
@@ -27,6 +28,7 @@ modules. Every declaration MUST depend strictly on `[propext, Classical.choice, 
 #print axioms GlidieBirdie.Collision.circleHitsRect_false_nonpos_radius_or_rect
 #print axioms GlidieBirdie.Collision.circleHitsRect_interior_hits
 #print axioms GlidieBirdie.Collision.centered_bird_clears_every_valid_pipe
+#print axioms GlidieBirdie.Collision.circleHitsRect_monotone_radius
 
 -- Module 3: StorageStreak (8)
 #print axioms GlidieBirdie.Storage.nextDayStreak_same_day
@@ -64,3 +66,13 @@ modules. Every declaration MUST depend strictly on `[propext, Classical.choice, 
 #print axioms GlidieBirdie.NonVacuity.nonvacuous_pipe_clearance_and_hit_witness
 #print axioms GlidieBirdie.NonVacuity.nonvacuous_weather_pool_churn_and_clear_witness
 #print axioms GlidieBirdie.NonVacuity.nonvacuous_iron_calm_3day_streak_witness
+
+-- Module 7: AdversarialTests (8)
+#print axioms GlidieBirdie.Adversarial.adversarial_unguarded_neg_radius_false_hit
+#print axioms GlidieBirdie.Adversarial.adversarial_hitch_100ms_drops_one_step
+#print axioms GlidieBirdie.Adversarial.adversarial_corrupted_ticks_per_step_10_breaks_180
+#print axioms GlidieBirdie.Adversarial.adversarial_zero_prev_same_day_returns_zero
+#print axioms GlidieBirdie.Adversarial.adversarial_leaked_weather_clear_violates_conservation
+#print axioms GlidieBirdie.Adversarial.adversarial_off_by_one_queue_exceeds_cap
+#print axioms GlidieBirdie.Adversarial.adversarial_unclamped_speed_exceeds_cap
+#print axioms GlidieBirdie.Adversarial.adversarial_nonpos_rect_never_hits_interior

@@ -2,18 +2,20 @@
   "name": "glidiebirdie",
   "version": "3.2.0",
   "private": true,
-  "description": "GlidieBirdie — zero-runtime-dependency deterministic 720 Hz fixed-step browser flyer (native ES2022 modules, procedural Web Audio, WCAG 2.2 AA, PWA), 45 pure Lean 4.35.0 proofs (6 kernels) & AMS-LaTeX Build White Paper.",
+  "description": "GlidieBirdie — zero-runtime-dependency deterministic 60 Hz fixed-step (720 Hz tick grid) browser flyer (native ES2022 modules, procedural Web Audio, WCAG 2.2 AA, PWA), 55 pure Lean 4.35.0 proofs (6 kernels) & AMS-LaTeX Build White Paper.",
   "type": "module",
   "scripts": {
-    "check": "node --check game.js && node --check service-worker.js && node --check src/config.js && node --check src/rng.js && node --check src/storage.js && node --check src/timestep.js && node --check src/input-queue.js && node --check src/state.js && node --check src/dom.js && node --check src/haptics.js && node --check src/hooks.js && node --check src/audio.js && node --check src/collision.js && node --check src/physics.js && node --check src/render.js && node --check src/achievements.js && node --check src/ui.js && node --check src/session.js && node --check src/input.js && node --check src/loop.js && node --check src/main.js && node --check src/index.js && node tests/static-checks.mjs && node tests/brand-guard.mjs && node tests/link-guard.mjs && node tests/license-guard.mjs && node tests/engine-test.mjs && node tests/property-and-metamorphic.mjs && node tests/determinism.mjs && node tests/smoke-test.mjs",
+    "check": "node --check game.js && node --check service-worker.js && node --check src/config.js && node --check src/rng.js && node --check src/storage.js && node --check src/timestep.js && node --check src/input-queue.js && node --check src/state.js && node --check src/dom.js && node --check src/haptics.js && node --check src/hooks.js && node --check src/audio.js && node --check src/collision.js && node --check src/physics.js && node --check src/render.js && node --check src/achievements.js && node --check src/ui.js && node --check src/session.js && node --check src/input.js && node --check src/loop.js && node --check src/main.js && node --check src/index.js && node tests/static-checks.mjs && node tests/brand-guard.mjs && node tests/link-guard.mjs && node tests/license-guard.mjs && node scripts/check-citations.mjs && node tests/engine-test.mjs && node tests/property-and-metamorphic.mjs && node tests/determinism.mjs && node tests/smoke-test.mjs",
     "test": "npm run check",
+    "fuzz": "node tests/fuzz-http-and-inputs.mjs",
     "mutate": "node scripts/mutation-test.mjs",
     "benchmark": "node scripts/benchmark.mjs",
+    "check:citations": "node scripts/check-citations.mjs",
     "lint": "eslint src game.js service-worker.js tests tools scripts examples eslint.config.js playwright.config.js",
     "test:browser": "playwright test",
     "typecheck": "npx -y -p typescript@5 tsc -p jsconfig.json && npx -y -p typescript@5 tsc --noEmit --allowJs --checkJs --target ES2020 --lib ES2020,WebWorker service-worker.js",
     "icons": "node tools/generate-icons.mjs",
-    "serve": "node tools/static-server.mjs 8000",
+    "serve": "node tools/static-server.mjs",
     "audit": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Audit-Repo.ps1 -Path ."
   },
   "engines": {

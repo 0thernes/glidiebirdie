@@ -1,11 +1,9 @@
 # GlidieBirdie
 
 [![CI](https://github.com/0thernes/glidiebirdie/actions/workflows/ci.yml/badge.svg)](https://github.com/0thernes/glidiebirdie/actions/workflows/ci.yml)
+[![Pages Deploy](https://github.com/0thernes/glidiebirdie/actions/workflows/pages.yml/badge.svg)](https://0thernes.github.io/glidiebirdie/)
+[![Canary](https://github.com/0thernes/glidiebirdie/actions/workflows/post-deploy-canary.yml/badge.svg)](https://github.com/0thernes/glidiebirdie/actions/workflows/post-deploy-canary.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2f855a)](LICENSE.txt)
-[![Vanilla JS](https://img.shields.io/badge/stack-vanilla%20JS-f7df1e)](game.js)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-0f766e)](package.json)
-[![Accessible Arcade](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-2563eb)](README.md#accessibility)
-[![Lean 4.35.0](https://img.shields.io/badge/Lean%204.35.0-45%20proofs-7c3aed)](lean/README.md)
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 **Status:** Active (`v3.2.0`) · **Build Standard:** `v1.2.0` (`repo.yaml`) · **Epistemic Scope:** Verified browser-game engineering build (not peer reviewed; retires `0 / 1,900` open problems in `0thernes/unsolved-problems-mega-atlas`).
@@ -111,28 +109,29 @@ A separate `npm run typecheck` runs ephemeral TypeScript over the `checkJs`-clea
 node examples/determinism_demo.mjs
 ```
 
-### Run mutation testing, benchmarks, and Build Standard self-audit
+### Run fuzzing, mutation testing, benchmarks, and Build Standard self-audit
 
 ```bash
-npm run mutate      # 10/10 surgical mutants killed (100.0%)
-npm run benchmark   # 30 paired seeds (60 Hz vs 144 Hz -> results/benchmarks.json)
+npm run fuzz        # 2,000 adversarial parser & HTTP static-server fuzz cases
+npm run mutate      # baseline-gated 12/12 surgical mutants killed (100.0%)
+npm run benchmark   # 30 counterbalanced paired seeds + 5,400 pure steps -> results/benchmarks.json
 npm run audit       # Build Standard v1.2.0 audit via scripts/Audit-Repo.ps1
 ```
 
 ### Formal Verification — Exact Lean 4.35.0 Axiom Audit (5-Second Proof)
 
-All **45 theorems** in [`lean/`](lean/README.md) compile with zero Mathlib, zero `sorryAx`, zero `native_decide`, and zero custom axioms (`lake build && lake build Challenge && lake env lean VerifyAxioms.lean && lake env leanchecker-paranoid --fresh Solution`). Headline outputs from `VerifyAxioms.lean`:
+All **55 theorems** in [`lean/`](lean/README.md) (47 core + 8 constructive adversarial refutations) compile with zero Mathlib, zero `sorryAx`, zero `native_decide`, and zero custom axioms (`cd lean && lake build && lake build Challenge && lake env lean VerifyAxioms.lean && lake env leanchecker-paranoid --fresh Solution`). Headline outputs from `VerifyAxioms.lean`:
 
 ```text
 'GlidieBirdie.Timestep.lcm_60_144_eq_720' does not depend on any axioms
-'GlidieBirdie.Timestep.hz60_hz144_lcm_cycle_step_parity' depends on axioms: [propext, Classical.choice, Quot.sound]
+'GlidieBirdie.Timestep.steps_executed_no_drop_under_60_ticks' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Collision.distSqPointRect_minimality' depends on axioms: [propext, Quot.sound]
-'GlidieBirdie.Collision.centered_bird_clears_every_valid_pipe' depends on axioms: [propext, Classical.choice, Quot.sound]
+'GlidieBirdie.Collision.circleHitsRect_monotone_radius' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Storage.dateSeedNat_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
 'GlidieBirdie.Pools.poolClearAll_conserves_and_empties' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Pools.queuePushMany_bounded' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Physics.mulberry32_golden_20261125' depends on axioms: [propext, Quot.sound]
-'GlidieBirdie.NonVacuity.nonvacuous_60_144_parity_witness' does not depend on any axioms
+'GlidieBirdie.Adversarial.adversarial_unguarded_neg_radius_false_hit' does not depend on any axioms
 ```
 
 See the [Build White Paper](dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf), [Interactive Blueprint](blueprint/index.html), [`CLAIMS.md`](CLAIMS.md), [`LIMITATIONS.md`](LIMITATIONS.md), and [`REPLICATION.md`](REPLICATION.md) for the complete statement-fidelity audit, 30-seed benchmarks, and clean-clone instructions.
@@ -200,11 +199,12 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `tests/property-and-metamorphic.mjs` | 8 property-based, metamorphic, failure-injection, differential & HTTP contract suites (2,500+ trials) |
 | `tests/determinism.mjs` | Verifies 180 identical 60 Hz and 144 Hz steps on the 720 Hz fixed tick grid |
 | `tests/smoke-test.mjs` | Syntax and surface-area smoke checks |
-| `tests/e2e/smoke.spec.js` | 7 Playwright browser and WCAG 2.2 AA axe-core checks |
-| `lean/` | 45 pure Lean 4.35.0 formal theorems (zero Mathlib, Palomar `Challenge`/`Solution`, 6-kernel comparator) |
-| `paper/` & `dist/` | Zero-warning 9-page AMS-LaTeX Build White Paper PDF and clean-room `arxiv_submission.tar.gz` |
+| `tests/e2e/smoke.spec.js` | 7 Playwright browser tests + 4-view WCAG 2.2 AA axe-core checks |
+| `tests/fuzz-http-and-inputs.mjs` | 2,000-case structured adversarial parser & HTTP static-server fuzzer (`B15`) |
+| `lean/` | 55 pure Lean 4.35.0 formal theorems (zero Mathlib, Palomar `Challenge`/`Solution`, 6-kernel comparator + negative tamper test) |
+| `paper/` & `dist/` | Zero-warning AMS-LaTeX Build White Paper PDF and clean-room `arxiv_submission.tar.gz` |
 | `blueprint/index.html` | Interactive Lean 4 Proof Blueprint & Claims Dependency Map |
-| `scripts/` | Surgical mutation harness (`mutation-test.mjs`), 30-seed benchmarks (`benchmark.mjs`), Build Standard v1.2.0 audit scripts |
+| `scripts/` | Baseline-gated 12-mutant harness (`mutation-test.mjs`), 30-seed counterbalanced benchmarks (`benchmark.mjs`), citation verifier (`check-citations.mjs`), Build Standard v1.2.0 audit scripts |
 | `examples/` | Runnable zero-dependency example (`determinism_demo.mjs`) |
 | `tools/` | Zero-dependency dev helpers (`static-server.mjs`, `generate-icons.mjs`) |
 | `VERSION`, `repo.yaml`, `justfile` | Single version source (`3.2.0`), Build Standard v1.2.0 manifest, one-word task runner |

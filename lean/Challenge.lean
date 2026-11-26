@@ -29,6 +29,9 @@ public theorem steps_executed_zero_when_nonadvancing (prevTick frameTick : Nat) 
     stepsExecuted prevTick frameTick = 0 := by sorry
 public theorem interp_alpha_bounded (frameTick stepIndex : Nat) (backlogDropped : Bool) :
     alphaScaled frameTick stepIndex backlogDropped ≤ TICKS_PER_STEP := by sorry
+public theorem steps_executed_no_drop_under_60_ticks (prevTick dtTicks : Nat) (h : dtTicks ≤ 60) :
+    stepsExecuted prevTick (prevTick + dtTicks) =
+      (prevTick + dtTicks) / TICKS_PER_STEP - prevTick / TICKS_PER_STEP := by sorry
 
 end GlidieBirdie.Timestep
 
@@ -62,6 +65,10 @@ public theorem centered_bird_clears_every_valid_pipe (bx px topH : Int)
     topH + PIPE_GAP < GROUND_Y ∧
     PIPE_GAP > 5 * (2 * BIRD_R) ∧
     intersectsPipeInt bx (topH + PIPE_GAP / 2) BIRD_R px topH = false := by sorry
+public theorem circleHitsRect_monotone_radius (cx cy r1 r2 rx ry rw rh : Int)
+    (h1 : 0 < r1) (hle : r1 ≤ r2)
+    (hmiss : circleHitsRect cx cy r2 rx ry rw rh = false) :
+    circleHitsRect cx cy r1 rx ry rw rh = false := by sorry
 
 end GlidieBirdie.Collision
 
@@ -161,3 +168,26 @@ public theorem nonvacuous_iron_calm_3day_streak_witness :
     st1 = 1 ∧ st2 = 2 ∧ st3 = 3 := by sorry
 
 end GlidieBirdie.NonVacuity
+
+namespace GlidieBirdie.Adversarial
+
+open GlidieBirdie.Timestep GlidieBirdie.Collision GlidieBirdie.Storage GlidieBirdie.Pools GlidieBirdie.Physics
+
+public theorem adversarial_unguarded_neg_radius_false_hit :
+    (0 : Int) < (-1) * (-1) ∧ circleHitsRect 50 50 (-1) 40 40 20 20 = false := by sorry
+public theorem adversarial_hitch_100ms_drops_one_step :
+    stepsExecuted 0 72 = 5 ∧ 72 / TICKS_PER_STEP = 6 ∧ stepsExecuted 0 72 < 72 / TICKS_PER_STEP := by sorry
+public theorem adversarial_corrupted_ticks_per_step_10_breaks_180 :
+    (180 * 12) / 10 = 216 ∧ (180 * 12) / 10 ≠ 180 := by sorry
+public theorem adversarial_zero_prev_same_day_returns_zero :
+    nextDayStreak 0 20261125 20261125 20261124 = 0 := by sorry
+public theorem adversarial_leaked_weather_clear_violates_conservation :
+    ¬ ({ active := 0, free := 137, cap := WEATHER_POOL : PoolState }).valid := by sorry
+public theorem adversarial_off_by_one_queue_exceeds_cap :
+    65 > INPUT_QUEUE_CAP ∧ queuePushCap 64 INPUT_QUEUE_CAP = INPUT_QUEUE_CAP := by sorry
+public theorem adversarial_unclamped_speed_exceeds_cap :
+    100 + 3 * (42 / 6) = 121 ∧ speedMult100 42 = 118 ∧ 121 > speedMult100 42 := by sorry
+public theorem adversarial_nonpos_rect_never_hits_interior :
+    circleHitsRect 50 50 10 50 50 0 20 = false ∧ circleHitsRect 50 50 10 50 50 20 (-5) = false := by sorry
+
+end GlidieBirdie.Adversarial

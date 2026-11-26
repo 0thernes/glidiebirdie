@@ -2,9 +2,11 @@
 /**
  * GlidieBirdie v3.2.0 — Surgical Mutation Testing Harness (Build Standard B13)
  *
- * Plants 10 single-line mutants across core engine modules, runs the full behavioral
- * & property test suite, verifies every mutant is KILLED (non-zero exit), and restores
- * the exact original file contents unconditionally in `finally`.
+ * 1. Runs every unique test suite against the unmutated source first (baseline gate).
+ * 2. Plants 12 single-line mutants across core engine & HTTP server modules.
+ * 3. Counts a mutant as KILLED strictly when the test suite completes cleanly with a
+ *    non-zero exit status (never on spawn error, timeout, or signal).
+ * 4. Restores exact original file contents unconditionally in `finally`.
  */
 
 import fs from 'node:fs';
@@ -95,34 +97,73 @@ const MUTANTS = [
     replace: 'if (!state.audioEnabled || !audioCtx || volume < -1) return;',
     suite: 'tests/engine-test.mjs',
   },
+  {
+    id: 'M11',
+    file: 'tools/static-server.mjs',
+    desc: 'Disable public asset allowlist in static-server (exposes .git/package.json)',
+    find: 'if (segments.some((seg) => !seg || seg.startsWith(\'.\'))) return false;\n  if (PUBLIC_EXACT_FILES.has(posixRel)) return true;\n  return PUBLIC_PREFIXES.some((prefix) => posixRel.startsWith(prefix));',
+    replace: 'return Boolean(posixRel);',
+    suite: 'tests/property-and-metamorphic.mjs',
+  },
+  {
+    id: 'M12',
+    file: 'src/timestep.js',
+    desc: 'Remove non-finite guard in msToTicks() (allows NaN tick propagation)',
+    find: 'if (!Number.isFinite(ms)) return 0;',
+    replace: 'if (false) return 0;',
+    suite: 'tests/property-and-metamorphic.mjs',
+  },
 ];
+
+function runSuite(suiteRelPath) {
+  return spawnSync(process.execPath, [path.join(ROOT, suiteRelPath)], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 30000,
+  });
+}
+
+console.log('========================================================================');
+console.log(` GlidieBirdie v3.2.0 — SURGICAL MUTATION TESTING HARNESS (${MUTANTS.length} MUTANTS)`);
+console.log('========================================================================');
+
+// Step 1: Verify every unique killing suite passes on unmutated baseline first
+const uniqueSuites = [...new Set(MUTANTS.map((m) => m.suite))];
+for (const suite of uniqueSuites) {
+  const base = runSuite(suite);
+  if (base.error || base.signal || base.status !== 0) {
+    console.error(`  [BASELINE FAIL] ${suite} failed on unmutated source (status=${base.status}, signal=${base.signal})`);
+    if (base.stdout) console.error(base.stdout);
+    if (base.stderr) console.error(base.stderr);
+    process.exit(1);
+  }
+}
+console.log(`  [BASELINE OK]   Verified ${uniqueSuites.length} unmutated suites pass before planting mutants.`);
 
 let killed = 0;
 let survived = 0;
-
-console.log('========================================================================');
-console.log(' GlidieBirdie v3.2.0 — SURGICAL MUTATION TESTING HARNESS (10 MUTANTS)');
-console.log('========================================================================');
+let runnerErrors = 0;
 
 for (const m of MUTANTS) {
   const fullPath = path.join(ROOT, m.file);
   const original = fs.readFileSync(fullPath, 'utf8');
   if (!original.includes(m.find)) {
     console.error(`  [ERROR]    ${m.id}: Target pattern not found in ${m.file}`);
-    survived++;
+    runnerErrors++;
     continue;
   }
   const mutated = original.replace(m.find, m.replace);
   const t0 = performance.now();
   try {
     fs.writeFileSync(fullPath, mutated, 'utf8');
-    const res = spawnSync(process.execPath, [path.join(ROOT, m.suite)], {
-      cwd: ROOT,
-      encoding: 'utf8',
-      timeout: 30000,
-    });
+    const res = runSuite(m.suite);
     const dt = (performance.now() - t0).toFixed(0);
-    if (res.status !== 0) {
+    if (res.error || res.signal || res.status === null) {
+      runnerErrors++;
+      console.error(
+        `  [RUNNER_ERR] ${m.id} (${m.file}): child error/timeout (${res.error?.message || res.signal || 'null status'}) (${dt} ms)`,
+      );
+    } else if (res.status !== 0) {
       killed++;
       console.log(`  [KILLED]   ${m.id} (${m.file}): ${m.desc} (${dt} ms)`);
     } else {
@@ -136,7 +177,9 @@ for (const m of MUTANTS) {
 
 const pct = ((100 * killed) / MUTANTS.length).toFixed(1);
 console.log('========================================================================');
-console.log(` Mutation score: ${killed}/${MUTANTS.length} (${pct}%) killed, ${survived} survived.`);
+console.log(
+  ` Mutation score: ${killed}/${MUTANTS.length} (${pct}%) killed, ${survived} survived, ${runnerErrors} runner errors.`,
+);
 console.log('========================================================================');
 
-if (survived > 0) process.exit(1);
+if (survived > 0 || runnerErrors > 0) process.exit(1);

@@ -17,7 +17,7 @@ Read this file first before modifying the repository. `CLAUDE.md`, `GEMINI.md`, 
 2. `CLAIMS.md` & `LIMITATIONS.md` — falsifiable claims and honest boundaries
 3. `docs/ARCHITECTURE.md` & `docs/architecture_master_blueprint.md` — acyclic 20-module ES2022 layout
 4. `docs/build-standard.md` & `repo.yaml` — Build Standard v1.2.0 manifest
-5. `lean/README.md` — 45 zero-Mathlib Lean 4.35.0 proofs (Palomar `Challenge`/`Solution`)
+5. `lean/README.md` — 55 zero-Mathlib Lean 4.35.0 proofs (Palomar `Challenge`/`Solution` + 8 adversarial refutations)
 6. `.memory/security.md` & `docs/threat-model.md` — storage, CSP, and HTTP server boundaries
 
 ## What This Project Is
@@ -28,7 +28,7 @@ GlidieBirdie (`v3.2.0`) is a solo-built, browser-first, zero-runtime-dependency 
 - one layered stylesheet (`style.css`)
 - 20 native ES2022 modules under `src/` (`src/main.js`, 18 runtime modules, and `src/index.js` headless barrel) loaded by `game.js` (zero bundler, zero runtime npm deps)
 - one compact offline app-shell service worker (`service-worker.js`)
-- 45 machine-checked pure Lean 4.35.0 theorems (`lean/`, zero Mathlib, Palomar `Challenge.lean`/`Solution.lean`)
+- 55 machine-checked pure Lean 4.35.0 theorems (`lean/`, zero Mathlib, Palomar `Challenge.lean`/`Solution.lean`, 6 kernels + live negative tamper test)
 - an AMS-LaTeX Build White Paper (`paper/main.tex` -> `dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf`)
 
 ## Hard Rules
@@ -39,28 +39,30 @@ GlidieBirdie (`v3.2.0`) is a solo-built, browser-first, zero-runtime-dependency 
 - Do not add a backend or network data flow for gameplay state.
 - Do not split `style.css` into multiple files.
 - Keep `service-worker.js` tiny and app-shell-focused; keep `CACHE_NAME` locked to `VERSION` and `package.json`.
+- `.gitignore` policy: ignore only OS/editor junk, `node_modules/`, Playwright test output, and Build Standard / toolchain build directories (`lean/.lake/`, `paper/build/`, `_site/`). Never ignore `dist/` (frozen PDF and arXiv bundle are tracked).
 - Never fabricate test results, axiom lines, benchmarks, peer review, DOIs, or LLC affiliation (`Alexander Stephen Donahue`, Independent Researcher, ORCID `0009-0006-8168-9648`).
 - Classify every audit finding as exactly one of: `bug`, `error`, `issue`, `problem`, `concern`, `dilemma`, `conflict`, `gap`, `hole`, `blindspot`.
 
 ## Runtime Rules
 
 - Put tunable constants in `CONFIG` (`src/config.js`).
-- Advance gameplay strictly via the 720 Hz fixed-step integrator (`src/timestep.js`, `src/loop.js`).
+- Advance gameplay strictly via the 60 Hz fixed-step integrator quantized on the 720 Hz integer tick grid (`src/timestep.js`, `src/loop.js`).
 - Route all persistence through guarded helpers in `src/storage.js` under the `gb:` namespace.
 - Keep keyboard, pointer, mobile touch bar, and gamepad controls at parity.
-- Preserve WCAG 2.2 AA accessibility, live screen-reader announcements, `prefers-reduced-motion`, and unlayered `prefers-reduced-transparency`.
+- Preserve automated WCAG 2.2 AA accessibility across all interactive views, live screen-reader announcements, `prefers-reduced-motion`, and unlayered `prefers-reduced-transparency`.
 - Never bypass active GitHub branch protection or self-apply `guardrail-approved`; if branch protection is enabled on `main`, leave guardrail approval to the human owner.
 
 ## Verification Commands
 
 ```bash
-npm run check          # syntax, static, brand, link, license, 69 engine, 8 property/contract, determinism, smoke
-npm run mutate         # 10/10 surgical mutation testing
-npm run benchmark      # 30-seed paired 60/144 Hz benchmark -> results/benchmarks.json
-npm run lint           # ESLint across src/, tests/, tools/, scripts/
+npm run check          # syntax, static, brand, link, license, 12/12 citations, 69 engine, 8 property/contract, determinism, smoke
+npm run fuzz           # 2,000-case adversarial parser & HTTP static-server fuzzer
+npm run mutate         # baseline-gated 12/12 surgical mutation testing
+npm run benchmark      # 30-seed counterbalanced 60/144 Hz + 5,400 pure-step + 5x10k pool benchmark -> results/benchmarks.json
+npm run lint           # ESLint across src/, tests/, tools/, scripts/, examples/
 npm run typecheck      # tsc via jsconfig.json + WebWorker service-worker.js
-npm run test:browser   # 7 Playwright + axe-core WCAG 2.2 AA E2E tests
-cd lean && lake build && lake build Challenge && lake env lean VerifyAxioms.lean
+npm run test:browser   # 7 Playwright + 4-view axe-core WCAG 2.2 AA E2E tests
+(cd lean && lake build && lake build Challenge && lake env lean VerifyAxioms.lean)
 pwsh scripts/Audit-Repo.ps1 -Path .
 ```
 
@@ -68,12 +70,12 @@ pwsh scripts/Audit-Repo.ps1 -Path .
 
 | Path | Purpose |
 | --- | --- |
-| `game.js`, `src/*.js` | Native ES2022 browser engine (18 acyclic modules) |
+| `game.js`, `src/*.js` | Native ES2022 browser engine (20 files: `main.js`, 18 runtime modules, `index.js` headless barrel) |
 | `index.html`, `style.css`, `service-worker.js`, `manifest.webmanifest` | PWA shell, CSS Cascade Layers, offline cache |
-| `lean/` | 45 pure Lean 4.35.0 theorems (`module`, zero Mathlib, Palomar `Challenge`/`Solution`, `comparator.json`) |
+| `lean/` | 55 pure Lean 4.35.0 theorems (`module`, zero Mathlib, Palomar `Challenge`/`Solution`, `comparator.json`, negative kernel tamper script) |
 | `paper/`, `dist/` | AMS-LaTeX Build White Paper, frozen PDF, standalone `arxiv_submission.tar.gz` |
-| `tests/`, `scripts/` | Engine, determinism, property/metamorphic/HTTP contract, Playwright/axe, mutation, benchmarks, audit |
-| `tools/` | Zero-dep `static-server.mjs` (`/healthz`, traversal/symlink defense) & `generate-icons.mjs` |
+| `tests/`, `scripts/` | Engine, determinism, property/metamorphic/HTTP contract, 2,000-case fuzzer, Playwright/axe, 12/12 mutation, benchmarks, citations, audit |
+| `tools/` | Zero-dep `static-server.mjs` (strict public allowlist, IPv6-safe, `/healthz`, traversal/symlink defense) & `generate-icons.mjs` |
 | `docs/`, `.memory/` | Architecture, ADRs, threat model, benchmarks, preregistration, reviews, run-log |
 
 <!-- END AGENTS.md -->
@@ -86,11 +88,9 @@ FILE: README.md
 # GlidieBirdie
 
 [![CI](https://github.com/0thernes/glidiebirdie/actions/workflows/ci.yml/badge.svg)](https://github.com/0thernes/glidiebirdie/actions/workflows/ci.yml)
+[![Pages Deploy](https://github.com/0thernes/glidiebirdie/actions/workflows/pages.yml/badge.svg)](https://0thernes.github.io/glidiebirdie/)
+[![Canary](https://github.com/0thernes/glidiebirdie/actions/workflows/post-deploy-canary.yml/badge.svg)](https://github.com/0thernes/glidiebirdie/actions/workflows/post-deploy-canary.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2f855a)](LICENSE.txt)
-[![Vanilla JS](https://img.shields.io/badge/stack-vanilla%20JS-f7df1e)](game.js)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-0f766e)](package.json)
-[![Accessible Arcade](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-2563eb)](README.md#accessibility)
-[![Lean 4.35.0](https://img.shields.io/badge/Lean%204.35.0-45%20proofs-7c3aed)](lean/README.md)
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 **Status:** Active (`v3.2.0`) · **Build Standard:** `v1.2.0` (`repo.yaml`) · **Epistemic Scope:** Verified browser-game engineering build (not peer reviewed; retires `0 / 1,900` open problems in `0thernes/unsolved-problems-mega-atlas`).
@@ -196,28 +196,29 @@ A separate `npm run typecheck` runs ephemeral TypeScript over the `checkJs`-clea
 node examples/determinism_demo.mjs
 ```
 
-### Run mutation testing, benchmarks, and Build Standard self-audit
+### Run fuzzing, mutation testing, benchmarks, and Build Standard self-audit
 
 ```bash
-npm run mutate      # 10/10 surgical mutants killed (100.0%)
-npm run benchmark   # 30 paired seeds (60 Hz vs 144 Hz -> results/benchmarks.json)
+npm run fuzz        # 2,000 adversarial parser & HTTP static-server fuzz cases
+npm run mutate      # baseline-gated 12/12 surgical mutants killed (100.0%)
+npm run benchmark   # 30 counterbalanced paired seeds + 5,400 pure steps -> results/benchmarks.json
 npm run audit       # Build Standard v1.2.0 audit via scripts/Audit-Repo.ps1
 ```
 
 ### Formal Verification — Exact Lean 4.35.0 Axiom Audit (5-Second Proof)
 
-All **45 theorems** in [`lean/`](lean/README.md) compile with zero Mathlib, zero `sorryAx`, zero `native_decide`, and zero custom axioms (`lake build && lake build Challenge && lake env lean VerifyAxioms.lean && lake env leanchecker-paranoid --fresh Solution`). Headline outputs from `VerifyAxioms.lean`:
+All **55 theorems** in [`lean/`](lean/README.md) (47 core + 8 constructive adversarial refutations) compile with zero Mathlib, zero `sorryAx`, zero `native_decide`, and zero custom axioms (`cd lean && lake build && lake build Challenge && lake env lean VerifyAxioms.lean && lake env leanchecker-paranoid --fresh Solution`). Headline outputs from `VerifyAxioms.lean`:
 
 ```text
 'GlidieBirdie.Timestep.lcm_60_144_eq_720' does not depend on any axioms
-'GlidieBirdie.Timestep.hz60_hz144_lcm_cycle_step_parity' depends on axioms: [propext, Classical.choice, Quot.sound]
+'GlidieBirdie.Timestep.steps_executed_no_drop_under_60_ticks' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Collision.distSqPointRect_minimality' depends on axioms: [propext, Quot.sound]
-'GlidieBirdie.Collision.centered_bird_clears_every_valid_pipe' depends on axioms: [propext, Classical.choice, Quot.sound]
+'GlidieBirdie.Collision.circleHitsRect_monotone_radius' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Storage.dateSeedNat_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
 'GlidieBirdie.Pools.poolClearAll_conserves_and_empties' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Pools.queuePushMany_bounded' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Physics.mulberry32_golden_20261125' depends on axioms: [propext, Quot.sound]
-'GlidieBirdie.NonVacuity.nonvacuous_60_144_parity_witness' does not depend on any axioms
+'GlidieBirdie.Adversarial.adversarial_unguarded_neg_radius_false_hit' does not depend on any axioms
 ```
 
 See the [Build White Paper](dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf), [Interactive Blueprint](blueprint/index.html), [`CLAIMS.md`](CLAIMS.md), [`LIMITATIONS.md`](LIMITATIONS.md), and [`REPLICATION.md`](REPLICATION.md) for the complete statement-fidelity audit, 30-seed benchmarks, and clean-clone instructions.
@@ -285,11 +286,12 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `tests/property-and-metamorphic.mjs` | 8 property-based, metamorphic, failure-injection, differential & HTTP contract suites (2,500+ trials) |
 | `tests/determinism.mjs` | Verifies 180 identical 60 Hz and 144 Hz steps on the 720 Hz fixed tick grid |
 | `tests/smoke-test.mjs` | Syntax and surface-area smoke checks |
-| `tests/e2e/smoke.spec.js` | 7 Playwright browser and WCAG 2.2 AA axe-core checks |
-| `lean/` | 45 pure Lean 4.35.0 formal theorems (zero Mathlib, Palomar `Challenge`/`Solution`, 6-kernel comparator) |
-| `paper/` & `dist/` | Zero-warning 9-page AMS-LaTeX Build White Paper PDF and clean-room `arxiv_submission.tar.gz` |
+| `tests/e2e/smoke.spec.js` | 7 Playwright browser tests + 4-view WCAG 2.2 AA axe-core checks |
+| `tests/fuzz-http-and-inputs.mjs` | 2,000-case structured adversarial parser & HTTP static-server fuzzer (`B15`) |
+| `lean/` | 55 pure Lean 4.35.0 formal theorems (zero Mathlib, Palomar `Challenge`/`Solution`, 6-kernel comparator + negative tamper test) |
+| `paper/` & `dist/` | Zero-warning AMS-LaTeX Build White Paper PDF and clean-room `arxiv_submission.tar.gz` |
 | `blueprint/index.html` | Interactive Lean 4 Proof Blueprint & Claims Dependency Map |
-| `scripts/` | Surgical mutation harness (`mutation-test.mjs`), 30-seed benchmarks (`benchmark.mjs`), Build Standard v1.2.0 audit scripts |
+| `scripts/` | Baseline-gated 12-mutant harness (`mutation-test.mjs`), 30-seed counterbalanced benchmarks (`benchmark.mjs`), citation verifier (`check-citations.mjs`), Build Standard v1.2.0 audit scripts |
 | `examples/` | Runnable zero-dependency example (`determinism_demo.mjs`) |
 | `tools/` | Zero-dependency dev helpers (`static-server.mjs`, `generate-icons.mjs`) |
 | `VERSION`, `repo.yaml`, `justfile` | Single version source (`3.2.0`), Build Standard v1.2.0 manifest, one-word task runner |
@@ -362,18 +364,18 @@ FILE: CLAIMS.md
 
 Every technical, mathematical, empirical, and accessibility claim made by **GlidieBirdie v3.2.0** is listed below with its verification authority and an explicit condition that would **refute / prove us wrong** (Build Standard B04, B05, B42).
 
-> **Epistemic boundary:** GlidieBirdie is a verified browser-game engineering project. Audited against `0thernes/unsolved-problems-mega-atlas`, it retires **0 / 1,900** open scientific or mathematical problems. This repository and its Build White Paper are not peer reviewed.
+> **Epistemic boundary:** GlidieBirdie is a verified browser-game engineering project. Audited against `0thernes/unsolved-problems-mega-atlas` (v2.6.0, 1,900 problems), it retires **0 / 1,900** open scientific or mathematical problems. This repository and its Build White Paper are not peer reviewed.
 
 | ID | Claim | Verification Authority | What Would Prove Us Wrong (Falsification Condition) |
 | --- | --- | --- | --- |
-| **C1** | **Exact 60 Hz vs 144 Hz trajectory parity** on a 720 Hz integer tick grid ($\mathrm{lcm}(60,144)=720$) with exact 180 steps per 3.0 s and bounded hitch recovery (`MAX_FRAME_STEPS = 5`, $\alpha \in [0, 1]$). | `lean/GlidieBirdieProofs/TimestepGrid.lean` (8 theorems, 6 kernels), `tests/determinism.mjs`, `results/benchmarks.json` (30 paired seeds: max drift `0.000 px` vs `4.783 px` baseline, $p_{\text{Holm}} = 3.73 \times 10^{-9}$). | Any paired 60 Hz / 144 Hz run on identical seed and inputs exhibiting drift `> 0 px`, step count `!= 180` in 3.0 s, or `view.alpha` outside `[0, 1]`. |
-| **C2** | **Optimal Euclidean circle-vs-rectangle projection**, soundness under non-positive radii / degenerate rectangles / `NaN`, and universal pipe passability (`PIPE_GAP = 184 > 5 * 36`). | `lean/GlidieBirdieProofs/CollisionGeometry.lean` (8 theorems), `tests/property-and-metamorphic.mjs` (1,000 `prop_check` trials + translation & axis-swap invariance), `M01`, `M02`. | Any valid `(cx, cy, cr, rx, ry, rw, rh)` violating closest-point minimality, any `cr <= 0` or `rw <= 0` returning `true`, or any valid pipe `topHeight in [60, 316]` hitting a centered bird. |
-| **C3** | **Strict $O(1)$ free-list pool conservation** (`PARTICLE_POOL = 220`, `WEATHER_POOL = 140`, `clearWeatherPool`) and strict 64-slot FIFO input buffer (`INPUT_QUEUE_CAP = 64`) rejecting non-finite timestamps. | `lean/GlidieBirdieProofs/PoolAndQueue.lean` (8 theorems), `tests/engine-test.mjs`, `tests/property-and-metamorphic.mjs`, 10,000-cycle pool churn benchmark (`0` violations), `M06`, `M07`. | Any spawn/reclaim/clear sequence violating `active + free === cap`, or any input burst causing `getInputQueueLength() > 64` or retaining a `NaN` tick. |
-| **C4** | **Injective UTC `YYYYMMDD` `dateSeed`**, exact calendar-day streak automaton (`nextDayStreak`), and allowlist-hardened `gb:` persistence surviving `QuotaExceededError` and malformed JSON. | `lean/GlidieBirdieProofs/StorageStreak.lean` (8 theorems), 366-day leap-year injectivity test, 500 `prop_check` trials, `QuotaExceededError` failure injection, `M04`, `M05`. | Any two distinct calendar dates colliding in `dateSeed`, any streak transition returning negative/`NaN`, or any unallowed achievement ID surviving `readUnlockedAchievements()`. |
+| **C1** | **Exact 60 Hz vs 144 Hz trajectory parity on hitch-free runs** via a 60 Hz fixed-step integrator quantized on a 720 Hz integer tick grid ($\mathrm{lcm}(60,144)=720$), executing 180 steps per 3.0 s when no frame backlog is dropped (`dtTicks <= 60`) and bounding hitch catch-up (`MAX_FRAME_STEPS = 5`, $\alpha \in [0, 1]$). | `lean/GlidieBirdieProofs/TimestepGrid.lean` (9 theorems, 6 kernels), `tests/determinism.mjs`, `results/benchmarks.json` (30 counterbalanced paired seeds: max drift `0.000 px` vs `4.783 px` naive baseline, $p_{\text{Holm}} = 3.73 \times 10^{-9}$). | Any hitch-free paired 60 Hz / 144 Hz run with identical quantized inputs exhibiting drift `> 0 px` or step count `!= 180` in 3.0 s, or any hitch producing `view.alpha` outside `[0, 1]` or `steps > 5`. |
+| **C2** | **Optimal Euclidean circle-vs-rectangle projection**, soundness under non-positive radii / degenerate rectangles / `NaN`, radius monotonicity (`0.82 * 18` runtime clearance implied by `r = 18`), and universal pipe passability (`PIPE_GAP = 184 > 5 * 36`). | `lean/GlidieBirdieProofs/CollisionGeometry.lean` (9 theorems), `tests/property-and-metamorphic.mjs` (1,000 `prop_check` trials + translation & axis-swap invariance), `M01`, `M02`. | Any valid `(cx, cy, cr, rx, ry, rw, rh)` violating closest-point minimality, any `cr <= 0` or `rw <= 0` returning `true`, or any valid pipe `topHeight in [60, 316]` hitting a centered bird. |
+| **C3** | **Strict $O(1)$ free-list pool conservation** (`PARTICLE_POOL = 220`, `WEATHER_POOL = 140`, `clearWeatherPool`) and strict 64-slot FIFO input buffer (`INPUT_QUEUE_CAP = 64`) rejecting non-finite timestamps. | `lean/GlidieBirdieProofs/PoolAndQueue.lean` (8 theorems), `tests/engine-test.mjs`, `tests/property-and-metamorphic.mjs`, 5 × 10,000-cycle pool churn benchmark (`0` violations), `M06`, `M07`. | Any spawn/reclaim/clear sequence violating `active + free === cap`, or any input burst causing `getInputQueueLength() > 64` or retaining a `NaN` tick. |
+| **C4** | **Injective UTC `YYYYMMDD` `dateSeed`**, exact calendar-day streak automaton (`nextDayStreak`, with `>= 1` whenever `prevStreak >= 1` or `lastDay !== today`), finite-bound-safe `clampNumber`, and allowlist-hardened `gb:` persistence surviving `QuotaExceededError` and malformed JSON. | `lean/GlidieBirdieProofs/StorageStreak.lean` (8 theorems), 366-day leap-year injectivity test, 500 `prop_check` trials, 1,500 parser fuzz cases, `QuotaExceededError` failure injection, `M04`, `M05`. | Any two distinct calendar dates colliding in `dateSeed`, any `clampNumber` returning `NaN`/`Infinity` for finite `fallback`, any streak transition violating spec, or any unallowed achievement ID surviving `readUnlockedAchievements()`. |
 | **C5** | **Bit-exact 32-bit `mulberry32` parity** between JS and Lean 4 (`20261125` golden vector), monotone bounded 6-point speed ramp `[1.00x, 1.18x]` saturating at score 36, and Feather Shield / invincibility collision safety. | `lean/GlidieBirdieProofs/PhysicsBounds.lean` (9 theorems), differential JS-vs-Lean test, `tests/engine-test.mjs`. | Any bit mismatch on `mulberry32(20261125)`, any score exceeding `1.18x` speed multiplier, or a shielded/invincible pipe hit triggering `gameOver`. |
-| **C6** | **WCAG 2.2 AA accessibility & safe runtime media**: zero axe-core violations, modal focus trap, keyboard/gamepad parity, reduced-motion game-over freeze, unlayered `prefers-reduced-transparency`, zero-volume Web Audio guard, and normalized SW cache keys. | `tests/e2e/smoke.spec.js` (7 Playwright + axe-core tests), `tests/smoke-test.mjs`, `tests/engine-test.mjs`, `M08`, `M09`, `M10`. | Any axe-core WCAG 2.2 AA violation, any oscillator scheduled at `volume = 0`, any `prefers-reduced-transparency` rule placed inside `@layer`, or reloaded achievement losing `.unlocked`. |
-| **C7** | **Hardened local HTTP server** (`tools/static-server.mjs`): `/healthz` JSON health, `nosniff` + `X-Frame-Options: DENY` + `Referrer-Policy`, `realpath` symlink confinement, traversal `403`, null-byte `400`, non-GET/HEAD `405`. | `tests/property-and-metamorphic.mjs` (HTTP contract + 16x concurrent request suite). | Any path traversal or symlink escape returning `200`, missing security header, or failed `/healthz` under concurrent load. |
-| **C8** | **100% surgical mutation kill score & clean static/security checks**: 10/10 planted mutants killed, 0 duplicate keys/self-comparisons, 0 retired brand tokens, 0 CodeQL alerts, 0 npm CVEs. | `scripts/mutation-test.mjs` (`10/10`), `tests/static-checks.mjs`, `tests/brand-guard.mjs`, `tests/license-guard.mjs`, `tests/link-guard.mjs`, `npm audit`, CodeQL CI. | Any surviving mutant in `scripts/mutation-test.mjs`, any CodeQL alert on `main`, or any failure in `npm run check`. |
+| **C6** | **Automated WCAG 2.2 AA axe-core compliance across 4 interactive views & safe runtime media**: `0` axe-core violations across initial playfield, Zen Customizer drawer, Tutorial modal, and Serene Postcard view; modal focus trap; keyboard/gamepad parity; reduced-motion game-over freeze; unlayered `prefers-reduced-transparency`; zero-volume Web Audio guard; and normalized SW cache keys. *(Automated scans complement rather than replace manual screen-reader/assistive-technology audits.)* | `tests/e2e/smoke.spec.js` (7 Playwright tests including 4-view `@axe-core/playwright` WCAG 2.2 AA scan), `tests/smoke-test.mjs`, `tests/engine-test.mjs`, `M08`, `M09`, `M10`. | Any axe-core WCAG 2.2 AA violation on any of the 4 scanned views, any oscillator scheduled at `volume = 0`, any `prefers-reduced-transparency` rule placed inside `@layer`, or reloaded achievement losing `.unlocked`. |
+| **C7** | **Hardened zero-dep static HTTP server** (`tools/static-server.mjs`): strict public static asset allowlist (blocking `.git/`, `.env`, `package.json`, `tools/`, `tests/`, `scripts/`), raw-URL pre-normalization dot-segment guard, IPv6-safe URL base, `/healthz` JSON probe, `nosniff` + `X-Frame-Options: DENY` + `Referrer-Policy`, `realpath` symlink confinement, traversal `403`, null-byte `400`, non-GET/HEAD `405`. | `tests/property-and-metamorphic.mjs` (HTTP allowlist/contract + 16x concurrency), `tests/fuzz-http-and-inputs.mjs` (500 adversarial HTTP fuzz requests), `M11`. | Any non-public path, dotfile, traversal, or symlink escape returning `200`, any `5xx` error under fuzzing, missing security header, or failed `/healthz` under concurrent load. |
+| **C8** | **100% baseline-gated surgical mutation kill score, 55-theorem 6-kernel Lean verification with live negative tamper check & clean static/security checks**: `12/12` planted mutants killed, `55/55` Lean theorems verified across 6 kernels (with live negative tamper rejection), `12/12` BibTeX citations resolved, `0` duplicate keys/self-comparisons, `0` retired brand tokens, `0` CodeQL alerts, `0` npm CVEs. | `scripts/mutation-test.mjs` (`12/12`), `lean/scripts/verify-negative-kernel.sh`, `scripts/check-citations.mjs` (`12/12`), `tests/static-checks.mjs`, `tests/brand-guard.mjs`, `tests/license-guard.mjs`, `tests/link-guard.mjs`, `npm audit`, CodeQL CI. | Any surviving mutant or runner error in `scripts/mutation-test.mjs`, any accepted tampered proof in `verify-negative-kernel.sh`, any CodeQL alert on `main`, or any failure in `npm run check` / `npm run fuzz`. |
 
 <!-- END CLAIMS.md -->
 
@@ -393,7 +395,7 @@ This document states explicitly what **GlidieBirdie v3.2.0** does **not** prove,
 
 ## 2. Formal-to-Runtime Modeling Gaps (Lean 4 vs JavaScript)
 
-- **Discrete integers vs IEEE-754 float64:** The 45 Lean 4.35.0 theorems verify exact integer and `UInt32` specifications (`GlidieBirdieProofs/Spec.lean`). The browser runtime executes JavaScript IEEE-754 double-precision floating-point arithmetic for bird velocity, drag (`Math.pow`), canvas rendering, and `msToTicks` rounding. Float behavior is tested empirically (`tests/determinism.mjs`, `tests/property-and-metamorphic.mjs`, `results/benchmarks.json`), not formally proved over $\mathbb{R}$ or IEEE-754.
+- **Discrete integers vs IEEE-754 float64:** The 55 Lean 4.35.0 theorems verify exact integer and `UInt32` specifications (`GlidieBirdieProofs/Spec.lean`). The browser runtime executes JavaScript IEEE-754 double-precision floating-point arithmetic for bird velocity, drag (`Math.pow`), canvas rendering, and `msToTicks` rounding. Float behavior is tested empirically (`tests/determinism.mjs`, `tests/property-and-metamorphic.mjs`, `tests/fuzz-http-and-inputs.mjs`, `results/benchmarks.json`), not formally proved over $\mathbb{R}$ or IEEE-754.
 - **Abstract slot counts vs JS arrays:** `PoolAndQueue.lean` certifies slot conservation (`active + free = cap`) on an abstract state counter; concrete index uniqueness and object mutation in `particlePool`/`weatherPool` are verified empirically by `tests/engine-test.mjs` and the 10,000-cycle pool churn benchmark.
 - **Canvas & Web Audio side effects:** Visual rendering (`src/render.js`) and Web Audio DSP synthesis (`src/audio.js`) are verified via Node stubs, Playwright browser runs, and manual inspection rather than formal semantics.
 
@@ -423,7 +425,7 @@ Any independent engineer or researcher can replicate every formal, empirical, an
 
 - **Node.js** `>= 20` (tested on Node `v22` in CI and `v25.8.2` locally)
 - **Lean 4** `v4.35.0` via `elan` (`lean/lean-toolchain` pins `leanprover/lean4:v4.35.0`; zero Mathlib download required)
-- **Tectonic** `>= 0.15` (optional, for recompiling `paper/main.tex` to PDF)
+- **Tectonic** `>= 0.15` (optional, for recompiling `paper/main.tex` and `dist/arxiv_submission.tar.gz`)
 - **Playwright Chromium** (`npx playwright install --with-deps chromium`, optional for browser E2E/axe-core tests)
 
 ## Step-by-Step Clean-Clone Replication
@@ -433,54 +435,67 @@ git clone https://github.com/0thernes/glidiebirdie.git
 cd glidiebirdie
 npm ci
 
-# 1. Core syntax, static, brand, link, license, 69 engine, 8 property/contract, determinism, and smoke suites
+# 1. Core syntax, static, brand, link, license, 12/12 citations, 69 engine, 8 property/contract, determinism, and smoke suites
 npm run check
 
-# 2. Surgical mutation testing (10/10 mutants must be KILLED)
+# 2. Structured adversarial fuzzing (2,000 parser & HTTP static-server cases)
+npm run fuzz
+
+# 3. Baseline-gated surgical mutation testing (12/12 mutants must be KILLED)
 npm run mutate
 
-# 3. 30-seed paired 60 Hz vs 144 Hz determinism & pool-churn benchmark
+# 4. 30-seed counterbalanced 60 Hz vs 144 Hz determinism, 5,400 pure-step & 5x10k pool-churn benchmarks
 npm run benchmark
 
-# 4. Report-only ESLint & strict TypeScript (checkJs + WebWorker) checks
+# 5. Report-only ESLint & strict TypeScript (checkJs + WebWorker) checks
 npm run lint
 npm run typecheck
 
-# 5. Browser E2E + WCAG 2.2 AA accessibility tests (7 Playwright + axe-core tests)
+# 6. Browser E2E + 4-view WCAG 2.2 AA accessibility tests (7 Playwright + axe-core tests)
 npx playwright install --with-deps chromium
 npm run test:browser
 
-# 6. Pure Lean 4.35.0 formal core (45 theorems, zero sorry, zero Mathlib, 6-kernel comparator on Linux)
-cd lean
-lake build
-lake build Challenge
-lake env lean VerifyAxioms.lean
-lake env leanchecker --fresh Solution
-lake env leanchecker-paranoid --fresh Solution
-# On Linux with bubblewrap installed:
-lake check --paranoid
-lake comparator --config comparator.json --paranoid
-cd ..
+# 7. Pure Lean 4.35.0 formal core (55 theorems, zero sorry, zero Mathlib, 6-kernel comparator + negative tamper test)
+(
+  cd lean
+  lake build
+  lake build Challenge
+  lake env lean VerifyAxioms.lean
+  lake env leanchecker --fresh Solution
+  lake env leanchecker-paranoid --fresh Solution
+  # On Linux with bubblewrap installed:
+  lake check --paranoid
+  lake comparator --config comparator.json --paranoid
+)
+# On Linux with bubblewrap installed — live negative kernel tamper test (must exit 0 after rejecting sorry):
+bash lean/scripts/verify-negative-kernel.sh
 
-# 7. Standalone Build White Paper & arXiv tarball compilation
+# 8. Build White Paper source AND standalone arXiv tarball verification
+mkdir -p paper/build /tmp/arxiv-verify
 tectonic -X compile paper/main.tex --outdir paper/build --keep-intermediates
+tar -xzf dist/arxiv_submission.tar.gz -C /tmp/arxiv-verify
+tectonic -X compile /tmp/arxiv-verify/main.tex --outdir /tmp/arxiv-verify
 
-# 8. Build Standard v1.2.0 self-audit
+# 9. SHA-256 manifests and Build Standard v1.2.0 self-audit
+sha256sum -c data/MANIFEST.sha256
+sha256sum -c CHECKSUMS.sha256
 pwsh scripts/Audit-Repo.ps1 -Path .    # or: bash scripts/audit-repo.sh .
 ```
 
 ## Expected Replication Criteria
 
-1. `npm run check` exits `0` with `69/69` engine assertions, `8/8` property/metamorphic/HTTP contract suites, `180` identical steps at 60 Hz and 144 Hz, and `0` static/brand/link/license failures.
-2. `npm run mutate` exits `0` with `10/10 (100.0%) killed, 0 survived`.
-3. `results/benchmarks.json` reports `fixed_step_720hz_max_drift_px.max === 0`, `paired_wins_fixed_over_variable === 30`, `exact_sign_test_p <= 1e-8`, and `conservation_violations === 0`.
-4. `VerifyAxioms.lean` emits 45 lines strictly within `[propext, Classical.choice, Quot.sound]` (0 `sorryAx`, 0 `ofReduceBool`, 0 custom axioms), and `leanchecker` / `leanchecker-paranoid` / `lake comparator --paranoid` exit `0`.
+1. `npm run check` exits `0` with `12/12` citations resolved, `69/69` engine assertions, `8/8` property/metamorphic/HTTP contract suites, `180` identical hitch-free steps at 60 Hz and 144 Hz, and `0` static/brand/link/license failures.
+2. `npm run fuzz` exits `0` across `2,000` adversarial cases (`1,500` parser/engine + `500` HTTP) with `0` crashes and `0` leaks.
+3. `npm run mutate` exits `0` after baseline verification with `12/12 (100.0%) killed, 0 survived, 0 runner errors`.
+4. `results/benchmarks.json` reports `fixed_step_60hz_on_720hz_grid_max_drift_px.max === 0`, `paired_wins_fixed_over_variable === 30`, `exact_sign_test_p <= 1e-8`, `individual_step_budget_violations_60hz === 0`, and `conservation_violations === 0`.
+5. `VerifyAxioms.lean` emits `55` lines strictly within `[propext, Classical.choice, Quot.sound]` (`0` `sorryAx`, `0` `ofReduceBool`, `0` custom axioms), `leanchecker` / `leanchecker-paranoid` / `lake comparator --paranoid` exit `0`, and `lean/scripts/verify-negative-kernel.sh` exits `0` (proving tampered proofs are rejected).
+6. Both `paper/main.tex` and the extracted standalone `dist/arxiv_submission.tar.gz` compile cleanly via Tectonic with `0` warnings.
 
 ## Replication Log
 
 | Date (UTC) | Replicator | Environment | Scope Verified | Outcome | Notes |
 | --- | --- | --- | --- | --- | --- |
-| 2026-11-26 | Alexander S. Donahue (author, self-replication) | Windows 11 x64, Node v25.8.2, Lean 4.35.0, Tectonic 0.17.0 | `npm run check`, `mutate` (10/10), `benchmark` (30/30), `lint`, `typecheck`, `lean` (45/45 + `leanchecker-paranoid`), Tectonic PDF + arXiv tarball, `Audit-Repo.ps1` | PASS | Self-replication only; **awaiting independent external replication** (open an issue to add your row). |
+| 2026-11-26 | Alexander S. Donahue (author, self-replication) | Windows 11 (`10.0.29704`, Intel Core Ultra 9 275HX, 24 cores), Node `v25.8.2`, Lean `4.35.0`, Tectonic `0.17.0` + GitHub Actions Ubuntu/macOS/Windows CI | `check`, `fuzz` (2,000), `mutate` (12/12), `benchmark` (30/30 + 5,400 steps), `lint`, `typecheck`, `test:browser` (7/7 + 4-view axe), `lean` (55/55 + 6-kernel comparator + negative tamper test), Tectonic PDF + arXiv tarball, `Audit-Repo.ps1` | PASS | Author self-replication + public CI; **B44 independent second-operator external replication pending** (open an issue to add your row). |
 
 <!-- END REPLICATION.md -->
 
@@ -652,19 +667,20 @@ FILE: lean/README.md
 
 # GlidieBirdie v3.2.0 — Pure Lean 4.35.0 Formal Core
 
-Zero-Mathlib, zero-dependency Lean 4.35.0 (`module` system) formalization certifying **45 theorems** across six modules covering the discrete mathematical invariants of GlidieBirdie's browser engine (`src/`).
+Zero-Mathlib, zero-dependency Lean 4.35.0 (`module` system) formalization certifying **55 theorems** (47 core invariants + 8 constructive adversarial refutations; 17 zero-axiom theorems) across seven modules covering the discrete mathematical invariants of GlidieBirdie's browser engine (`src/`).
 
 ## Modules
 
 | Module | Theorems | Runtime Source Covered |
 | --- | ---: | --- |
 | `GlidieBirdieProofs/Spec.lean` | — | Pure shared definitions (zero proofs, zero `sorry`) |
-| `GlidieBirdieProofs/TimestepGrid.lean` | 8 | `src/timestep.js`, `src/loop.js` (720 Hz LCM grid, 60/144 Hz parity, hitch & alpha clamp) |
-| `GlidieBirdieProofs/CollisionGeometry.lean` | 8 | `src/collision.js` (closest-point optimality, non-positive radius guard, universal pipe clearance) |
+| `GlidieBirdieProofs/TimestepGrid.lean` | 9 | `src/timestep.js`, `src/loop.js` (720 Hz LCM grid, 60/144 Hz parity, hitch-free `dt <= 60` proof, alpha clamp) |
+| `GlidieBirdieProofs/CollisionGeometry.lean` | 9 | `src/collision.js` (closest-point optimality, non-positive guard, conservative radius monotonicity, universal pipe clearance) |
 | `GlidieBirdieProofs/StorageStreak.lean` | 8 | `src/storage.js`, `src/rng.js` (`nextDayStreak`, `dateSeed` injectivity, `clampNumber` bounds) |
 | `GlidieBirdieProofs/PoolAndQueue.lean` | 8 | `src/physics.js`, `src/input-queue.js` (free-list pool conservation, `clearWeatherPool`, 64-cap FIFO) |
 | `GlidieBirdieProofs/PhysicsBounds.lean` | 9 | `src/physics.js`, `src/rng.js` (6-point ramp `[1.00×, 1.18×]`, shield hit safety, `mulberry32` 32-bit golden vectors) |
 | `GlidieBirdieProofs/NonVacuity.lean` | 4 | Concrete witnesses proving every hypothesis bundle is satisfiable |
+| `GlidieBirdieProofs/AdversarialTests.lean` | 8 | Constructive false-variant refutations proving guards, caps, and preconditions are sharp |
 
 ## Local Verification Commands
 
@@ -678,6 +694,7 @@ lake env leanchecker-paranoid --fresh Solution
 # On Linux with bubblewrap installed (also run in GitHub Actions CI):
 lake check --paranoid
 lake comparator --config comparator.json --paranoid
+cd .. && bash lean/scripts/verify-negative-kernel.sh
 ```
 
 <!-- END lean/README.md -->

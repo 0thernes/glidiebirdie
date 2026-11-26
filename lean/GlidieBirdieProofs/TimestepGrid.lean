@@ -56,4 +56,12 @@ public theorem interp_alpha_bounded (frameTick stepIndex : Nat) (backlogDropped 
   · simp only [alphaScaled, ↓reduceIte]
     omega
 
+/-- Any hitch-free frame (`dtTicks ≤ 60`, covering all refresh rates ≥ 12 Hz including 60 Hz and 144 Hz)
+    executes its exact uncapped step count with zero dropped backlog. -/
+public theorem steps_executed_no_drop_under_60_ticks (prevTick dtTicks : Nat) (h : dtTicks ≤ 60) :
+    stepsExecuted prevTick (prevTick + dtTicks) =
+      (prevTick + dtTicks) / TICKS_PER_STEP - prevTick / TICKS_PER_STEP := by
+  simp only [stepsExecuted, MAX_FRAME_STEPS, TICKS_PER_STEP, TICK_HZ, SIM_HZ]
+  omega
+
 end GlidieBirdie.Timestep

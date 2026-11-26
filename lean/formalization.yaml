@@ -15,12 +15,14 @@ authors:
 origin: "Original software-verification formalization of GlidieBirdie v3.2.0 deterministic browser game engine invariants (no open mathematical conjecture solved; 0/1,900 Mega-Atlas problems retired)."
 automation_methods:
   - "AI-assisted formalization and engineering under human direction (Antigravity / Gemini, Claude, Codex across v2–v3.2)."
-  - "Correctness of all 45 theorems is mechanically certified by the Lean 4.35.0 kernel and independent multi-kernel replay (`lake comparator --config comparator.json --paranoid`)."
+  - "Correctness of all 55 theorems (47 core + 8 constructive adversarial refutations; 17 zero-axiom) is mechanically certified by the Lean 4.35.0 kernel, independent 6-kernel replay (`lake comparator --config comparator.json --paranoid`), and a live negative kernel tamper test (`lean/scripts/verify-negative-kernel.sh`)."
 verification:
-  theorem_count: 45
+  theorem_count: 55
+  zero_axiom_count: 17
   challenge_module: "Challenge"
   solution_module: "Solution"
   comparator_config: "comparator.json"
+  negative_kernel_script: "scripts/verify-negative-kernel.sh"
   permitted_axioms: ["propext", "Classical.choice", "Quot.sound"]
   forbidden_tokens: ["sorry", "admit", "native_decide", "axiom", "implemented_by", "@[extern"]
 limitations:

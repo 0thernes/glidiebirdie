@@ -133,4 +133,17 @@ public theorem centered_bird_clears_every_valid_pipe (bx px topH : Int)
     have hdy : (topH + (184 : Int) / 2 - (topH + 184)) * (topH + (184 : Int) / 2 - (topH + 184)) = 8464 := by omega
     omega
 
+/-- Monotonicity of clearance in circle radius: if a conservative larger radius `r2` misses
+    the rectangle, every smaller positive radius `0 < r1 ≤ r2` (such as runtime `0.82 * 18`) also misses. -/
+public theorem circleHitsRect_monotone_radius (cx cy r1 r2 rx ry rw rh : Int)
+    (h1 : 0 < r1) (hle : r1 ≤ r2)
+    (hmiss : circleHitsRect cx cy r2 rx ry rw rh = false) :
+    circleHitsRect cx cy r1 rx ry rw rh = false := by
+  simp only [circleHitsRect, decide_eq_false_iff_not] at *
+  intro ⟨_, hrw, hrh, hlt⟩
+  apply hmiss
+  have hr2 : 0 < r2 := by omega
+  have hsq : r1 * r1 ≤ r2 * r2 := sq_le_sq_of_nonneg_le (by omega) hle
+  exact ⟨hr2, hrw, hrh, Int.lt_of_lt_of_le hlt hsq⟩
+
 end GlidieBirdie.Collision

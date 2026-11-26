@@ -65,9 +65,10 @@ builtin_check() {
   case "$1" in
     version_consistent)
       if [ ! -f VERSION ]; then D="no VERSION file"; return; fi
-      local v; v="$(tr -d '[:space:]' < VERSION)"
-      if ! grep -Eq "^## \[?v?$v\]?" CHANGELOG.md 2>/dev/null; then D="CHANGELOG.md has no section for $v"; return; fi
-      if [ -f CITATION.cff ] && ! grep -Eq "^version: *\"?$v\"?" CITATION.cff; then D="CITATION.cff version differs from $v"; return; fi
+      local v ve; v="$(tr -d '[:space:]' < VERSION)"
+      ve="$(printf '%s' "$v" | sed -e 's/[.[\*^$()+?{|\\]/\\&/g')"
+      if ! grep -Eq "^## \[?v?${ve}(\]|$|[^0-9A-Za-z._+-])" CHANGELOG.md 2>/dev/null; then D="CHANGELOG.md has no section for $v"; return; fi
+      if [ -f CITATION.cff ] && ! grep -Eq "^version: *(\"?${ve}\"?|'${ve}')([[:space:]]*(#.*)?)$" CITATION.cff; then D="CITATION.cff version differs from $v"; return; fi
       R=pass; D="VERSION $v matches CHANGELOG and CITATION" ;;
     tests_exist)
       if grep -Eqi '(^|/)(tests?|spec|__tests__|testdata)/|_test\.(go|py|rb|c|cc|cpp|exs)$|(^|/)test_[^/]*\.py$|\.(test|spec)\.[cm]?[jt]sx?$|_spec\.rb$|Tests?\.(java|kt|cs|fs|swift)$' "$FILES"; then R=pass; D="test files found"; else D="no test files found"; fi ;;
@@ -175,7 +176,7 @@ fi
 
 jesc() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'; }
 if [ -n "$JSON" ]; then
-  {
+  if ! {
     printf '{\n  "standard_version": "%s",\n  "repo": "%s",\n' "$VERSION_STD" "$(jesc "$REPONAME")"
     printf '  "score": {"structure_percent": %s, "completion_percent": %s, "core_completion_percent": %s, "checked": %s, "core_checked": %s},\n' "$STRUCT" "$COMPLETE" "$CORE" "$CHK" "$CCHK"
     printf '  "counts": {"pass": %s, "partial": %s, "fail": %s, "na": %s, "unknown": %s},\n' "$P" "$PA" "$F" "$NA" "$U"
@@ -187,11 +188,14 @@ if [ -n "$JSON" ]; then
         "$id" "$tier" "$res" "$src" "$applies" "$(jesc "$name")" "$(jesc "$det")" "$sep"
     done < "$OUT"
     printf '  ]\n}\n'
-  } > "$JSON"
+  } > "$JSON"; then
+    echo "Error: failed to write JSON report to $JSON" >&2
+    exit 1
+  fi
   [ $QUIET = 0 ] && echo "JSON report: $JSON"
 fi
 if [ -n "$MD" ]; then
-  {
+  if ! {
     echo "## Build Standard v$VERSION_STD audit"
     echo
     echo "Structure **$STRUCT%** · Completion **$COMPLETE%** · Core complete **$CORE%** · pass $P, partial $PA, fail $F, n/a $NA, unknown $U"
@@ -199,6 +203,9 @@ if [ -n "$MD" ]; then
     echo "| Result | ID | Tier | Item | Detail |"
     echo "|---|---|---|---|---|"
     awk -F'\t' 'function esc(s,  o, i, c) { o = ""; for (i = 1; i <= length(s); i++) { c = substr(s, i, 1); o = o (c == "|" ? "\\|" : c) } return o } $3!="na" { printf "| %s | %s | %s | %s | %s |\n", $3, $1, $2, esc($6), esc($7) }' "$OUT"
-  } >> "$MD"
+  } >> "$MD"; then
+    echo "Error: failed to write Markdown report to $MD" >&2
+    exit 1
+  fi
 fi
 exit 0

@@ -39,7 +39,7 @@ function applyScheduled(ev) {
 }
 
 /** One 60 Hz simulation step. dt is exactly 1 (one 60 fps frame of the tuned physics). */
-function stepSimulation(stepEndTick) {
+export function stepSimulation(stepEndTick) {
   snapshotPrev();
   consumeInputs(stepEndTick, applyScheduled);
   syncLocomotion();

@@ -91,8 +91,8 @@ function Invoke-Builtin([string]$name) {
       if (-not (Test-Path -LiteralPath "VERSION")) { $D = "no VERSION file"; break }
       $v = ((Get-Content -LiteralPath "VERSION" -Raw) -replace '\s', '')
       $ve = [regex]::Escape($v)
-      if (-not (Test-Grep "CHANGELOG.md" "^## \[?v?$ve\]?")) { $D = "CHANGELOG.md has no section for $v"; break }
-      if ((Test-Path -LiteralPath "CITATION.cff") -and -not (Test-Grep "CITATION.cff" "^version: *`"?$ve`"?")) { $D = "CITATION.cff version differs from $v"; break }
+      if (-not (Test-Grep "CHANGELOG.md" "^## \[?v?$ve(?![0-9A-Za-z._+-])\]?")) { $D = "CHANGELOG.md has no section for $v"; break }
+      if ((Test-Path -LiteralPath "CITATION.cff") -and -not (Test-Grep "CITATION.cff" "^version: *`"?$ve(?![0-9A-Za-z._+-])`"?(\s*(#.*)?)$")) { $D = "CITATION.cff version differs from $v"; break }
       $R = "pass"; $D = "VERSION $v matches CHANGELOG and CITATION"
     }
     "tests_exist" {

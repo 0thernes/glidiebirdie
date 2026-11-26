@@ -1,6 +1,6 @@
 name: Release
 
-# Publishes a GitHub Release with SHA256SUMS and SLSA provenance when a version tag is pushed.
+# Publishes a GitHub Release with SHA256SUMS (basename layout) and SLSA provenance when a version tag is pushed.
 # This workflow does not create tags. See RELEASING.md.
 
 on:
@@ -9,44 +9,56 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
 
 jobs:
   release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
+    permissions:
+      # Required to publish the GitHub Release and sign SLSA build provenance for the attached assets.
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Generate SHA256SUMS for release artifacts
+      - name: Stage attached release assets & generate basename SHA256SUMS
         run: |
-          sha256sum \
-            index.html style.css game.js service-worker.js manifest.webmanifest \
-            dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf \
-            dist/arxiv_submission.tar.gz \
-            results/benchmarks.json > SHA256SUMS
-          cat SHA256SUMS
+          mkdir -p /tmp/release-assets
+          cp dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf /tmp/release-assets/
+          cp dist/arxiv_submission.tar.gz /tmp/release-assets/
+          cp results/benchmarks.json /tmp/release-assets/
+          (
+            cd /tmp/release-assets
+            sha256sum \
+              Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf \
+              arxiv_submission.tar.gz \
+              benchmarks.json > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
+          cat /tmp/release-assets/SHA256SUMS
 
       - name: Attest build provenance (SLSA)
-        uses: actions/attest-build-provenance@v4
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
         continue-on-error: true
         with:
           subject-path: |
-            dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf
-            dist/arxiv_submission.tar.gz
-            SHA256SUMS
+            /tmp/release-assets/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf
+            /tmp/release-assets/arxiv_submission.tar.gz
+            /tmp/release-assets/benchmarks.json
+            /tmp/release-assets/SHA256SUMS
 
       - name: Create the release from the tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
-            dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf \
-            dist/arxiv_submission.tar.gz \
-            SHA256SUMS \
+            /tmp/release-assets/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf \
+            /tmp/release-assets/arxiv_submission.tar.gz \
+            /tmp/release-assets/benchmarks.json \
+            /tmp/release-assets/SHA256SUMS \
             --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME" \
             --generate-notes

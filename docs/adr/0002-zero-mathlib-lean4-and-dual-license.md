@@ -9,7 +9,7 @@ GlidieBirdie's critical invariants (720 Hz LCM grid, Euclidean circle-vs-rect pr
 
 ## Decision
 
-1. Formalize all 45 discrete invariants in pure Lean 4.35.0 (`lean/GlidieBirdieProofs/`, `module` system, zero Mathlib, zero external Lake packages) with isolated Palomar `Challenge.lean` / `Solution.lean` / `comparator.json` checked across 6 independent kernels.
+1. Formalize all 55 discrete invariants and constructive adversarial refutations in pure Lean 4.35.0 (`lean/GlidieBirdieProofs/`, `module` system, zero Mathlib, zero external Lake packages) with isolated Palomar `Challenge.lean` / `Solution.lean` / `comparator.json` checked across 6 independent kernels plus a live negative kernel tamper check.
 2. Keep permissive MIT licensing for all source code (`LICENSE.txt`) and CC BY 4.0 for manuscripts, white papers, and documentation (`NOTICE`, `paper/`, `dist/`).
 
 ## Consequences

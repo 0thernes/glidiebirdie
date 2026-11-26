@@ -26,10 +26,11 @@ const textFiles = {
 
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 assert.equal(textFiles.versionFile, pkg.version, 'VERSION file must match package.json version');
+const escapedVer = pkg.version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 assert.match(
   textFiles.citationCff,
-  new RegExp(`^version:\\s*["']?${pkg.version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']?`, 'm'),
-  'CITATION.cff version must match package.json version',
+  new RegExp(`^version:\\s*(?:"${escapedVer}"|'${escapedVer}'|${escapedVer})\\s*(?:#.*)?$`, 'm'),
+  'CITATION.cff version must match package.json version exactly',
 );
 
 // Syntax check

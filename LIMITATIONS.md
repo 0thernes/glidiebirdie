@@ -9,7 +9,7 @@ This document states explicitly what **GlidieBirdie v3.2.0** does **not** prove,
 
 ## 2. Formal-to-Runtime Modeling Gaps (Lean 4 vs JavaScript)
 
-- **Discrete integers vs IEEE-754 float64:** The 45 Lean 4.35.0 theorems verify exact integer and `UInt32` specifications (`GlidieBirdieProofs/Spec.lean`). The browser runtime executes JavaScript IEEE-754 double-precision floating-point arithmetic for bird velocity, drag (`Math.pow`), canvas rendering, and `msToTicks` rounding. Float behavior is tested empirically (`tests/determinism.mjs`, `tests/property-and-metamorphic.mjs`, `results/benchmarks.json`), not formally proved over $\mathbb{R}$ or IEEE-754.
+- **Discrete integers vs IEEE-754 float64:** The 55 Lean 4.35.0 theorems verify exact integer and `UInt32` specifications (`GlidieBirdieProofs/Spec.lean`). The browser runtime executes JavaScript IEEE-754 double-precision floating-point arithmetic for bird velocity, drag (`Math.pow`), canvas rendering, and `msToTicks` rounding. Float behavior is tested empirically (`tests/determinism.mjs`, `tests/property-and-metamorphic.mjs`, `tests/fuzz-http-and-inputs.mjs`, `results/benchmarks.json`), not formally proved over $\mathbb{R}$ or IEEE-754.
 - **Abstract slot counts vs JS arrays:** `PoolAndQueue.lean` certifies slot conservation (`active + free = cap`) on an abstract state counter; concrete index uniqueness and object mutation in `particlePool`/`weatherPool` are verified empirically by `tests/engine-test.mjs` and the 10,000-cycle pool churn benchmark.
 - **Canvas & Web Audio side effects:** Visual rendering (`src/render.js`) and Web Audio DSP synthesis (`src/audio.js`) are verified via Node stubs, Playwright browser runs, and manual inspection rather than formal semantics.
 

@@ -91,8 +91,9 @@ export function readStoredChoice(key, choices, fallback) {
 /** @param {number} value @param {number} fallback @param {number} min @param {number} max */
 export function clampNumber(value, fallback, min = -Infinity, max = Infinity) {
   if (!Number.isFinite(value)) return fallback;
-  if (min > max) return fallback;
-  return Math.min(max, Math.max(min, value));
+  if (Number.isNaN(min) || Number.isNaN(max) || min > max) return fallback;
+  const clamped = Math.min(max, Math.max(min, value));
+  return Number.isFinite(clamped) ? clamped : fallback;
 }
 
 export function readStoredNumber(key, fallback, min = -Infinity, max = Infinity) {

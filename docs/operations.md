@@ -5,13 +5,24 @@
 - **Live production URL:** `https://0thernes.github.io/glidiebirdie/`
 - **Automated deploy:** `.github/workflows/pages.yml` packages the static browser shell and deploys via `actions/deploy-pages` on push to `main`.
 - **Post-deploy health verification:** `.github/workflows/post-deploy-canary.yml` probes `index.html`, `game.js`, `src/main.js`, `style.css`, and `manifest.webmanifest` for HTTP `200` (with `--connect-timeout 10 --max-time 15`) and opens an alert issue on failure.
-- **One-command rollback:**
+- **One-command rollback & live deployment recovery:**
 
   ```bash
+  # 1. Stage a coherent tagged snapshot (runtime shell + package manifests + VERSION) and verify
   just rollback v3.1.0
+
+  # 2. Review diff (reconcile CITATION.cff if reverting across versions), commit, and push to main
+  git status
+  git commit -m "revert: rollback browser runtime shell to v3.1.0"
+  git push origin main
+
+  # 3. Verify live GitHub Pages deployment and post-deploy canary
+  gh run list --workflow pages.yml --limit 1
+  gh run list --workflow post-deploy-canary.yml --limit 1
+  curl -sfI https://0thernes.github.io/glidiebirdie/ | head -n 5
   ```
 
-  Checks out the browser shell (`index.html`, `style.css`, `game.js`, `service-worker.js`, `manifest.webmanifest`, `src/`) from the target release tag and immediately runs `npm run check`.
+  `just rollback` checks out a coherent release snapshot (`index.html`, `style.css`, `game.js`, `service-worker.js`, `manifest.webmanifest`, `src/`, `package.json`, `package-lock.json`, and `VERSION`) so `service-worker.js` `CACHE_NAME` stays consistent with `package.json` and `VERSION`, then runs syntax, engine, and determinism verification before you commit and push to trigger `.github/workflows/pages.yml`.
 
 ## 2. Observability Basics (Local Static Server & Browser Runtime)
 

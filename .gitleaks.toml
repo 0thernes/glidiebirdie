@@ -4,11 +4,16 @@ title = "GlidieBirdie gitleaks configuration"
 useDefault = true
 
 [allowlist]
-description = "Exclude build-standard audit regex patterns and generated Lean/PDF build artifacts"
+description = "Exclude generated build directories and documented secret-detection regex syntax only"
 paths = [
-  '''^scripts/Audit-Repo\.ps1$''',
-  '''^scripts/audit-repo\.sh$''',
-  '''^docs/build-standard\.md$''',
   '''^lean/\.lake/''',
-  '''^paper/build/'''
+  '''^paper/build/''',
+  '''^_site/'''
+]
+regexes = [
+  '''AKIA\[0-9A-Z\]\{16\}''',
+  '''ghp_\[A-Za-z0-9\]\{36\}''',
+  '''github_pat_\[A-Za-z0-9_\]\{40,\}''',
+  '''sk-\[A-Za-z0-9_-\]\{32,\}''',
+  '''xox\[baprs\]-\[A-Za-z0-9-\]\{10,\}'''
 ]

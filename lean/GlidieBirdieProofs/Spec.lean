@@ -32,7 +32,10 @@ namespace GlidieBirdie.Timestep
 @[expose] public def stepsExecuted (prevTick frameTick : Nat) : Nat :=
   min MAX_FRAME_STEPS ((frameTick / TICKS_PER_STEP) - (prevTick / TICKS_PER_STEP))
 
-/-- Total steps executed over `frames` uniform frames of width `ticksPerFrame` ticks (starting at 0). -/
+/-- Uncapped total 60 Hz steps over `frames` uniform hitch-free frames of width `ticksPerFrame` ticks.
+    Matches `loop()` in `src/loop.js` whenever `ticksPerFrame ≤ MAX_FRAME_STEPS * TICKS_PER_STEP = 60`
+    (all refresh rates ≥ 12 Hz, including 60 Hz (`12 ≤ 60`) and 144 Hz (`5 ≤ 60`); proved in
+    `steps_executed_no_drop_under_60_ticks`). -/
 @[expose] public def totalStepsUniform (frames ticksPerFrame : Nat) : Nat :=
   (frames * ticksPerFrame) / TICKS_PER_STEP
 
@@ -73,7 +76,10 @@ namespace GlidieBirdie.Collision
 @[expose] public def circleHitsRect (cx cy cr rx ry rw rh : Int) : Bool :=
   decide (cr > 0 ∧ rw > 0 ∧ rh > 0 ∧ distSqPointRect cx cy rx ry rw rh < cr * cr)
 
-/-- Top-pipe and bottom-pipe intersection test matching `intersectsPipe` in `src/collision.js`. -/
+/-- Conservative integer top-pipe and bottom-pipe clearance predicate (`src/collision.js`).
+    Runtime `intersectsPipe` uses shrunken radius `0.82 * BIRD_R = 14.76 < 18`; by
+    `circleHitsRect_monotone_radius`, proving no collision at `cr = BIRD_R = 18` strictly
+    implies no collision at every smaller positive radius `0 < r' ≤ 18`. -/
 @[expose] public def intersectsPipeInt (bx by_ cr px topH : Int) : Bool :=
   circleHitsRect bx by_ cr px 0 PIPE_W topH ||
   circleHitsRect bx by_ cr px (topH + PIPE_GAP) PIPE_W (GROUND_Y - (topH + PIPE_GAP))

@@ -10,7 +10,7 @@ No — **0 / 1,900** problems retired. GlidieBirdie is a formally verified brows
 
 ## Why use a 720 Hz tick grid if physics steps at 60 Hz?
 
-`720 = lcm(60, 144)` and divides `60, 120, 144, 240, 360, 720` cleanly. Quantizing wall time to 720 Hz integer ticks eliminates floating-point accumulator drift so 60 Hz and 144 Hz displays execute the exact same 180 steps over 3.0 s (`0.000 px` max drift across 30 paired seeds).
+`720 = lcm(60, 144)` and is evenly divisible by `60, 120, 144, 240, 360, and 720`. Quantizing wall time to 720 Hz integer ticks eliminates floating-point accumulator drift so hitch-free 60 Hz and 144 Hz displays execute the exact same 180 simulation steps over 3.0 s (`0.000 px` max drift across 30 paired seeds).
 
 ## Why are there zero runtime dependencies and zero bundler?
 

@@ -10,6 +10,7 @@
     "GlidieBirdie.Timestep.steps_executed_monotone",
     "GlidieBirdie.Timestep.steps_executed_zero_when_nonadvancing",
     "GlidieBirdie.Timestep.interp_alpha_bounded",
+    "GlidieBirdie.Timestep.steps_executed_no_drop_under_60_ticks",
     "GlidieBirdie.Collision.clampInt_bounds",
     "GlidieBirdie.Collision.clampInt_minimizes_sq_dist",
     "GlidieBirdie.Collision.distSqPointRect_nonneg",
@@ -18,6 +19,7 @@
     "GlidieBirdie.Collision.circleHitsRect_false_nonpos_radius_or_rect",
     "GlidieBirdie.Collision.circleHitsRect_interior_hits",
     "GlidieBirdie.Collision.centered_bird_clears_every_valid_pipe",
+    "GlidieBirdie.Collision.circleHitsRect_monotone_radius",
     "GlidieBirdie.Storage.nextDayStreak_same_day",
     "GlidieBirdie.Storage.nextDayStreak_consecutive_day",
     "GlidieBirdie.Storage.nextDayStreak_gap_resets",
@@ -46,7 +48,15 @@
     "GlidieBirdie.NonVacuity.nonvacuous_60_144_parity_witness",
     "GlidieBirdie.NonVacuity.nonvacuous_pipe_clearance_and_hit_witness",
     "GlidieBirdie.NonVacuity.nonvacuous_weather_pool_churn_and_clear_witness",
-    "GlidieBirdie.NonVacuity.nonvacuous_iron_calm_3day_streak_witness"
+    "GlidieBirdie.NonVacuity.nonvacuous_iron_calm_3day_streak_witness",
+    "GlidieBirdie.Adversarial.adversarial_unguarded_neg_radius_false_hit",
+    "GlidieBirdie.Adversarial.adversarial_hitch_100ms_drops_one_step",
+    "GlidieBirdie.Adversarial.adversarial_corrupted_ticks_per_step_10_breaks_180",
+    "GlidieBirdie.Adversarial.adversarial_zero_prev_same_day_returns_zero",
+    "GlidieBirdie.Adversarial.adversarial_leaked_weather_clear_violates_conservation",
+    "GlidieBirdie.Adversarial.adversarial_off_by_one_queue_exceeds_cap",
+    "GlidieBirdie.Adversarial.adversarial_unclamped_speed_exceeds_cap",
+    "GlidieBirdie.Adversarial.adversarial_nonpos_rect_never_hits_interior"
   ],
   "definition_names": [],
   "permitted_axioms": [

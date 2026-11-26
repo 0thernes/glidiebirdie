@@ -224,27 +224,28 @@ function rawRequest(port, method, rawPath) {
   });
 }
 
-await checkAsync('HTTP contract & concurrency: static-server /healthz, security headers, traversal 403, 16x concurrent GETs', async () => {
+await checkAsync('HTTP contract, allowlist & concurrency: static-server /healthz, private blocks, traversal 403, 16x GETs', async () => {
   const port = 18000 + Math.floor(Math.random() * 10000);
   const child = spawn(process.execPath, [path.join(ROOT, 'tools/static-server.mjs'), String(port)], {
     cwd: ROOT,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
-  await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('static-server startup timeout')), 5000);
-    child.stdout.on('data', (chunk) => {
-      if (chunk.toString('utf8').includes('Static server listening')) {
-        clearTimeout(timer);
-        resolve();
-      }
-    });
-    child.on('exit', (code) => {
-      clearTimeout(timer);
-      reject(new Error(`static-server exited prematurely (${code})`));
-    });
-  });
 
   try {
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('static-server startup timeout')), 5000);
+      child.stdout.on('data', (chunk) => {
+        if (chunk.toString('utf8').includes('Static server listening')) {
+          clearTimeout(timer);
+          resolve();
+        }
+      });
+      child.on('exit', (code) => {
+        clearTimeout(timer);
+        reject(new Error(`static-server exited prematurely (${code})`));
+      });
+    });
+
     const health = await rawRequest(port, 'GET', '/healthz');
     assert.equal(health.status, 200);
     assert.equal(JSON.parse(health.body).status, 'ok');
@@ -260,7 +261,17 @@ await checkAsync('HTTP contract & concurrency: static-server /healthz, security 
     assert.equal(trav2.status, 403);
     const nullByte = await rawRequest(port, 'GET', '/index.html%00.txt');
     assert.equal(nullByte.status, 400);
-    const missing = await rawRequest(port, 'GET', '/nonexistent-404-file.js');
+
+    // Devin security regression checks: non-public checkout files & dotfiles MUST return 403
+    for (const priv of ['/.git/HEAD', '/.env', '/package.json', '/tools/static-server.mjs', '/.github/workflows/ci.yml']) {
+      const privResp = await rawRequest(port, 'GET', priv);
+      assert.equal(privResp.status, 403, `Expected 403 for private path ${priv}, got ${privResp.status}`);
+    }
+
+    // Allowed public directories serve cleanly, missing public file returns 404
+    const bpResp = await rawRequest(port, 'GET', '/blueprint/index.html');
+    assert.equal(bpResp.status, 200);
+    const missing = await rawRequest(port, 'GET', '/src/nonexistent-404-file.js');
     assert.equal(missing.status, 404);
 
     // 16x concurrent requests across core app-shell assets
