@@ -3,7 +3,7 @@ module
 public import GlidieBirdieProofs.Spec
 
 /-!
-# GlidieBirdieProofs.AdversarialTests — Constructive False-Variant Refutations (8 Theorems)
+# GlidieBirdieProofs.AdversarialTests — Constructive False-Variant Refutations (9 Theorems)
 
 Machine-checked negative witnesses proving that each hardened guard, cap, and precondition
 in `GlidieBirdieProofs` is genuinely load-bearing rather than vacuous:
@@ -52,6 +52,11 @@ public theorem adversarial_unclamped_speed_exceeds_cap :
 
 public theorem adversarial_nonpos_rect_never_hits_interior :
     circleHitsRect 50 50 10 50 50 0 20 = false ∧ circleHitsRect 50 50 10 50 50 20 (-5) = false := by
+  decide
+
+/-- Refutes the pre-hardening detached-pupil bug (`lookX = 18`): `18^2 = 324 > 64 = 8^2`, whereas `2^2 = 4 < 64`. -/
+public theorem adversarial_detached_pupil_18_escapes_sclera :
+    (18 : Int) * 18 > SCLERA_R * SCLERA_R ∧ (2 : Int) * 2 < SCLERA_R * SCLERA_R := by
   decide
 
 end GlidieBirdie.Adversarial

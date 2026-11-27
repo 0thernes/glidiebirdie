@@ -5,7 +5,7 @@ import { SK, nextDayStreak, writeStoredValue } from './storage.js';
 import { bird, control, getTheme, ground, pipes, sim, state, syncLocomotion } from './state.js';
 import { clearInputs } from './input-queue.js';
 import { doFlap, initObjectPools, spawnParticles } from './physics.js';
-import { sfxDie, sfxNewBest, startMusic, stopMusic } from './audio.js';
+import { sfxDie, sfxNewBest, startMusic, stopMusic, suspendAudio } from './audio.js';
 import { hapticPulse } from './haptics.js';
 import { announce } from './dom.js';
 import { syncUiState } from './ui.js';
@@ -165,6 +165,8 @@ export function gameOver() {
   state.shakeAmount = state.reducedMotion ? 0 : 6.0;
   sfxDie();
   stopMusic();
+  // Let death/new-best SFX and the 2 s reverb tail finish cleanly, then sleep the audio thread.
+  suspendAudio(2600);
   spawnParticles(bird.x, bird.y, 18, '#ff4444', 5);
   spawnParticles(bird.x, bird.y, 12, '#ffaa00', 4);
   // Second wave of particles, slightly delayed. Tracked + cleared on restart so a
@@ -175,6 +177,7 @@ export function gameOver() {
     if (state.phase !== 'gameOver') return;
     spawnParticles(bird.x, bird.y, 10, '#ffffff', 3);
     spawnParticles(bird.x, bird.y, 8, '#ff6666', 2.5);
+    hooks.requestRender();
   }, 180);
 
   // Always persist updated stats, streak, score history, and check end-of-run achievements

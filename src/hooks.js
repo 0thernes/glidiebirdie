@@ -8,5 +8,6 @@ export const hooks = {
   /** @param {Event | null} [_event] */
   handleAction(_event) {},
   clearDrawerResume() {},
+  requestRender() {},
 };
 

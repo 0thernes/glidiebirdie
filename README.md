@@ -113,25 +113,28 @@ node examples/determinism_demo.mjs
 
 ```bash
 npm run fuzz        # 2,000 adversarial parser & HTTP static-server fuzz cases
-npm run mutate      # baseline-gated 12/12 surgical mutants killed (100.0%)
+npm run test:native # C11 differential oracle (bit-for-bit parity + 1,000,000 fuzz cases)
+npm run mutate      # baseline-gated 16/16 surgical mutants killed (100.0%)
 npm run benchmark   # 30 counterbalanced paired seeds + 5,400 pure steps -> results/benchmarks.json
 npm run audit       # Build Standard v1.2.0 audit via scripts/Audit-Repo.ps1
 ```
 
 ### Formal Verification — Exact Lean 4.35.0 Axiom Audit (5-Second Proof)
 
-All **55 theorems** in [`lean/`](lean/README.md) (47 core + 8 constructive adversarial refutations) compile with zero Mathlib, zero `sorryAx`, zero `native_decide`, and zero custom axioms (`cd lean && lake build && lake build Challenge && lake env lean VerifyAxioms.lean && lake env leanchecker-paranoid --fresh Solution`). Headline outputs from `VerifyAxioms.lean`:
+All **68 theorems** in [`lean/`](lean/README.md) (59 core + 9 constructive adversarial refutations; 19 zero-axiom) compile with zero Mathlib, zero `sorryAx`, zero `native_decide`, and zero custom axioms (`cd lean && lake build && lake build Challenge && lake env lean VerifyAxioms.lean && lake env leanchecker-paranoid --fresh Solution`). Headline outputs from `VerifyAxioms.lean`:
 
 ```text
 'GlidieBirdie.Timestep.lcm_60_144_eq_720' does not depend on any axioms
 'GlidieBirdie.Timestep.steps_executed_no_drop_under_60_ticks' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Timestep.idle_scheduler_sleeps_when_hidden_or_static_pause' depends on axioms: [propext]
 'GlidieBirdie.Collision.distSqPointRect_minimality' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Collision.circleHitsRect_monotone_radius' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Storage.dateSeedNat_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
-'GlidieBirdie.Pools.poolClearAll_conserves_and_empties' depends on axioms: [propext, Quot.sound]
-'GlidieBirdie.Pools.queuePushMany_bounded' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Pools.listPoolClearAll_valid_and_restores' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Pools.fifoPush_length_bounded' depends on axioms: [propext, Quot.sound]
 'GlidieBirdie.Physics.mulberry32_golden_20261125' depends on axioms: [propext, Quot.sound]
-'GlidieBirdie.Adversarial.adversarial_unguarded_neg_radius_false_hit' does not depend on any axioms
+'GlidieBirdie.Physics.moving_pipe_lerp_within_bounds' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Adversarial.adversarial_detached_pupil_18_escapes_sclera' does not depend on any axioms
 ```
 
 See the [Build White Paper](dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf), [Interactive Blueprint](blueprint/index.html), [`CLAIMS.md`](CLAIMS.md), [`LIMITATIONS.md`](LIMITATIONS.md), and [`REPLICATION.md`](REPLICATION.md) for the complete statement-fidelity audit, 30-seed benchmarks, and clean-clone instructions.
@@ -143,7 +146,7 @@ See [`LIMITATIONS.md`](LIMITATIONS.md) for full details. In summary, GlidieBirdi
 | Term in UI / Prose | Literal Reality |
 | --- | --- |
 | "60 Hz fixed-step on 720 Hz tick grid" | **Literal** — verified by Lean 4 (`TimestepGrid.lean`) and 30-seed paired benchmarks (`0.000 px` max hitch-free drift). |
-| "55 Lean 4.35.0 proofs across 6 kernels" | **Literal (discrete specs)** — machine-checked over exact integer/`UInt32` models, not IEEE-754 float64 canvas rendering or Web Audio DSP. |
+| "68 Lean 4.35.0 proofs across 6 kernels" | **Literal (discrete specs)** — machine-checked over exact integer/`UInt32`/concrete `ListPool` models, not IEEE-754 float64 canvas rendering or Web Audio DSP. |
 | "Automated WCAG 2.2 AA" | **Literal (automated scope)** — `0` axe-core violations across 4 interactive views; complements rather than replaces manual assistive-technology audits. |
 | "Five living themes" / "Expressive bird emotions" | **Metaphor / visual design** — procedural Canvas 2D palettes, particle presets, and deterministic state-driven sprite expressions (`calm`/`happy`/`scared`/`determined`/`dizzy`), not AI or biology. |
 | "Feather Shield" / "Serene Postcard" | **Metaphor / gameplay feature** — a boolean collision-absorption pickup and a paused canvas PNG export mode. |
@@ -207,16 +210,17 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `tests/brand-guard.mjs` | Ensures retired trademarked terms never reappear |
 | `tests/link-guard.mjs` | Verifies every local HTML/manifest asset reference resolves |
 | `tests/license-guard.mjs` | Enforces MIT license consistency across `LICENSE.txt` and `package.json` |
-| `tests/engine-test.mjs` | 69 headless engine behavioral tests importing `src/` |
+| `tests/engine-test.mjs` | 81 headless engine behavioral tests importing `src/` |
 | `tests/property-and-metamorphic.mjs` | 8 property-based, metamorphic, failure-injection, differential & HTTP contract suites (2,500+ trials) |
 | `tests/determinism.mjs` | Verifies 180 identical 60 Hz and 144 Hz steps on the 720 Hz fixed tick grid |
 | `tests/smoke-test.mjs` | Syntax and surface-area smoke checks |
 | `tests/e2e/smoke.spec.js` | 7 Playwright browser tests + 4-view WCAG 2.2 AA axe-core checks |
 | `tests/fuzz-http-and-inputs.mjs` | 2,000-case structured adversarial parser & HTTP static-server fuzzer (`B15`) |
-| `lean/` | 55 pure Lean 4.35.0 formal theorems (zero Mathlib, Palomar `Challenge`/`Solution`, 6-kernel comparator + negative tamper test) |
+| `tests/native-differential.mjs` & `native/` | Offline C11 differential oracle (`glidiebirdie_oracle.c`, 1M fuzz cases + ASan/UBSan in CI) & Zig/WASM microbenchmark (`oracle.zig`) |
+| `lean/` | 68 pure Lean 4.35.0 formal theorems (zero Mathlib, Palomar `Challenge`/`Solution`, 6-kernel comparator + negative tamper test) |
 | `paper/` & `dist/` | Zero-warning AMS-LaTeX Build White Paper PDF and clean-room `arxiv_submission.tar.gz` |
 | `blueprint/index.html` | Interactive Lean 4 Proof Blueprint & Claims Dependency Map |
-| `scripts/` | Baseline-gated 12-mutant harness (`mutation-test.mjs`), 30-seed counterbalanced benchmarks (`benchmark.mjs`), citation verifier (`check-citations.mjs`), Build Standard v1.2.0 audit scripts |
+| `scripts/` | Baseline-gated 16-mutant harness (`mutation-test.mjs`), 30-seed counterbalanced benchmarks (`benchmark.mjs`), browser/native profilers, citation verifier (`check-citations.mjs`), Build Standard v1.2.0 audit scripts |
 | `examples/` | Runnable zero-dependency example (`determinism_demo.mjs`) |
 | `tools/` | Zero-dependency dev helpers (`static-server.mjs`, `generate-icons.mjs`) |
 | `VERSION`, `repo.yaml`, `justfile` | Single version source (`3.2.0`), Build Standard v1.2.0 manifest, one-word task runner |
@@ -226,7 +230,7 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `RELEASING.md`, `UPGRADING.md` | Release checklist and version upgrade guide |
 | `docs/architecture_master_blueprint.md` | Calm, humble philosophy & technical architecture reference |
 | `docs/ARCHITECTURE.md` | System + engine architecture with diagrams (frame loop, rendering, audio, boot, invariants) |
-| `docs/adr/` | Architecture Decision Records (`0001`–`0003`) |
+| `docs/adr/` | Architecture Decision Records (`0001`–`0004`) |
 | `docs/benchmarks.md`, `docs/preregistration.md` | 30-seed paired benchmarks & pre-registered hypotheses |
 | `docs/threat-model.md`, `docs/operations.md` | Security boundary analysis, `/healthz`, backups, offsite mirror, and rollback |
 | `docs/configuration.md`, `docs/faq.md`, `docs/glossary.md` | Environment variables, FAQ, and canonical glossary |
@@ -250,7 +254,7 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 1. `README.md` — the product and workflow overview.
 2. `docs/architecture_master_blueprint.md` — the runtime layout.
 3. `CONTRIBUTING.md` — change boundaries and review expectations.
-4. `AGENTS.md` / `CLAUDE.md` — AI-assistant guardrails and the protected merge flow.
+4. `AGENTS.md` / `CLAUDE.md` — AI-assistant rules and Build Standard v1.2.0 conventions.
 
 ## Browser Support
 

@@ -10,12 +10,14 @@ const {
   CONFIG,
   LEGACY_KEY_MAP,
   SK,
+  SPRITE_CACHE,
   activeParticles,
   activeWeather,
   bird,
   checkAchievements,
   circleHitsRect,
   clearWeatherPool,
+  configureCanvasForDPR,
   control,
   dateSeed,
   doFlap,
@@ -38,10 +40,13 @@ const {
   readScoreHistory,
   readStoredNumber,
   readUnlockedAchievements,
+  rebuildBirdCache,
+  rebuildSkyCache,
   resetGame,
   resetStats,
   setSeededRNG,
   setUnseededRNG,
+  shouldContinueLoop,
   sim,
   spawnParticles,
   spawnPipe,
@@ -49,6 +54,8 @@ const {
   spawnWeatherParticles,
   startGame,
   state,
+  stepSimulation,
+  toggleMute,
   togglePause,
   togglePostcard,
   updateBird,
@@ -495,6 +502,94 @@ pipes.length = 0;
   state.reducedMotion = false;
   loop(6100);
   expect('gameOver advances state.time when motion is allowed', state.time > frozenTime);
+}
+
+// Thermal/power-efficiency, DPR resize guard, audio power-gating, detached pupil fix, & 144 Hz pipe interpolation
+{
+  // 1. Demand-driven idle scheduler sleeps on pause and hidden tab, stays active in play and live postcard
+  startGame();
+  state.reducedMotion = false;
+  document.hidden = false;
+  expect('shouldContinueLoop is true during active unpaused play', shouldContinueLoop() === true);
+  togglePause(true);
+  expect('shouldContinueLoop sleeps (false) when paused without postcard', shouldContinueLoop() === false);
+  togglePostcard();
+  expect('shouldContinueLoop stays active for live animated postcard', shouldContinueLoop() === true);
+  state.reducedMotion = true;
+  expect('shouldContinueLoop sleeps for reduced-motion postcard', shouldContinueLoop() === false);
+  togglePostcard();
+  togglePause(false);
+  document.hidden = true;
+  expect('shouldContinueLoop sleeps immediately when document.hidden is true', shouldContinueLoop() === false);
+  document.hidden = false;
+  state.reducedMotion = false;
+
+  // 2. Identical-DPR resize drag skips redundant offscreen cache rebuilds
+  configureCanvasForDPR(true);
+  expect('configureCanvasForDPR returns false on identical-DPR resize', configureCanvasForDPR() === false);
+
+  // 3. Lazy per-theme bird cache pre-warms only the 5 active-theme emotions (not all 25)
+  state.theme = 'sunset';
+  rebuildBirdCache('sunset');
+  expect('lazy rebuildBirdCache builds only active theme emotions (5 sprites)', Object.keys(SPRITE_CACHE.bird).length === 5);
+
+  // 4. Sky cache stays stable across score brackets (no pointless reallocation every 5 points)
+  SPRITE_CACHE.sky = null;
+  SPRITE_CACHE.skyKey = '';
+  state.score = 0;
+  rebuildSkyCache();
+  const sky0 = SPRITE_CACHE.sky;
+  state.score = 15;
+  rebuildSkyCache();
+  expect('rebuildSkyCache does not reallocate sky across score changes', SPRITE_CACHE.sky === sky0);
+
+  // 5. Detached pupil regression (F40): default gaze stays comfortably inside the 8 px sclera
+  resetGame();
+  startGame();
+  pipes.length = 0;
+  sim.nearestPipeCache = null;
+  bird.pupilOffsetX = 0;
+  bird.pupilOffsetY = 0;
+  for (let i = 0; i < 60; i++) updateBird();
+  expect(
+    'bird default gaze stays comfortably inside sclera with zero pipes',
+    bird.pupilOffsetX > 0 && bird.pupilOffsetX <= 2.8 && Math.hypot(bird.pupilOffsetX, bird.pupilOffsetY) <= 3.7,
+    `pupil=(${bird.pupilOffsetX.toFixed(2)}, ${bird.pupilOffsetY.toFixed(2)})`,
+  );
+
+  // 6. Moving pipe vertical interpolation tracks prevTopHeight across stepSimulation (F26)
+  resetGame();
+  startGame();
+  pipes.length = 0;
+  pipes.push({
+    x: 300,
+    prevX: 300,
+    topHeight: 160,
+    prevTopHeight: 160,
+    baseTopHeight: 160,
+    passed: false,
+    isMoving: true,
+    movePhase: 0,
+    color: '#0f0',
+    capColor: '#090',
+    nearMissRecorded: false,
+    shieldBubble: null,
+  });
+  stepSimulation(12);
+  expect(
+    'moving pipe records prevTopHeight before advancing topHeight',
+    pipes[0].prevTopHeight === 160 && pipes[0].topHeight !== 160,
+    `prev=${pipes[0].prevTopHeight}, cur=${pipes[0].topHeight}`,
+  );
+
+  // 7. AudioContext power-gating suspends on mute to stop idle ConvolverNode FFT burn
+  state.audioEnabled = true;
+  ensureAudio();
+  expect('ensureAudio keeps AudioContext running', api.audioCtx?.state === 'running');
+  toggleMute();
+  expect('toggleMute suspends AudioContext to eliminate idle reverb CPU', api.audioCtx?.state === 'suspended');
+  toggleMute();
+  resetGame();
 }
 
 const failed = results.filter((r) => !r.pass);

@@ -9,6 +9,45 @@ export let musicGain = /** @type {GainNode | null} */ (null);
 export let masterLowpass = /** @type {BiquadFilterNode | null} */ (null);
 export let reverbConvolver = /** @type {ConvolverNode | null} */ (null);
 export let reverbWetGain = /** @type {GainNode | null} */ (null);
+let suspendTimer = /** @type {ReturnType<typeof setTimeout> | null} */ (null);
+
+function clearSuspendTimer() {
+  if (suspendTimer != null) {
+    clearTimeout(suspendTimer);
+    suspendTimer = null;
+  }
+}
+
+/**
+ * Power-gate the Web Audio graph (including the 2 s stereo ConvolverNode FFT)
+ * when muted, paused, or hidden so the audio thread can enter deep idle.
+ * @param {number} [delayMs]
+ */
+export function suspendAudio(delayMs = 0) {
+  clearSuspendTimer();
+  if (!audioCtx || audioCtx.state === 'suspended') return;
+  const runSuspend = () => {
+    suspendTimer = null;
+    if (!audioCtx || audioCtx.state === 'suspended') return;
+    // Never suspend if active music resumed before the timer fired.
+    if (musicSchedulerHandle != null && state.audioEnabled && !state.paused && !document.hidden) {
+      return;
+    }
+    try {
+      audioCtx.suspend?.()?.catch?.(() => {
+        /* swallow */
+      });
+    } catch {
+      /* swallow */
+    }
+  };
+  if (delayMs <= 0) {
+    runSuspend();
+  } else {
+    suspendTimer = setTimeout(runSuspend, delayMs);
+    /** @type {any} */ (suspendTimer)?.unref?.();
+  }
+}
 
 export function buildReverbBuffer(ctx, durationSec, decay) {
   const sr = ctx.sampleRate;
@@ -54,6 +93,7 @@ export function buildAudioGraph() {
 }
 
 export function ensureAudio() {
+  clearSuspendTimer();
   try {
     if (!audioCtx) {
       audioCtx = new AudioCtx();
@@ -274,4 +314,9 @@ export function stopMusic(fade = true) {
     musicSchedulerHandle = null;
   }
   if (fade) fadeMusic(0.0001, CONFIG.MUSIC_FADE_SEC * 0.5);
+  if (!state.audioEnabled) {
+    suspendAudio(0);
+  } else if (state.paused || (typeof document !== 'undefined' && document.hidden)) {
+    suspendAudio(fade ? Math.ceil(CONFIG.MUSIC_FADE_SEC * 500 + 250) : 0);
+  }
 }

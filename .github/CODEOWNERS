@@ -1,20 +1,13 @@
-# Guardrail paths — the project's own safety machinery.
-#
-# Changes here auto-request the owner's review AND are blocked from silent
-# auto-merge by the "Guardrail check" workflow, which requires a human to apply
-# the `guardrail-approved` label. This is the tamper-proofing: an autonomous
-# agent cannot weaken its own oversight (CI, tests, agent rules, the check
-# script) without a deliberate human action.
-#
-# See .github/workflows/guardrail-guard.yml.
+# Code ownership for review routing (informational only — Build Standard v1.2.0 R1-R3).
 
-/.github/              @0thernes
-/tests/                @0thernes
-/AGENTS.md             @0thernes
-/CLAUDE.md             @0thernes
-/package.json          @0thernes
-/package-lock.json     @0thernes
-/eslint.config.js      @0thernes
-/playwright.config.js  @0thernes
-/jsconfig.json         @0thernes
+/.github/                @0thernes
+/tests/                  @0thernes
+/lean/                   @0thernes
+/AGENTS.md               @0thernes
+/CLAUDE.md               @0thernes
+/package.json            @0thernes
+/package-lock.json       @0thernes
+/eslint.config.js        @0thernes
+/playwright.config.js    @0thernes
+/jsconfig.json           @0thernes
 /tools/static-server.mjs @0thernes

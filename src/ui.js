@@ -4,7 +4,7 @@ import { dateSeed, setSeededRNG, setUnseededRNG } from './rng.js';
 import { SK, clampNumber, readStoredBool, writeStoredValue } from './storage.js';
 import { announce, canvas, dom } from './dom.js';
 import { state, syncLocomotion, updateDerivedPhysics } from './state.js';
-import { ensureAudio, playSequence, startMusic, stopMusic } from './audio.js';
+import { ensureAudio, playSequence, startMusic, stopMusic, suspendAudio } from './audio.js';
 import { clearWeatherPool } from './physics.js';
 import { SPRITE_CACHE, rebuildSkyCache } from './render.js';
 import { drawSparkline, resetStats, showToast, syncStatsAndAchievements } from './achievements.js';
@@ -151,7 +151,10 @@ export function applyTheme(theme) {
   });
   SPRITE_CACHE.sky = null;
   SPRITE_CACHE.skyKey = '';
+  SPRITE_CACHE.ground = null;
+  SPRITE_CACHE.groundKey = '';
   rebuildSkyCache();
+  hooks.requestRender();
 }
 
 export function syncUiState() {
@@ -194,6 +197,7 @@ export function syncUiState() {
       ? `On — shared seed #${dateSeed()}`
       : 'Off — random pipes each run';
   }
+  hooks.requestRender();
 }
 
 export function togglePause(forceValue) {
@@ -230,8 +234,12 @@ export function togglePostcard() {
 
 export function toggleMute() {
   state.audioEnabled = !state.audioEnabled;
-  if (!state.audioEnabled) stopMusic();
-  else if (state.phase === 'play' && !state.paused) startMusic();
+  if (!state.audioEnabled) {
+    stopMusic();
+    suspendAudio(0);
+  } else if (state.phase === 'play' && !state.paused) {
+    startMusic();
+  }
   syncUiState();
   announce(state.audioEnabled ? 'Sound on.' : 'Sound muted.');
 }
@@ -412,6 +420,7 @@ export function bindDrawerControls() {
   dom.fpsToggle?.addEventListener('change', (e) => {
     state.showFps = /** @type {HTMLInputElement} */ (e.target).checked;
     writeStoredValue(SK.fps, state.showFps);
+    hooks.requestRender();
   });
 }
 

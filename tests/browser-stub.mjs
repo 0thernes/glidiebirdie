@@ -248,6 +248,11 @@ export function installBrowserStub() {
       return { getChannelData() { return new Float32Array(length); } };
     }
     resume() {
+      this.state = 'running';
+      return Promise.resolve();
+    }
+    suspend() {
+      this.state = 'suspended';
       return Promise.resolve();
     }
   }

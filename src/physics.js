@@ -312,7 +312,7 @@ export function updateBird() {
   const easing = Math.min(1, 0.16 * dt);
 
   if (bird.isBraking && bird.velocity > 0) {
-    bird.velocity *= Math.pow(0.78, dt);
+    bird.velocity *= dt === 1 ? 0.78 : Math.pow(0.78, dt);
   }
   if (bird.isDiving) {
     bird.velocity = Math.min(bird.velocity + 0.16 * dt, state.terminalFall);
@@ -331,7 +331,7 @@ export function updateBird() {
   }
 
   const drag = bird.velocity < 0 ? 0.992 : 0.985;
-  bird.velocity *= Math.pow(drag, dt);
+  bird.velocity *= dt === 1 ? drag : Math.pow(drag, dt);
 
   bird.velocity += state.gravity * dt;
   bird.velocity = Math.max(state.terminalRise, Math.min(bird.velocity, state.terminalFall));
@@ -382,7 +382,7 @@ export function updateBird() {
 
   // Living eyes — the bird looks at the world with intent
   // Priority: active shield bubble > next safe gap. Feels curious and alive.
-  let lookX = 18; // default gentle forward gaze
+  let lookX = 2.2; // default gentle forward gaze (stays comfortably inside the 8px sclera)
   let lookY = 0;
 
   const nearPipe = sim.nearestPipeCache;
@@ -421,6 +421,14 @@ export function updateBird() {
     lookY = Math.min(lookY + 1.2, 3);
   }
 
+  // Clamp gaze offset inside the eye socket so the pupil never detaches from the sclera.
+  const lookMag = Math.hypot(lookX, lookY);
+  if (lookMag > 3.6) {
+    const s = 3.6 / lookMag;
+    lookX *= s;
+    lookY *= s;
+  }
+
   // Soft easing + tiny organic interest when gliding calm
   const ease = 0.18 * state.dt;
   bird.pupilOffsetX += (lookX - bird.pupilOffsetX) * ease;
@@ -454,6 +462,7 @@ export function spawnPipe() {
     x: CONFIG.CANVAS_W + 30,
     prevX: CONFIG.CANVAS_W + 30,
     topHeight,
+    prevTopHeight: topHeight,
     baseTopHeight: topHeight,
     passed: false,
     isMoving,

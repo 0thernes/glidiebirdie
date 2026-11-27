@@ -1,6 +1,6 @@
 /** Fixed-step loop. Simulation advances in 1/60 s ticks; rendering interpolates. */
 import { CONFIG } from './config.js';
-import { bird, control, ground, pipes, state, syncLocomotion, view } from './state.js';
+import { activeParticles, bird, control, ground, pipes, state, syncLocomotion, view } from './state.js';
 import { MAX_FRAME_STEPS, TICKS_PER_STEP, msToTicks } from './timestep.js';
 import { consumeInputs } from './input-queue.js';
 import { pollGamepad } from './input.js';
@@ -8,9 +8,13 @@ import { doFlap, updateBird, updateEmotion, updateParticles, updatePipes, update
 import { draw, rebuildSkyCache, updateFpsCounter } from './render.js';
 import { syncStatsAndAchievements } from './achievements.js';
 import { syncUiState } from './ui.js';
+import { hooks } from './hooks.js';
 
 let frameErrorCount = 0;
 let frameErrorCooldownUntilMs = 0;
+let loopScheduled = false;
+let inLoop = false;
+let renderDirty = false;
 /** @type {null | (() => void)} */
 let stepListener = null;
 
@@ -19,11 +23,69 @@ export function setStepListener(fn) {
   stepListener = fn;
 }
 
+/** @returns {boolean} */
+export function isLoopScheduled() {
+  return loopScheduled;
+}
+
+function hasActiveGamepad() {
+  if (typeof navigator.getGamepads !== 'function') return false;
+  const pads = navigator.getGamepads();
+  if (!pads) return false;
+  for (let i = 0; i < pads.length; i++) {
+    if (pads[i]) return true;
+  }
+  return false;
+}
+
+/**
+ * Demand-driven idle scheduler predicate: returns false when the screen is
+ * hidden or completely static (paused without live postcard, reduced-motion
+ * start, or settled reduced-motion game-over), letting the tab drop to 0 FPS.
+ */
+export function shouldContinueLoop() {
+  if (typeof document !== 'undefined' && document.hidden) return false;
+  if (state.phase === 'play' && !state.paused) return true;
+  if (hasActiveGamepad()) return true;
+  if (state.paused) return Boolean(state.postcardMode && !state.reducedMotion);
+  if (state.phase === 'start') return !state.reducedMotion;
+  if (state.phase === 'gameOver') {
+    if (!state.reducedMotion) return true;
+    return (
+      state.afterglowActive ||
+      state.shakeAmount > 0 ||
+      state.newBestFlash > 0 ||
+      state.nearMissFlash > 0 ||
+      activeParticles.length > 0
+    );
+  }
+  return false;
+}
+
+/** Wake the demand-driven render loop for at least one frame after any state/UI change. */
+export function requestRender() {
+  if (inLoop) {
+    renderDirty = true;
+    return;
+  }
+  if (loopScheduled) return;
+  if (typeof document !== 'undefined' && document.hidden) return;
+  // Reset clockReady on wake from idle sleep so idle wall-time never registers as a hitch.
+  state.clockReady = false;
+  loopScheduled = true;
+  requestAnimationFrame(loop);
+}
+
+hooks.requestRender = requestRender;
+
 function snapshotPrev() {
   bird.prevY = bird.y;
   bird.prevRotation = bird.rotation;
   ground.prevOffset = ground.offset;
-  for (let i = 0; i < pipes.length; i++) pipes[i].prevX = pipes[i].x;
+  for (let i = 0; i < pipes.length; i++) {
+    pipes[i].prevX = pipes[i].x;
+    pipes[i].prevTopHeight = pipes[i].topHeight;
+  }
 }
 
 /** @param {{type:string}} ev */
@@ -126,6 +188,9 @@ function present(timestamp, wallSec) {
 
 /** @param {number} [timestamp] */
 export function loop(timestamp = performance.now()) {
+  loopScheduled = false;
+  inLoop = true;
+  renderDirty = false;
   const wallSec = state.clockReady ? Math.max(0, (timestamp - state.lastTimestamp) / 1000) : 0;
   try {
     if (!state.clockReady) {
@@ -161,6 +226,10 @@ export function loop(timestamp = performance.now()) {
     view.alpha = backlogDropped || into <= 0 ? 1 : Math.min(1, into / TICKS_PER_STEP);
     present(timestamp, wallSec);
   } finally {
-    requestAnimationFrame(loop);
+    inLoop = false;
+    if ((renderDirty || shouldContinueLoop()) && !loopScheduled) {
+      loopScheduled = true;
+      requestAnimationFrame(loop);
+    }
   }
 }

@@ -9,10 +9,10 @@ GlidieBirdie's critical invariants (720 Hz LCM grid, Euclidean circle-vs-rect pr
 
 ## Decision
 
-1. Formalize all 55 discrete invariants and constructive adversarial refutations in pure Lean 4.35.0 (`lean/GlidieBirdieProofs/`, `module` system, zero Mathlib, zero external Lake packages) with isolated Palomar `Challenge.lean` / `Solution.lean` / `comparator.json` checked across 6 independent kernels plus a live negative kernel tamper check.
+1. Formalize all 68 discrete invariants and constructive adversarial refutations in pure Lean 4.35.0 (`lean/GlidieBirdieProofs/`, `module` system, zero Mathlib, zero external Lake packages) with isolated Palomar `Challenge.lean` / `Solution.lean` / `comparator.json` checked across 6 independent kernels plus a live negative kernel tamper check.
 2. Keep permissive MIT licensing for all source code (`LICENSE.txt`) and CC BY 4.0 for manuscripts, white papers, and documentation (`NOTICE`, `paper/`, `dist/`).
 
 ## Consequences
 
-- **Positive:** Full clean Lean build takes ~6 s with zero external cache downloads; every theorem audits strictly within `[propext, Classical.choice, Quot.sound]` (17 theorems use zero axioms).
+- **Positive:** Full clean Lean build takes ~6 s with zero external cache downloads; every theorem audits strictly within `[propext, Classical.choice, Quot.sound]` (19 theorems use zero axioms).
 - **Trade-off:** IEEE-754 floating-point canvas and Web Audio behavior stays outside the integer/UInt32 formal model and is verified empirically via Node/Playwright suites (documented in `LIMITATIONS.md`).

@@ -15,11 +15,11 @@ import {
 } from './ui.js';
 import { bindMobileControls } from './input.js';
 import { resetGame, restartRun } from './session.js';
-import { loop } from './loop.js';
+import { requestRender } from './loop.js';
 
 export function boot() {
   onDprChange(rebuildSpriteCaches);
-  configureCanvasForDPR();
+  configureCanvasForDPR(true);
   updateDerivedPhysics();
   resetGame();
   bindDrawerControls();
@@ -33,5 +33,5 @@ export function boot() {
   dom.muteToggle?.addEventListener('click', () => toggleMute());
   dom.restartButton?.addEventListener('click', () => restartRun());
   dom.fullscreenToggle?.addEventListener('click', () => toggleFullscreen());
-  requestAnimationFrame(loop);
+  requestRender();
 }

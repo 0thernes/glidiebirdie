@@ -3,7 +3,7 @@
  * GlidieBirdie v3.2.0 — Surgical Mutation Testing Harness (Build Standard B13)
  *
  * 1. Runs every unique test suite against the unmutated source first (baseline gate).
- * 2. Plants 12 single-line mutants across core engine & HTTP server modules.
+ * 2. Plants 16 single-line mutants across core engine & HTTP server modules.
  * 3. Counts a mutant as KILLED strictly when the test suite completes cleanly with a
  *    non-zero exit status (never on spawn error, timeout, or signal).
  * 4. Restores exact original file contents unconditionally in `finally`.
@@ -112,6 +112,38 @@ const MUTANTS = [
     find: 'if (!Number.isFinite(ms)) return 0;',
     replace: 'if (false) return 0;',
     suite: 'tests/property-and-metamorphic.mjs',
+  },
+  {
+    id: 'M13',
+    file: 'src/dom.js',
+    desc: 'Disable identical-DPR resize guard in configureCanvasForDPR() (re-introduces resize rebuild storm)',
+    find: '  if (\n    !force &&\n    canvasConfigured &&',
+    replace: '  if (\n    false &&\n    canvasConfigured &&',
+    suite: 'tests/engine-test.mjs',
+  },
+  {
+    id: 'M14',
+    file: 'src/loop.js',
+    desc: 'Force shouldContinueLoop() to spin while paused (re-introduces idle thermal burn)',
+    find: '  if (state.paused) return Boolean(state.postcardMode && !state.reducedMotion);',
+    replace: '  if (state.paused) return true;',
+    suite: 'tests/engine-test.mjs',
+  },
+  {
+    id: 'M15',
+    file: 'src/physics.js',
+    desc: 'Re-introduce detached pupil lookX=18 bug and bypass sclera clamp',
+    find: '  let lookX = 2.2; // default gentle forward gaze (stays comfortably inside the 8px sclera)',
+    replace: '  let lookX = 18; // broken detached gaze',
+    suite: 'tests/engine-test.mjs',
+  },
+  {
+    id: 'M16',
+    file: 'src/audio.js',
+    desc: 'Disable AudioContext.suspend() power-gating (re-introduces idle ConvolverNode burn)',
+    find: '      audioCtx.suspend?.()?.catch?.(() => {',
+    replace: '      if (false) audioCtx.suspend?.()?.catch?.(() => {',
+    suite: 'tests/engine-test.mjs',
   },
 ];
 

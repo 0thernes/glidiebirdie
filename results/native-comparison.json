@@ -1,0 +1,26 @@
+{
+  "iterations": 2000000,
+  "jsV8": {
+    "hits": 1394379,
+    "totalMs": 32.171,
+    "nsPerIter": 16.09
+  },
+  "zigWasmPerCallBoundary": {
+    "hits": 1394379,
+    "totalMs": 53.163,
+    "nsPerIter": 26.58
+  },
+  "zigWasmBatched": {
+    "zigVersion": "0.17.0",
+    "wasmBytes": 8204,
+    "hits": 1394379,
+    "totalMs": 33.925,
+    "nsPerIter": 16.96
+  },
+  "nativeC11": {
+    "compiler": "gcc",
+    "hits": 1394379,
+    "totalMs": 24.022,
+    "nsPerIter": 12.01
+  }
+}

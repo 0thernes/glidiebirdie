@@ -18,29 +18,30 @@ cp -r lean "$TMPDIR/lean"
 cd "$TMPDIR/lean"
 
 # Step 1: Untampered control check MUST pass first (rules out environment/bwrap errors)
-lake comparator --config comparator.json --paranoid >/tmp/control-kernel.log 2>&1 || {
+lake comparator --config comparator.json --paranoid >"$TMPDIR/control-kernel.log" 2>&1 || {
   echo "ERROR: untampered control comparator run failed!" >&2
-  cat /tmp/control-kernel.log >&2
+  cat "$TMPDIR/control-kernel.log" >&2
   exit 1
 }
 
-# Step 2: Inject an explicit sorry into a proved theorem (M-kernel tamper)
-sed -i 's/decide/sorry/' GlidieBirdieProofs/TimestepGrid.lean
+# Step 2: Inject an explicit sorry into a proved theorem (M-kernel tamper, portable sed)
+sed 's/decide/sorry/' GlidieBirdieProofs/TimestepGrid.lean > "$TMPDIR/TimestepGrid.tampered.lean"
+mv "$TMPDIR/TimestepGrid.tampered.lean" GlidieBirdieProofs/TimestepGrid.lean
 
 set +e
-lake comparator --config comparator.json --paranoid >/tmp/neg-kernel.log 2>&1
+lake comparator --config comparator.json --paranoid >"$TMPDIR/neg-kernel.log" 2>&1
 RC=$?
 set -e
 
 if [ "$RC" -eq 0 ]; then
   echo "CRITICAL FAILURE: lake comparator accepted a tampered sorry-backed solution!" >&2
-  cat /tmp/neg-kernel.log >&2
+  cat "$TMPDIR/neg-kernel.log" >&2
   exit 1
 fi
 
-if ! grep -Eqi "sorry|axiom|disallowed|not allowed|failed|mismatch|error" /tmp/neg-kernel.log; then
+if ! grep -Eqi "sorry|axiom|disallowed|not allowed|failed|mismatch|error" "$TMPDIR/neg-kernel.log"; then
   echo "ERROR: tampered run exited $RC without expected proof-rejection diagnostics:" >&2
-  cat /tmp/neg-kernel.log >&2
+  cat "$TMPDIR/neg-kernel.log" >&2
   exit 1
 fi
 

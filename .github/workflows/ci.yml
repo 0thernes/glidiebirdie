@@ -35,7 +35,14 @@ jobs:
       - name: Structured fuzzing (2,000 adversarial parser & HTTP cases)
         run: npm run fuzz
 
-      - name: Surgical mutation testing (12/12 mutants)
+      - name: Native C11 differential oracle (1,000,000 fuzz cases + ASan/UBSan)
+        run: |
+          npm run test:native
+          cc -std=c11 -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall -Wextra -Werror native/glidiebirdie_oracle.c -o /tmp/oracle-san -lm
+          /tmp/oracle-san --verify
+          /tmp/oracle-san --fuzz 200000
+
+      - name: Surgical mutation testing (16/16 mutants)
         run: npm run mutate
 
       - name: Type check (ephemeral TypeScript — not a repo dependency)
@@ -84,14 +91,14 @@ jobs:
       - name: Structured fuzzing (2,000 cases)
         run: npm run fuzz
 
-      - name: Surgical mutation suite (12/12)
+      - name: Surgical mutation suite (16/16)
         run: npm run mutate
 
       - name: Runnable determinism example
         run: node examples/determinism_demo.mjs
 
   lean-6kernel:
-    name: Pure Lean 4.35.0 — 55 Theorems & 6-Kernel Palomar Comparator
+    name: Pure Lean 4.35.0 — 68 Theorems & 6-Kernel Palomar Comparator
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -114,7 +121,7 @@ jobs:
           cat /tmp/lean4-audit.txt
           COUNT=$(grep -cE "depends on axioms:|does not depend on any axioms" /tmp/lean4-audit.txt)
           echo "Audited theorem count: $COUNT"
-          test "$COUNT" -eq 55
+          test "$COUNT" -eq 68
           if grep -E "sorryAx|ofReduceBool|trustCompiler" /tmp/lean4-audit.txt; then
             echo "FORBIDDEN AXIOM DETECTED" >&2
             exit 1

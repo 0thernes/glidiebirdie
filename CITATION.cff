@@ -10,9 +10,9 @@ url: "https://0thernes.github.io/glidiebirdie/"
 abstract: >-
   Zero-runtime-dependency, no-bundler browser flyer built in 20 native ES2022 modules
   using a 60 Hz fixed-step integrator quantized on a 720 Hz tick grid, paired with
-  procedural Web Audio, automated 4-view WCAG 2.2 AA accessibility checks, 55 zero-Mathlib
-  Lean 4.35.0 formal theorems (6 kernels + live negative tamper check), 2,000-case
-  fuzzing, 12/12 surgical mutation testing, and an AMS-LaTeX Build White Paper.
+  procedural Web Audio, automated 4-view WCAG 2.2 AA accessibility checks, 68 zero-Mathlib
+  Lean 4.35.0 formal theorems (6 kernels + live negative tamper check), 2,000-case JS +
+  1,000,000-case C11 differential fuzzing, 16/16 surgical mutation testing, and an AMS-LaTeX Build White Paper.
   Developed with AI engineering assistance under human direction; not peer reviewed.
 authors:
   - family-names: "Donahue"

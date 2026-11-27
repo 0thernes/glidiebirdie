@@ -13,6 +13,9 @@ test:
 fuzz:
   npm run fuzz
 
+native:
+  npm run test:native
+
 mutate:
   npm run mutate
 
@@ -42,6 +45,7 @@ reproduce:
   npm ci
   npm run check
   npm run fuzz
+  npm run test:native
   npm run mutate
   npm run benchmark
   npm run lint

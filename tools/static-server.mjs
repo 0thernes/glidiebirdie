@@ -73,6 +73,11 @@ const server = createServer(async (req, res) => {
 
   const rawUrl = req.url || '/';
   const rawPathOnly = rawUrl.split('?')[0].split('#')[0];
+  if (rawPathOnly.startsWith('//')) {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8', ...SECURITY_HEADERS });
+    res.end('Bad Request');
+    return;
+  }
   let decodedRawPath;
   try {
     decodedRawPath = decodeURIComponent(rawPathOnly);

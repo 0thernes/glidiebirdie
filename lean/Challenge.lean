@@ -6,7 +6,7 @@ public import GlidieBirdieProofs.Spec
 # GlidieBirdie v3.2.0 — Isolated Statement-Only Challenge Specification (`Challenge.lean`)
 
 Imports ONLY `GlidieBirdieProofs.Spec` (pure definitions, zero proofs, zero `sorry`)
-and NONE of the six proof modules. Every `sorry` here is intentional and matched
+and NONE of the seven proof modules. Every `sorry` here is intentional and matched
 against sorry-free `Solution.lean` across 6 independent Lean 4.35.0 kernels via:
     lake comparator --config comparator.json --paranoid
 -/
@@ -32,6 +32,17 @@ public theorem interp_alpha_bounded (frameTick stepIndex : Nat) (backlogDropped 
 public theorem steps_executed_no_drop_under_60_ticks (prevTick dtTicks : Nat) (h : dtTicks ≤ 60) :
     stepsExecuted prevTick (prevTick + dtTicks) =
       (prevTick + dtTicks) / TICKS_PER_STEP - prevTick / TICKS_PER_STEP := by sorry
+public theorem interp_alpha_pos (frameTick stepIndex : Nat) (backlogDropped : Bool) :
+    1 ≤ alphaScaled frameTick stepIndex backlogDropped := by sorry
+public theorem afterglow_terminates_252_steps :
+    AFTERGLOW_TENTHS * SIM_HZ = 252 * 10 := by sorry
+public theorem idle_scheduler_never_sleeps_during_active_play
+    (postcard reducedMotion hasGamepad : Bool) :
+    shouldContinueLoop false true false postcard reducedMotion hasGamepad = true := by sorry
+public theorem idle_scheduler_sleeps_when_hidden_or_static_pause
+    (hidden playing paused postcard reducedMotion hasGamepad : Bool)
+    (h : hidden = true ∨ (paused = true ∧ postcard = false ∧ hasGamepad = false)) :
+    shouldContinueLoop hidden playing paused postcard reducedMotion hasGamepad = false := by sorry
 
 end GlidieBirdie.Timestep
 
@@ -113,6 +124,14 @@ public theorem queuePushCap_bounded (len cap : Nat) :
     queuePushCap len cap ≤ cap := by sorry
 public theorem queuePushMany_bounded (n len cap : Nat) (h : len ≤ cap) :
     queuePushMany n len cap ≤ cap := by sorry
+public theorem listPoolInit_valid (cap : Nat) : (listPoolInit cap).valid := by sorry
+public theorem listPoolSpawn_valid (p : ListPool) (h : p.valid) : (listPoolSpawn p).valid := by sorry
+public theorem listPoolReclaim_valid (p : ListPool) (h : p.valid) : (listPoolReclaim p).valid := by sorry
+public theorem listPoolClearAll_valid_and_restores (p : ListPool) (h : p.valid) :
+    (listPoolClearAll p).valid ∧ (listPoolClearAll p).active = [] ∧
+    (listPoolClearAll p).free.length = p.cap := by sorry
+public theorem fifoPush_length_bounded {α : Type} (q : List α) (x : α) (cap : Nat) (h : q.length ≤ cap) :
+    (fifoPush q x cap).length ≤ cap := by sorry
 
 end GlidieBirdie.Pools
 
@@ -140,6 +159,13 @@ public theorem mulberry32_golden_20261125 :
     s1 = 1851826938 ∧ o1 = 1176269751 ∧
     s2 = 3683392751 ∧ o2 = 1461114176 ∧
     s3 = 1219991268 ∧ o3 = 3047578727 := by sorry
+public theorem eye_gaze_clamp_within_sclera (gx gy : Int) (h : gx * gx + gy * gy ≤ 16) :
+    gx * gx + gy * gy < SCLERA_R * SCLERA_R := by sorry
+public theorem moving_pipe_lerp_within_bounds (prevH curH lo hi a : Int)
+    (hp1 : lo ≤ prevH) (hp2 : prevH ≤ hi)
+    (hc1 : lo ≤ curH) (hc2 : curH ≤ hi)
+    (ha1 : 0 ≤ a) (ha2 : a ≤ 12) :
+    12 * lo ≤ lerpPipeTopScaled prevH curH a ∧ lerpPipeTopScaled prevH curH a ≤ 12 * hi := by sorry
 
 end GlidieBirdie.Physics
 
@@ -166,6 +192,10 @@ public theorem nonvacuous_iron_calm_3day_streak_witness :
     let st2 := nextDayStreak st1 d1 d2 d1
     let st3 := nextDayStreak st2 d2 d3 d2
     st1 = 1 ∧ st2 = 2 ∧ st3 = 3 := by sorry
+public theorem nonvacuous_concrete_list_pool_witness :
+    ∃ p : ListPool, p.valid ∧ p.active.length = 1 ∧
+      (listPoolClearAll p).valid ∧ (listPoolClearAll p).active = [] ∧
+      (listPoolClearAll p).free.length = 4 := by sorry
 
 end GlidieBirdie.NonVacuity
 
@@ -189,5 +219,7 @@ public theorem adversarial_unclamped_speed_exceeds_cap :
     100 + 3 * (42 / 6) = 121 ∧ speedMult100 42 = 118 ∧ 121 > speedMult100 42 := by sorry
 public theorem adversarial_nonpos_rect_never_hits_interior :
     circleHitsRect 50 50 10 50 50 0 20 = false ∧ circleHitsRect 50 50 10 50 50 20 (-5) = false := by sorry
+public theorem adversarial_detached_pupil_18_escapes_sclera :
+    (18 : Int) * 18 > SCLERA_R * SCLERA_R ∧ (2 : Int) * 2 < SCLERA_R * SCLERA_R := by sorry
 
 end GlidieBirdie.Adversarial

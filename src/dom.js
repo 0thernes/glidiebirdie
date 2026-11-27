@@ -1,7 +1,9 @@
 /** Canvas, cached DOM nodes, and the screen-reader live region. */
 import { CONFIG } from './config.js';
+import { hooks } from './hooks.js';
 
 export const dprState = { value: 1 };
+let canvasConfigured = false;
 let afterDpr = () => {};
 /** @param {() => void} fn */
 export function onDprChange(fn) {
@@ -9,7 +11,7 @@ export function onDprChange(fn) {
 }
 
 export const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('game'));
-export const ctx = canvas?.getContext('2d');
+export const ctx = canvas?.getContext('2d', { alpha: false }) || canvas?.getContext('2d');
 if (!canvas || !ctx) throw new Error('Canvas element #game not found or 2D context unavailable.');
 
 /** @returns {number} */
@@ -17,13 +19,29 @@ export function getDPR() {
   return Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
 }
 
-export function configureCanvasForDPR() {
-  dprState.value = getDPR();
-  canvas.width = Math.round(CONFIG.CANVAS_W * dprState.value);
-  canvas.height = Math.round(CONFIG.CANVAS_H * dprState.value);
-  ctx.setTransform(dprState.value, 0, 0, dprState.value, 0, 0);
+/** @param {boolean} [force] */
+export function configureCanvasForDPR(force = false) {
+  const nextDpr = getDPR();
+  const nextW = Math.round(CONFIG.CANVAS_W * nextDpr);
+  const nextH = Math.round(CONFIG.CANVAS_H * nextDpr);
+  if (
+    !force &&
+    canvasConfigured &&
+    dprState.value === nextDpr &&
+    canvas.width === nextW &&
+    canvas.height === nextH
+  ) {
+    return false;
+  }
+  canvasConfigured = true;
+  dprState.value = nextDpr;
+  canvas.width = nextW;
+  canvas.height = nextH;
+  ctx.setTransform(nextDpr, 0, 0, nextDpr, 0, 0);
   // CSS sizing already declares aspect-ratio + width: 100% via style.css.
   afterDpr();
+  hooks.requestRender();
+  return true;
 }
 export const dom = {
   pauseToggle: /** @type {HTMLButtonElement | null} */ (document.getElementById('pauseToggle')),

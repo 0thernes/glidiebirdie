@@ -20,7 +20,10 @@ const FORBIDDEN_FILENAME = new RegExp(['flappy', '(?:bird|calm)'].join('[\\s_-]?
 const TEXT_EXT = new Set([
   '.md', '.js', '.mjs', '.cjs', '.json', '.html', '.htm', '.css',
   '.yml', '.yaml', '.txt', '.webmanifest', '.xml', '.svg',
+  '.lean', '.tex', '.bib', '.cff', '.toml', '.sh', '.ps1', '.mdc',
+  '.tsv', '.c', '.h', '.zig', '.rs',
 ]);
+const EXTENSIONLESS_TEXT = new Set(['justfile', 'NOTICE', 'VERSION']);
 const SKIP_DIRS = new Set([
   'node_modules',
   '.git',
@@ -44,7 +47,10 @@ async function walk(dir, textFiles = [], allPaths = []) {
       await walk(full, textFiles, allPaths);
     } else {
       allPaths.push(full);
-      if (TEXT_EXT.has(path.extname(entry.name).toLowerCase())) {
+      if (
+        TEXT_EXT.has(path.extname(entry.name).toLowerCase()) ||
+        EXTENSIONLESS_TEXT.has(entry.name)
+      ) {
         textFiles.push(full);
       }
     }

@@ -61,18 +61,18 @@
   \small Independent Researcher (0thernes project), Spokane, WA, USA
 }
 
-\date{November 25, 2026 \quad $\cdot$ \quad Systems Engineering Build White Paper \texttt{v3.2.0}}
+\date{November 27, 2026 \quad $\cdot$ \quad Systems Engineering Build White Paper \texttt{v3.2.0}}
 
 \begin{document}
 \maketitle
 \thispagestyle{plain}
 
 \begin{abstract}
-Browser-based real-time games routinely accumulate fragile build chains, external runtime dependencies, refresh-rate-coupled physics drift between 60~Hz and 144~Hz displays, subtle state-machine regressions across pause/modal/lifecycle transitions, and unverified persistence or collision boundaries. We present the engineering architecture and formal verification of \textbf{GlidieBirdie v3.2.0}, a zero-runtime-dependency, no-bundler, offline-capable Progressive Web App (PWA) implemented in 20 native ES2022 modules (\texttt{src/}), one layered stylesheet (\texttt{style.css}), one semantic HTML shell (\texttt{index.html}), and a query-normalized stale-while-revalidate service worker (\texttt{service-worker.js}).
+Browser-based real-time games routinely accumulate fragile build chains, external runtime dependencies, refresh-rate-coupled physics drift between 60~Hz and 144~Hz displays, idle thermal burn on paused or hidden tabs, subtle state-machine regressions across pause/modal/lifecycle transitions, and unverified persistence or collision boundaries. We present the engineering architecture and formal verification of \textbf{GlidieBirdie v3.2.0}, a zero-runtime-dependency, no-bundler, offline-capable Progressive Web App (PWA) implemented in 20 native ES2022 modules (\texttt{src/}), one layered stylesheet (\texttt{style.css}), one semantic HTML shell (\texttt{index.html}), and a query-normalized stale-while-revalidate service worker (\texttt{service-worker.js}).
 
-GlidieBirdie decouples simulation from display refresh via an exact 60~Hz fixed-step loop quantized on a \textbf{720~Hz integer tick grid} ($\mathrm{lcm}(60,144)=720$), paired with a bounded 64-slot timestamped input queue, an $O(1)$ free-list object pool architecture (\texttt{PARTICLE\_POOL = 220}, \texttt{WEATHER\_POOL = 140}), true Euclidean circle-versus-rectangle collision geometry, procedural Web Audio synthesis with zero-volume \texttt{RangeError} guards, and automated WCAG~2.2~AA accessibility checks across four interactive views (initial playfield, Customizer drawer, Tutorial modal, and Serene Postcard), plus keyboard focus trapping, screen-reader live announcements, \texttt{prefers-reduced-motion}, unlayered \texttt{prefers-reduced-transparency}, and gamepad support.
+GlidieBirdie decouples simulation from display refresh via an exact 60~Hz fixed-step loop quantized on a \textbf{720~Hz integer tick grid} ($\mathrm{lcm}(60,144)=720$) with demand-driven 0~FPS idle sleep, paired with a bounded 64-slot timestamped input queue, an $O(1)$ free-list object pool architecture (\texttt{PARTICLE\_POOL = 220}, \texttt{WEATHER\_POOL = 140}), true Euclidean circle-versus-rectangle collision geometry, procedural Web Audio synthesis with zero-volume \texttt{RangeError} guards and \texttt{AudioContext.suspend()} power-gating, and automated WCAG~2.2~AA accessibility checks across four interactive views (initial playfield, Customizer drawer, Tutorial modal, and Serene Postcard), plus keyboard focus trapping, screen-reader live announcements, \texttt{prefers-reduced-motion}, unlayered \texttt{prefers-reduced-transparency}, and gamepad support.
 
-To provide machine-checked assurance alongside empirical testing, we formalize \textbf{55 discrete core invariants and constructive adversarial refutations in pure Lean~4 (\texttt{v4.35.0}, \texttt{module} system, zero Mathlib)} across seven modules (\texttt{TimestepGrid}, \texttt{CollisionGeometry}, \texttt{StorageStreak}, \texttt{PoolAndQueue}, \texttt{PhysicsBounds}, \texttt{NonVacuity}, and \texttt{AdversarialTests}), exported as isolated Palomar \texttt{Challenge.lean}/\allowbreak\texttt{Solution.lean} targets with zero \texttt{sorryAx}, zero \texttt{native\_\allowbreak decide}, and zero custom axioms (strictly within \texttt{[propext, Classical.\allowbreak choice, Quot.\allowbreak sound]}; 17 theorems use zero axioms), verified across 6 independent kernels plus a live negative kernel tamper check in CI. Across \textbf{30 counterbalanced paired deterministic seeds} (after 5 warmup seeds) comparing hitch-free 60~Hz and 144~Hz execution over 180 steps (5,400 individual steps total), GlidieBirdie exhibits \textbf{0.000~px maximum vertical trajectory drift} versus \textbf{3.855~px median} (max \textbf{4.783~px}, 95\% CI $[3.820, 4.069]$~px) for a naive variable-$\Delta t$ Euler baseline (\textbf{30/30} paired wins, exact sign-test $p=1.86\times 10^{-9}$, $p_{\text{Holm}}=3.73\times 10^{-9}$), executing pure simulation steps at \textbf{0.50~$\mu$s median} (\textbf{1.90~$\mu$s} p95, \textbf{163.20~$\mu$s} max, 0 budget violations; amortized whole-loop cost including headless presentation \textbf{4.36~$\mu$s/step} at 60~Hz) and \textbf{17.08~ms median} across 5 repetitions of 10,000 pool-churn cycles with 0 slot-conservation violations. Empirical verification combines \textbf{69 behavioral engine assertions}, \textbf{8 property-based/metamorphic/contract/HTTP allowlist suites} (2,500+ randomized \texttt{prop\_check} trials), a \textbf{2,000-case structured parser/HTTP fuzzer} (which caught two real boundary bugs in \texttt{clampNumber} and WHATWG URL normalization), \textbf{7 Playwright + 4-view axe-core WCAG~2.2~AA browser tests}, \textbf{12/12 citation checks}, and \textbf{12/12 (100.0\%)} baseline-gated surgical mutants killed---with mutation testing uncovering and closing two real test-suite gaps (\texttt{M03} and \texttt{M09}). This document is an independent systems-engineering build white paper, not a peer-reviewed publication; GlidieBirdie retires \textbf{0/1,900} open problems in the Unsolved Problems Mega-Atlas (v2.6.0).
+To provide machine-checked assurance alongside empirical testing, we formalize \textbf{68 discrete core invariants and constructive adversarial refutations in pure Lean~4 (\texttt{v4.35.0}, \texttt{module} system, zero Mathlib)} across seven modules (\texttt{TimestepGrid}, \texttt{CollisionGeometry}, \texttt{StorageStreak}, \texttt{PoolAndQueue} including concrete \texttt{Nodup} list-backed pools and FIFO queues, \texttt{Physics\allowbreak Bounds}, \texttt{Non\allowbreak Vacuity}, and \texttt{Adversarial\allowbreak Tests}), exported as isolated Palomar \texttt{Challenge.lean}/\allowbreak\texttt{Solution.lean} targets with zero \texttt{sorryAx}, zero \texttt{native\_\allowbreak decide}, and zero custom axioms (strictly within \texttt{[propext, Classical.\allowbreak choice, Quot.\allowbreak sound]}; 19 theorems use zero axioms), verified across 6 independent kernels plus a live negative kernel tamper check in CI. Across \textbf{30 counterbalanced paired deterministic seeds} (after 5 warmup seeds) comparing hitch-free 60~Hz and 144~Hz execution over 180 steps (5,400 individual steps total), GlidieBirdie exhibits \textbf{0.000~px maximum vertical trajectory drift} versus \textbf{3.855~px median} (max \textbf{4.783~px}, 95\% CI $[3.820, 4.069]$~px) for a naive variable-$\Delta t$ Euler baseline (\textbf{30/30} paired wins, exact sign-test $p=1.86\times 10^{-9}$, $p_{\text{Holm}}=3.73\times 10^{-9}$), executing pure simulation steps at \textbf{0.50~$\mu$s median} (\textbf{2.10~$\mu$s} p95, \textbf{316.40~$\mu$s} max, 0 budget violations; amortized whole-loop cost including headless presentation \textbf{3.92~$\mu$s/step} at 60~Hz) and \textbf{17.02~ms median} across 5 repetitions of 10,000 pool-churn cycles with 0 slot-conservation violations. Empirical verification combines \textbf{81 behavioral engine assertions}, \textbf{8 property-based/\allowbreak metamorphic/\allowbreak contract/\allowbreak HTTP allowlist suites} (2,500+ randomized \texttt{prop\_check} trials), a \textbf{2,000-case structured JS parser/HTTP fuzzer}, an offline \textbf{ISO~C11 differential reference oracle} (\texttt{native/\allowbreak glidiebirdie\_\allowbreak oracle.c}, 1,000,000 fuzz cases + ASan/UBSan in CI, bit-for-bit parity with JS and Lean~4), \textbf{7 Playwright + 4-view axe-core WCAG~2.2~AA browser tests}, \textbf{12/12 citation checks}, and \textbf{16/16 (100.0\%)} baseline-gated surgical mutants killed. This document is an independent systems-engineering build white paper, not a peer-reviewed publication; GlidieBirdie retires \textbf{0/1,900} open problems in the Unsolved Problems Mega-Atlas (v2.6.0).
 \end{abstract}
 
 \noindent\textbf{Keywords:} fixed-step simulation, deterministic game loop, browser architecture, native ES modules, Lean~4 verification, mutation testing, property-based testing, WCAG~2.2~AA accessibility, Progressive Web App.
@@ -107,14 +107,14 @@ Table~\ref{tab:claims} enumerates every engineering and formal claim of GlidieBi
 \toprule
 \textbf{ID} & \textbf{Claim} & \textbf{Verification Authority} & \textbf{Explicit Falsification Condition} \\
 \midrule
-\textbf{C1} & Hitch-free 60~Hz vs 144~Hz parity (60~Hz sim on 720~Hz tick grid) & Lean~4 \texttt{TimestepGrid.lean} (9 thms) + \texttt{determinism.mjs} + \texttt{benchmarks.json} & Any hitch-free 60/144~Hz run with drift $>0$~px or steps $\neq 180$ in 3.0~s \\
-\textbf{C2} & Optimal Euclidean circle--rect projection, radius monotonicity \& pipe clearance & Lean~4 \texttt{CollisionGeometry.lean} (9 thms) + 1,000 \texttt{prop\_check} trials + \texttt{M01, M02} & Any counterexample violating projection minimality, negative radius returning \texttt{true}, or unpassable pipe \\
-\textbf{C3} & Bounded $O(1)$ free-list pools (220/140) and strict 64-slot FIFO input queue & Lean~4 \texttt{PoolAndQueue.lean} (8 thms) + 5$\times$10k churn + \texttt{M06, M07} & Any transition violating $\text{active}+\text{free}=\text{cap}$ or queue length $>64$ \\
+\textbf{C1} & Hitch-free 60/144~Hz parity \& demand-driven 0~FPS idle sleep & Lean~4 \texttt{TimestepGrid.lean} (13 thms) + \texttt{determinism.mjs} + \texttt{benchmarks.json} & Any hitch-free 60/144~Hz drift $>0$~px, steps $\neq 180$ in 3.0~s, or paused loop spin \\
+\textbf{C2} & Optimal Euclidean circle--rect projection, radius monotonicity \& pipe clearance & Lean~4 \texttt{CollisionGeometry.lean} (9 thms) + 1,000 \texttt{prop\_check} + 1M C11 fuzz + \texttt{M01, M02} & Any counterexample violating projection minimality, negative radius returning \texttt{true}, or unpassable pipe \\
+\textbf{C3} & Bounded $O(1)$ free-list pools (concrete \texttt{Nodup}) and strict 64-slot FIFO queue & Lean~4 \texttt{PoolAndQueue.lean} (13 thms) + 5$\times$10k churn + \texttt{M06, M07} & Any transition violating $\text{active}+\text{free}=\text{cap}$, index uniqueness, or queue $>64$ \\
 \textbf{C4} & Injective UTC \texttt{YYYYMMDD} \texttt{dateSeed}, streak automaton \& storage allowlist & Lean~4 \texttt{StorageStreak.lean} (8 thms) + 366-day check + 1,500 fuzz + \texttt{M04, M05} & Any calendar collision, non-finite clamp, wrong streak transition, or unallowed ID surviving load \\
-\textbf{C5} & Exact 32-bit \texttt{mulberry32} parity, bounded 6-pt ramp $[1.00\times,1.18\times]$ \& shield safety & Lean~4 \texttt{PhysicsBounds.lean} (9 thms) + differential JS test + \texttt{engine-test.mjs} & Any bit mismatch on seed \texttt{20261125}, ramp $>1.18\times$, or shield hit causing \texttt{gameOver} \\
-\textbf{C6} & 4-view automated axe-core WCAG~2.2~AA (0 violations) \& safe audio/SW & 7 Playwright + 4-view axe-core E2E tests + \texttt{smoke-test.mjs} + \texttt{M08, M09, M10} & Any axe-core WCAG~2.2~AA violation in 4 views, zero-volume oscillator, or layered transparency override \\
-\textbf{C7} & Hardened static HTTP server (strict allowlist, raw-URL/IPv6/symlink/headers) & \texttt{property-and-\allowbreak metamorphic.mjs} + 500 HTTP fuzz cases + \texttt{M11} & Any private/dotfile/traversal returning 200, missing \texttt{nosniff}/\texttt{DENY}, or failed \texttt{/healthz} \\
-\textbf{C8} & 12/12 (100\%) baseline-gated mutants, live negative Lean tamper \& 0 CodeQL alerts & \texttt{mutation-test.mjs} + \texttt{verify-\allowbreak negative-\allowbreak kernel.sh} + \texttt{check-\allowbreak citations.mjs} & Any surviving mutant, accepted sorry proof, broken citation, or CodeQL alert \\
+\textbf{C5} & Exact 32-bit \texttt{mulberry32} parity (JS/Lean/C11), ramp $[1.00\times,1.18\times]$, sclera \& lerp & Lean~4 \texttt{PhysicsBounds.lean} (11 thms) + C11 oracle + \texttt{engine-test.mjs} + \texttt{M15} & Any bit mismatch on seed \texttt{20261125}, ramp $>1.18\times$, shield game-over, or pupil escape \\
+\textbf{C6} & 4-view automated axe-core WCAG~2.2~AA (0 violations) \& audio/DPR power-gating & 7 Playwright + 4-view axe-core E2E + \texttt{smoke-\allowbreak test.mjs} + \texttt{M08--M10}, \texttt{M13}, \texttt{M16} & Any axe-core WCAG~2.2~AA violation, zero-vol oscillator, idle audio spin, or layered transparency \\
+\textbf{C7} & Hardened static HTTP server (allowlist, raw-URL, \texttt{//}, IPv6, symlink, headers) & \texttt{property-and-\allowbreak metamorphic.mjs} + 500 HTTP fuzz cases + \texttt{M11} & Any private, dotfile, protocol-relative, or traversal path returning 200, missing headers, or failed \texttt{/healthz} \\
+\textbf{C8} & 16/16 (100\%) mutants, 68-thm 6-kernel Lean + negative tamper, C11 ASan/UBSan & \texttt{mutation-\allowbreak test.mjs} + \texttt{verify-\allowbreak negative-\allowbreak kernel.sh} + \texttt{native-\allowbreak differential.mjs} & Any surviving mutant, accepted sorry proof, C11 oracle mismatch, broken citation, or CodeQL alert \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -245,7 +245,7 @@ Following the Palomar Registry architecture \cite{palomar2026} and the Defensibl
 
 \begin{table}[ht]
 \centering
-\caption{GlidieBirdie v3.2.0 Pure Lean~4.35.0 Formal Verification Summary (55 Theorems, Zero Mathlib).}
+\caption{GlidieBirdie v3.2.0 Pure Lean~4.35.0 Formal Verification Summary (68 Theorems, Zero Mathlib).}
 \label{tab:lean}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -253,15 +253,15 @@ Following the Palomar Registry architecture \cite{palomar2026} and the Defensibl
 \toprule
 \textbf{Module} & \textbf{Thms} & \textbf{Axioms Used (Max Set)} & \textbf{Runtime Source Anchors} \\
 \midrule
-\texttt{TimestepGrid.lean} & 9 & \texttt{[propext, Classical.choice, Quot.sound]} (3 zero-axiom) & \texttt{src/timestep.js}, \texttt{src/loop.js} \\
+\texttt{TimestepGrid.lean} & 13 & \texttt{[propext, Classical.choice, Quot.sound]} (4 zero-axiom) & \texttt{src/timestep.js}, \texttt{src/loop.js} \\
 \texttt{CollisionGeometry.lean} & 9 & \texttt{[propext, Classical.choice, Quot.sound]} & \texttt{src/collision.js}, \texttt{src/config.js} \\
 \texttt{StorageStreak.lean} & 8 & \texttt{[propext, Classical.choice, Quot.sound]} & \texttt{src/storage.js}, \texttt{src/rng.js} \\
-\texttt{PoolAndQueue.lean} & 8 & \texttt{[propext, Quot.sound]} (1 zero-axiom) & \texttt{src/physics.js}, \texttt{src/input-queue.js} \\
-\texttt{PhysicsBounds.lean} & 9 & \texttt{[propext, Classical.choice, Quot.sound]} (3 zero-axiom) & \texttt{src/physics.js}, \texttt{src/rng.js} \\
-\texttt{NonVacuity.lean} & 4 & \texttt{[propext, Quot.sound]} (3 zero-axiom) & Concrete realizability witnesses \\
-\texttt{AdversarialTests.lean} & 8 & \texttt{[propext, Quot.sound]} (7 zero-axiom) & Constructive false-variant refutations \\
+\texttt{PoolAndQueue.lean} & 13 & \texttt{[propext, Classical.choice, Quot.sound]} (1 zero-axiom) & \texttt{src/physics.js}, \texttt{src/input-queue.js} \\
+\texttt{PhysicsBounds.lean} & 11 & \texttt{[propext, Classical.choice, Quot.sound]} (3 zero-axiom) & \texttt{src/physics.js}, \texttt{src/rng.js} \\
+\texttt{NonVacuity.lean} & 5 & \texttt{[propext, Classical.choice, Quot.sound]} (3 zero-axiom) & Concrete realizability witnesses \\
+\texttt{AdversarialTests.lean} & 9 & \texttt{[propext, Quot.sound]} (8 zero-axiom) & Constructive false-variant refutations \\
 \midrule
-\textbf{Total} & \textbf{55} & \textbf{17 zero-axiom; zero \texttt{sorryAx}, zero \texttt{native\_decide}, zero custom axioms} & \textbf{6-kernel \texttt{lake comparator --paranoid} + live negative tamper} \\
+\textbf{Total} & \textbf{68} & \textbf{19 zero-axiom; zero \texttt{sorryAx}, zero \texttt{native\_decide}, zero custom axioms} & \textbf{6-kernel \texttt{lake comparator --paranoid} + live negative tamper} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -279,11 +279,11 @@ A formal proof is only as meaningful as the fidelity between its Lean definition
 \toprule
 \textbf{Lean Declaration} & \textbf{Runtime Symbol} & \textbf{Exact Fidelity Notes \& Gap} & \textbf{Status} \\
 \midrule
-\texttt{stepsExecuted}, \texttt{totalStepsUniform}, \texttt{alphaScaled} & \texttt{src/timestep.js}, \texttt{src/loop.js} & Exact integer division matches \texttt{Math.floor(tick / 12)} and \texttt{MAX\_FRAME\_STEPS = 5}; \texttt{steps\_\allowbreak executed\_\allowbreak no\_\allowbreak drop\_\allowbreak under\_\allowbreak 60\_\allowbreak ticks} proves hitch-free equivalence for $\Delta t \le 60$; JS \texttt{msToTicks} rounds IEEE-754 float \texttt{ms} first. & \textbf{Exact (grid)} \\
+\texttt{stepsExecuted}, \texttt{alphaScaled}, \texttt{shouldContinueLoop} & \texttt{src/timestep.js}, \texttt{src/loop.js} & Exact integer division matches \texttt{Math.floor(tick / 12)}, \texttt{MAX\_FRAME\_STEPS = 5}, 252-step afterglow, and idle sleep predicate; JS \texttt{msToTicks} rounds IEEE-754 float \texttt{ms} first. & \textbf{Exact (grid)} \\
 \texttt{distSqPointRect}, \texttt{circleHitsRect}, \texttt{intersectsPipeInt} & \texttt{src/collision.js} & Exact algebraic match over $\mathbb{Z}$; runtime uses float64 and shrunken $0.82\cdot 18=14.76$ radius, bridged conservatively by \texttt{circleHitsRect\_\allowbreak monotone\_\allowbreak radius} + 1,000-trial \texttt{prop\_check}. & \textbf{Conservative} \\
 \texttt{nextDayStreak}, \texttt{dateSeedNat}, \texttt{clampIntBounds} & \texttt{src/storage.js}, \texttt{src/rng.js} & Exact 1-to-1 logic; JS also guards \texttt{NaN}/non-finite bounds before comparison (verified by 1,500 parser fuzz cases). & \textbf{Exact} \\
-\texttt{PoolState}, \texttt{poolClearAll}, \texttt{queuePushMany} & \texttt{src/physics.js}, \texttt{src/input-queue.js} & Proves slot cardinality conservation; JS array-index uniqueness and element fields verified by \texttt{engine-test.mjs} and $5\times 10$k churn. & \textbf{Abstract count} \\
-\texttt{speedMult100}, \texttt{resolvePipeHit}, \texttt{mulberry32Step} & \texttt{src/physics.js}, \texttt{src/rng.js} & \texttt{mulberry32Step} matches JS 32-bit \texttt{Math.imul}/\texttt{>>> 0} bit-for-bit; \texttt{speedMult100} scales float step $+0.03$ by $100\times$. & \textbf{Bit-exact PRNG} \\
+\texttt{PoolState}, \texttt{ListPool}, \texttt{fifoPush} & \texttt{src/physics.js}, \texttt{src/input-queue.js} & Certifies both slot cardinality and concrete \texttt{Nodup} index disjointness + bounded FIFO list length; mutable JS array fields verified by \texttt{engine-test.mjs}, $5\times 10$k churn, and 1M C11 fuzz cases. & \textbf{Concrete list} \\
+\texttt{speedMult100}, \texttt{mulberry32Step}, \texttt{lerpPipeTopScaled} & \texttt{src/physics.js}, \texttt{src/rng.js} & \texttt{mulberry32Step} matches JS and C11 bit-for-bit; \texttt{speedMult100}, sclera gaze bound, and moving-pipe lerp scale exact integer bounds. & \textbf{Bit-exact PRNG} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -309,9 +309,9 @@ We executed \texttt{node scripts/benchmark.mjs} on an \texttt{Intel Core Ultra 9
 Max 60~Hz vs.\ 144~Hz vertical drift (px) & \textbf{0.000} & Naive: 4.783 & 30/30 & $3.73\times 10^{-9}$ \\
 Median 60~Hz vs.\ 144~Hz vertical drift (px) & \textbf{0.000} & Naive: 3.855 & --- & --- \\
 Mean drift $\pm$ 95\% CI (px) & \textbf{0.000 $[0, 0]$} & $3.944\;[3.820, 4.069]$ & --- & --- \\
-Pure sim individual step: med / p95 / max ($\mu$s) & \textbf{0.50 / 1.90 / 163.20} & Budget: 16,666.67 (0 viol.) & 30/30 & $3.73\times 10^{-9}$ \\
-Amortized whole-loop (incl.\ draw): 60 / 144~Hz ($\mu$s) & \textbf{4.36 / 8.96} (med) & p95: 6.35 / 11.98 (30 runs) & --- & --- \\
-10,000-cycle pool churn ($5$ reps): med / 95\% CI & \textbf{17.08~ms $[16.27, 17.51]$} & \textbf{1.71~$\mu$s/cycle}, 0 viol. & --- & --- \\
+Pure sim individual step: med / p95 / max ($\mu$s) & \textbf{0.50 / 2.10 / 316.40} & Budget: 16,666.67 (0 viol.) & 30/30 & $3.73\times 10^{-9}$ \\
+Amortized whole-loop (incl.\ draw): 60 / 144~Hz ($\mu$s) & \textbf{3.92 / 10.31} (med) & p95: 10.15 / 13.14 (30 runs) & --- & --- \\
+10,000-cycle pool churn ($5$ reps): med / 95\% CI & \textbf{17.02~ms $[15.47, 19.62]$} & \textbf{1.70~$\mu$s/cycle}, 0 viol. & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -358,13 +358,13 @@ Amortized whole-loop (incl.\ draw): 60 / 144~Hz ($\mu$s) & \textbf{4.36 / 8.96} 
 \subsection{Property Testing, Adversarial Fuzzing, and Surgical Mutation}
 To eliminate false confidence from hand-picked unit examples, GlidieBirdie pairs QuickCheck-style property testing \cite{claessen2000} and metamorphic invariance checks \cite{chen2018} (\texttt{tests/\allowbreak property-\allowbreak and-\allowbreak metamorphic.mjs}) with a 2,000-case structured adversarial fuzzer (\texttt{tests/\allowbreak fuzz-\allowbreak http-\allowbreak and-\allowbreak inputs.mjs}: 1,500 parser/engine cases + 500 HTTP static-server cases) and baseline-gated surgical single-line mutation testing \cite{jia2011} (\texttt{scripts/\allowbreak mutation-\allowbreak test.mjs}). Both adversarial harnesses paid immediate dividends:
 \begin{itemize}[leftmargin=1.6em, itemsep=1.5pt]
-  \item \textbf{Mutation Holes \texttt{M03} \& \texttt{M09}:} Initial mutation testing caught that \texttt{tests/\allowbreak determinism.mjs} omitted \texttt{a.length === 180} (letting corrupted \texttt{TICKS\_\allowbreak PER\_\allowbreak STEP = 10} run 20\% fast) and \texttt{tests/\allowbreak engine-\allowbreak test.mjs} omitted mid-run paused \texttt{resetStats()}. Closing both and expanding to 12 mutants raised the score to \textbf{12/12 (100.0\%)} with explicit baseline validation and runner-error separation.
-  \item \textbf{Fuzzer Catches \texttt{F16} \& \texttt{F17}:} The 2,000-case fuzzer immediately exposed two real defects: \texttt{clampNumber()} returned \texttt{NaN}/\texttt{Infinity} on non-finite bounds (\texttt{F16}, fixed in \texttt{src/storage.js}), and WHATWG \texttt{new URL()} collapsed \texttt{/\%2e\%2e/.env/../\%2e\%2e} to \texttt{/} with HTTP~200 (\texttt{F17}, fixed by pre-normalization dot-segment rejection plus a strict public allowlist in \texttt{tools/static-server.mjs}).
+  \item \textbf{Mutation Holes \texttt{M03}, \texttt{M09} \& Thermal/Visual Guards \texttt{M13}--\texttt{M16}:} Initial mutation testing caught that \texttt{tests/\allowbreak determinism.mjs} omitted \texttt{a.length === 180} (letting corrupted \texttt{TICKS\_\allowbreak PER\_\allowbreak STEP = 10} run 20\% fast) and \texttt{tests/\allowbreak engine-\allowbreak test.mjs} omitted mid-run paused \texttt{resetStats()}. Expanding to 16 mutants (adding identical-DPR resize guard \texttt{M13}, paused idle sleep \texttt{M14}, sclera pupil clamp \texttt{M15}, and \texttt{AudioContext.suspend()} power-gating \texttt{M16}) raised coverage to \textbf{16/16 (100.0\%)} with baseline validation and runner-error separation.
+  \item \textbf{Fuzzer (\texttt{F16}--\texttt{F17}) \& Offline C11 Oracle:} The 2,000-case JS fuzzer exposed \texttt{clamp\allowbreak Number()} returning \texttt{NaN}/\texttt{Infinity} on non-finite bounds (\texttt{F16}) and WHATWG \texttt{new URL()} collapsing \texttt{/\%2e\%2e/\allowbreak .env/\allowbreak ../\allowbreak \%2e\%2e} to \texttt{/} (\texttt{F17}). An offline ISO~C11 reference oracle (\texttt{native/\allowbreak glidiebirdie\_\allowbreak oracle.c}, built with \texttt{-std=c11 -O3 -Wall -Wextra -Werror} and ASan/\allowbreak UBSan in CI) independently verifies bit-for-bit parity with JS and Lean~4 plus 1,000,000 fuzz iterations; empirical profiling (\texttt{results/\allowbreak native-\allowbreak comparison.json}, \texttt{results/\allowbreak browser-\allowbreak thermal.json}) confirms V8 runs the collision kernel at 16.09~ns/iter (faster than per-call Zig--WASM at 26.58~ns/iter) while demand-driven sleep drops paused rendering to \textbf{0.0~FPS} (ADR~0004).
 \end{itemize}
 
 \begin{table}[ht]
 \centering
-\caption{Baseline-Gated Surgical Mutation Kill Matrix (\texttt{scripts/mutation-test.mjs}: 12/12 = 100.0\% Killed).}
+\caption{Baseline-Gated Surgical Mutation Kill Matrix (\texttt{scripts/mutation-test.mjs}: 16/16 = 100.0\% Killed).}
 \label{tab:mutants}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -384,6 +384,10 @@ To eliminate false confidence from hand-picked unit examples, GlidieBirdie pairs
 \texttt{M10} & \texttt{src/audio.js} & Disable zero-volume \texttt{playToneAt} guard & \texttt{engine-test.mjs} & \textbf{KILLED} \\
 \texttt{M11} & \texttt{tools/static-server} & Disable public static asset allowlist & \texttt{property-and-metamorphic} & \textbf{KILLED} \\
 \texttt{M12} & \texttt{src/timestep.js} & Remove \texttt{msToTicks} non-finite guard & \texttt{property-and-metamorphic} & \textbf{KILLED} \\
+\texttt{M13} & \texttt{src/dom.js} & Disable identical-DPR resize rebuild guard & \texttt{engine-test.mjs} & \textbf{KILLED} \\
+\texttt{M14} & \texttt{src/loop.js} & Force \texttt{shouldContinueLoop()} spin while paused & \texttt{engine-test.mjs} & \textbf{KILLED} \\
+\texttt{M15} & \texttt{src/physics.js} & Re-introduce detached pupil \texttt{lookX = 18} bug & \texttt{engine-test.mjs} & \textbf{KILLED} \\
+\texttt{M16} & \texttt{src/audio.js} & Disable \texttt{AudioContext.suspend()} power-gating & \texttt{engine-test.mjs} & \textbf{KILLED} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -406,7 +410,7 @@ Key engineering limitations (detailed in \texttt{LIMITATIONS.md}):
 \subsection{Unsolved Problems Mega-Atlas Scope and AI-Assistance Disclosure}
 \textbf{Mega-Atlas Audit:} Audited explicitly against the 1,900 open problems cataloged in \texttt{0thernes/\allowbreak unsolved-\allowbreak problems-\allowbreak mega-\allowbreak atlas} (v2.6.0), GlidieBirdie retires \textbf{0 / 1,900} open problems. It is a verified interactive software engineering system, not a mathematical conjecture proof.
 
-\textbf{AI-Assistance and Provenance Disclosure:} This repository, its formal Lean~4 proofs, test suites, and technical white paper were developed by Alexander Stephen Donahue with substantial AI engineering assistance (Antigravity/Gemini, Claude, and Codex across versions v2.0--v3.2). No peer review, journal acceptance, arXiv endorsement, or external DOI is claimed. Independent soundness rests strictly on reproducible mechanical verification: the Lean~4.35.0 kernel and 6-kernel comparator (55 theorems + live negative tamper check), 69 engine tests, 8 property/metamorphic/HTTP allowlist suites, 2,000 adversarial fuzz cases, 12/12 baseline-gated mutation tests, 12/12 citation checks, 7 Playwright + 4-view axe-core WCAG~2.2~AA tests, and deterministic SHA-256 build artifacts.
+\textbf{AI-Assistance and Provenance Disclosure:} This repository, its formal Lean~4 proofs, test suites, and technical white paper were developed by Alexander Stephen Donahue with substantial AI engineering assistance (Antigravity/Gemini, Claude, and Codex across versions v2.0--v3.2). No peer review, journal acceptance, arXiv endorsement, or external DOI is claimed. Independent soundness rests strictly on reproducible mechanical verification: the Lean~4.35.0 kernel and 6-kernel comparator (68 theorems + live negative tamper check), 81 engine tests, 8 property/metamorphic/HTTP allowlist suites, 2,000 JS + 1,000,000 C11 differential oracle fuzz cases (with ASan/UBSan in CI), 16/16 baseline-gated mutation tests, 12/12 citation checks, 7 Playwright + 4-view axe-core WCAG~2.2~AA tests, and deterministic SHA-256 build artifacts.
 
 \FloatBarrier
 \bibliographystyle{plain}

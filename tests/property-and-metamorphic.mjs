@@ -257,6 +257,8 @@ await checkAsync('HTTP contract, allowlist & concurrency: static-server /healthz
 
     const trav1 = await rawRequest(port, 'GET', '/%2e%2e%2fpackage.json');
     assert.equal(trav1.status, 403);
+    const protoRel = await rawRequest(port, 'GET', '//evil.example/index.html');
+    assert.equal(protoRel.status, 400);
     const trav2 = await rawRequest(port, 'GET', '/..%5cpackage.json');
     assert.equal(trav2.status, 403);
     const nullByte = await rawRequest(port, 'GET', '/index.html%00.txt');

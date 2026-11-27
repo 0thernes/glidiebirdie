@@ -39,11 +39,22 @@ namespace GlidieBirdie.Timestep
 @[expose] public def totalStepsUniform (frames ticksPerFrame : Nat) : Nat :=
   (frames * ticksPerFrame) / TICKS_PER_STEP
 
-/-- Scaled interpolation numerator in `[0, TICKS_PER_STEP]` matching `view.alpha` in `src/loop.js`. -/
+/-- Scaled interpolation numerator in `[1, TICKS_PER_STEP]` matching `view.alpha` in `src/loop.js`. -/
 @[expose] public def alphaScaled (frameTick stepIndex : Nat) (backlogDropped : Bool) : Nat :=
   if backlogDropped then TICKS_PER_STEP
   else if frameTick ≤ stepIndex * TICKS_PER_STEP then TICKS_PER_STEP
   else min TICKS_PER_STEP (frameTick - stepIndex * TICKS_PER_STEP)
+
+/-- Afterglow duration in tenths of a second (`4.2 s` -> `42`), advancing by `1/60 s` per step. -/
+@[expose] public def AFTERGLOW_TENTHS : Nat := 42
+
+/-- Exact demand-driven idle scheduler predicate mirroring `shouldContinueLoop()` in `src/loop.js`. -/
+@[expose] public def shouldContinueLoop (hidden playing paused postcard reducedMotion hasGamepad : Bool) : Bool :=
+  if hidden then false
+  else if playing && !paused then true
+  else if hasGamepad then true
+  else if paused then postcard && !reducedMotion
+  else !reducedMotion
 
 end GlidieBirdie.Timestep
 
@@ -153,6 +164,42 @@ public structure PoolState where
   | 0, len, _ => len
   | n + 1, len, cap => queuePushMany n (queuePushCap len cap) cap
 
+/-- Concrete index-list free-list pool matching `activeWeather` / `freeWeather` in `src/physics.js`. -/
+public structure ListPool where
+  active : List Nat
+  free   : List Nat
+  cap    : Nat
+  deriving DecidableEq, Repr
+
+/-- Concrete safety invariant: length conservation, pairwise uniqueness & disjointness (`Nodup`), and bounds. -/
+@[expose] public def ListPool.valid (p : ListPool) : Prop :=
+  p.active.length + p.free.length = p.cap ∧
+  (p.active ++ p.free).Nodup ∧
+  (∀ i, i ∈ p.active ++ p.free → i < p.cap)
+
+@[expose] public def listPoolInit (cap : Nat) : ListPool :=
+  { active := [], free := List.range cap, cap := cap }
+
+@[expose] public def listPoolSpawn (p : ListPool) : ListPool :=
+  match p.free with
+  | [] => p
+  | idx :: rest => { active := idx :: p.active, free := rest, cap := p.cap }
+
+@[expose] public def listPoolReclaim (p : ListPool) : ListPool :=
+  match p.active with
+  | [] => p
+  | idx :: rest => { active := rest, free := idx :: p.free, cap := p.cap }
+
+/-- Concrete restoration mirroring `clearWeatherPool()`: pushes every active slot back onto `free`. -/
+@[expose] public def listPoolClearAll (p : ListPool) : ListPool :=
+  { active := [], free := p.free ++ p.active, cap := p.cap }
+
+/-- Concrete bounded FIFO queue push mirroring `scheduleInput()` in `src/input-queue.js`. -/
+@[expose] public def fifoPush {α : Type} (q : List α) (x : α) (cap : Nat) : List α :=
+  if cap = 0 then []
+  else if q.length ≥ cap then q.tail ++ [x]
+  else q ++ [x]
+
 end GlidieBirdie.Pools
 
 -- ============================================================================
@@ -183,5 +230,12 @@ public inductive HitOutcome where
   let t2 : UInt32 := t1 ^^^ (t1 + ((t1 ^^^ (t1 >>> 7)) * (t1 ||| 61)))
   let out : UInt32 := t2 ^^^ (t2 >>> 14)
   (s, out)
+
+/-- Sclera radius (8 px) and integer gaze-clamp bound (radius ≤ 4 px, runtime 3.6 px). -/
+@[expose] public def SCLERA_R : Int := 8
+
+/-- Scaled vertical interpolation `12 * prevH + a * (curH - prevH)` for `a ∈ [0, 12]` (`pipeDrawTopHeight`). -/
+@[expose] public def lerpPipeTopScaled (prevH curH a : Int) : Int :=
+  12 * prevH + a * (curH - prevH)
 
 end GlidieBirdie.Physics

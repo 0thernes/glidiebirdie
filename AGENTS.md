@@ -8,7 +8,7 @@ Read this file first before modifying the repository. `CLAUDE.md`, `GEMINI.md`, 
 2. `CLAIMS.md` & `LIMITATIONS.md` — falsifiable claims and honest boundaries
 3. `docs/ARCHITECTURE.md` & `docs/architecture_master_blueprint.md` — acyclic 20-module ES2022 layout
 4. `docs/build-standard.md` & `repo.yaml` — Build Standard v1.2.0 manifest
-5. `lean/README.md` — 55 zero-Mathlib Lean 4.35.0 proofs (Palomar `Challenge`/`Solution` + 8 adversarial refutations)
+5. `lean/README.md` — 68 zero-Mathlib Lean 4.35.0 proofs (Palomar `Challenge`/`Solution` + 9 adversarial refutations)
 6. `.memory/security.md` & `docs/threat-model.md` — storage, CSP, and HTTP server boundaries
 
 ## What This Project Is
@@ -19,7 +19,8 @@ GlidieBirdie (`v3.2.0`) is a solo-built, browser-first, zero-runtime-dependency 
 - one layered stylesheet (`style.css`)
 - 20 native ES2022 modules under `src/` (`src/main.js`, 18 runtime modules, and `src/index.js` headless barrel) loaded by `game.js` (zero bundler, zero runtime npm deps)
 - one compact offline app-shell service worker (`service-worker.js`)
-- 55 machine-checked pure Lean 4.35.0 theorems (`lean/`, zero Mathlib, Palomar `Challenge.lean`/`Solution.lean`, 6 kernels + live negative tamper test)
+- 68 machine-checked pure Lean 4.35.0 theorems (`lean/`, zero Mathlib, Palomar `Challenge.lean`/`Solution.lean`, 6 kernels + live negative tamper test)
+- an offline C11 differential oracle & 1,000,000-case fuzzer (`native/glidiebirdie_oracle.c`, `tests/native-differential.mjs`) plus Zig/WASM microbenchmark companion (`native/oracle.zig`)
 - an AMS-LaTeX Build White Paper (`paper/main.tex` -> `dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf`)
 
 ## Hard Rules
@@ -41,14 +42,15 @@ GlidieBirdie (`v3.2.0`) is a solo-built, browser-first, zero-runtime-dependency 
 - Route all persistence through guarded helpers in `src/storage.js` under the `gb:` namespace.
 - Keep keyboard, pointer, mobile touch bar, and gamepad controls at parity.
 - Preserve automated WCAG 2.2 AA accessibility across all interactive views, live screen-reader announcements, `prefers-reduced-motion`, and unlayered `prefers-reduced-transparency`.
-- Never bypass active GitHub branch protection or self-apply `guardrail-approved`; if branch protection is enabled on `main`, leave guardrail approval to the human owner.
+- Build Standard v1.2.0 R1–R4: commit and push straight to `main` once owner disables legacy branch protection; CI is strictly informational, never a merge gate, and no Dependabot/CodeRabbit/Copilot/PR-template/guardrail-gate workflows are used. Never defeat or bypass active GitHub branch protection if still enabled on the remote.
 
 ## Verification Commands
 
 ```bash
-npm run check          # syntax, static, brand, link, license, 12/12 citations, 69 engine, 8 property/contract, determinism, smoke
+npm run check          # syntax, static, brand, link, license, 12/12 citations, 81 engine, 8 property/contract, determinism, smoke
 npm run fuzz           # 2,000-case adversarial parser & HTTP static-server fuzzer
-npm run mutate         # baseline-gated 12/12 surgical mutation testing
+npm run test:native    # C11 differential oracle (bit-for-bit parity + 1,000,000 fuzz cases)
+npm run mutate         # baseline-gated 16/16 surgical mutation testing
 npm run benchmark      # 30-seed counterbalanced 60/144 Hz + 5,400 pure-step + 5x10k pool benchmark -> results/benchmarks.json
 npm run lint           # ESLint across src/, tests/, tools/, scripts/, examples/
 npm run typecheck      # tsc via jsconfig.json + WebWorker service-worker.js
@@ -63,8 +65,9 @@ pwsh scripts/Audit-Repo.ps1 -Path .
 | --- | --- |
 | `game.js`, `src/*.js` | Native ES2022 browser engine (20 files: `main.js`, 18 runtime modules, `index.js` headless barrel) |
 | `index.html`, `style.css`, `service-worker.js`, `manifest.webmanifest` | PWA shell, CSS Cascade Layers, offline cache |
-| `lean/` | 55 pure Lean 4.35.0 theorems (`module`, zero Mathlib, Palomar `Challenge`/`Solution`, `comparator.json`, negative kernel tamper script) |
+| `lean/` | 68 pure Lean 4.35.0 theorems (`module`, zero Mathlib, Palomar `Challenge`/`Solution`, `comparator.json`, negative kernel tamper script) |
+| `native/` | Offline C11 differential reference oracle + 1M fuzzer (`glidiebirdie_oracle.c`) & Zig/WASM benchmark (`oracle.zig`) |
 | `paper/`, `dist/` | AMS-LaTeX Build White Paper, frozen PDF, standalone `arxiv_submission.tar.gz` |
-| `tests/`, `scripts/` | Engine, determinism, property/metamorphic/HTTP contract, 2,000-case fuzzer, Playwright/axe, 12/12 mutation, benchmarks, citations, audit |
+| `tests/`, `scripts/` | Engine (81), determinism, property/metamorphic/HTTP contract, 2,000-case JS fuzzer, C11 oracle test, Playwright/axe, 16/16 mutation, benchmarks, citations, audit |
 | `tools/` | Zero-dep `static-server.mjs` (strict public allowlist, IPv6-safe, `/healthz`, traversal/symlink defense) & `generate-icons.mjs` |
 | `docs/`, `.memory/` | Architecture, ADRs, threat model, benchmarks, preregistration, reviews, run-log |

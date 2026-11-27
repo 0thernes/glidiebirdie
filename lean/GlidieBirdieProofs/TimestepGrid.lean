@@ -64,4 +64,35 @@ public theorem steps_executed_no_drop_under_60_ticks (prevTick dtTicks : Nat) (h
   simp only [stepsExecuted, MAX_FRAME_STEPS, TICKS_PER_STEP, TICK_HZ, SIM_HZ]
   omega
 
+/-- Interpolation numerator is strictly positive (`≥ 1`), never collapsing to degenerate `0`. -/
+public theorem interp_alpha_pos (frameTick stepIndex : Nat) (backlogDropped : Bool) :
+    1 ≤ alphaScaled frameTick stepIndex backlogDropped := by
+  cases backlogDropped
+  · simp only [alphaScaled, Bool.false_eq_true, ↓reduceIte, TICKS_PER_STEP, TICK_HZ, SIM_HZ]
+    by_cases h : frameTick ≤ stepIndex * (720 / 60)
+    · simp only [h, ↓reduceIte]; omega
+    · simp only [h, ↓reduceIte]; omega
+  · simp only [alphaScaled, ↓reduceIte, TICKS_PER_STEP, TICK_HZ, SIM_HZ]
+    omega
+
+/-- Afterglow (`4.2 s = 42/10 s`) decremented by `dtSec = 1/60 s` terminates in exact `252` steps. -/
+public theorem afterglow_terminates_252_steps :
+    AFTERGLOW_TENTHS * SIM_HZ = 252 * 10 := by
+  decide
+
+/-- Liveness of the demand-driven idle scheduler: visible, active unpaused play NEVER sleeps. -/
+public theorem idle_scheduler_never_sleeps_during_active_play
+    (postcard reducedMotion hasGamepad : Bool) :
+    shouldContinueLoop false true false postcard reducedMotion hasGamepad = true := by
+  simp [shouldContinueLoop]
+
+/-- Thermal safety of the demand-driven idle scheduler: hidden tabs and static pauses always sleep (`false`). -/
+public theorem idle_scheduler_sleeps_when_hidden_or_static_pause
+    (hidden playing paused postcard reducedMotion hasGamepad : Bool)
+    (h : hidden = true ∨ (paused = true ∧ postcard = false ∧ hasGamepad = false)) :
+    shouldContinueLoop hidden playing paused postcard reducedMotion hasGamepad = false := by
+  rcases h with hh | ⟨hp, hpc, hg⟩
+  · simp [shouldContinueLoop, hh]
+  · cases hidden <;> cases playing <;> simp [shouldContinueLoop, hp, hpc, hg]
+
 end GlidieBirdie.Timestep

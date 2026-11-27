@@ -52,4 +52,20 @@ public theorem nonvacuous_iron_calm_3day_streak_witness :
     st1 = 1 ∧ st2 = 2 ∧ st3 = 3 := by
   decide
 
+/-- Concrete list-backed pool witness (`cap = 4`): spawn 2, reclaim 1, clear all preserves Nodup & restores. -/
+public theorem nonvacuous_concrete_list_pool_witness :
+    ∃ p : ListPool, p.valid ∧ p.active.length = 1 ∧
+      (listPoolClearAll p).valid ∧ (listPoolClearAll p).active = [] ∧
+      (listPoolClearAll p).free.length = 4 := by
+  let p0 := listPoolInit 4
+  let p1 := listPoolSpawn p0
+  let p2 := listPoolSpawn p1
+  let p3 := listPoolReclaim p2
+  have hv0 : p0.valid := listPoolInit_valid 4
+  have hv1 : p1.valid := listPoolSpawn_valid p0 hv0
+  have hv2 : p2.valid := listPoolSpawn_valid p1 hv1
+  have hv3 : p3.valid := listPoolReclaim_valid p2 hv2
+  have hc := listPoolClearAll_valid_and_restores p3 hv3
+  exact ⟨p3, hv3, rfl, hc.1, hc.2.1, hc.2.2⟩
+
 end GlidieBirdie.NonVacuity

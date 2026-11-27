@@ -16,7 +16,7 @@ Engineering documentation for a solo-built, zero-dependency, GitHub-Pages browse
 ## Quick orientation
 
 - **Want to play or build?** See the top-level [README](../README.md).
-- **Contributing (human or agent)?** See [CONTRIBUTING](../CONTRIBUTING.md) and [AGENTS.md](../AGENTS.md) — every change flows branch → PR → CI → auto-merge.
+- **Contributing (human or agent)?** See [CONTRIBUTING](../CONTRIBUTING.md) and [AGENTS.md](../AGENTS.md) — Build Standard v1.2.0 R1–R4 with informational CI.
 - **Security?** See [SECURITY.md](../.github/SECURITY.md).
 
 All documents are calibrated to the project's real scope: a calm, accessible, dependency-free arcade game,

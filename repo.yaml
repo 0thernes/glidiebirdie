@@ -2,7 +2,7 @@
 # Project manifest for the Build Standard for LLMs v1.2.0. Read by scripts/audit-repo.sh and Audit-Repo.ps1.
 standard: "1.2.0"
 name: "glidiebirdie"
-description: "Zero-dependency deterministic 60 Hz fixed-step (720 Hz tick grid) browser flyer (native ES2022 modules, procedural Web Audio, WCAG 2.2 AA, PWA), 55 pure Lean 4.35.0 proofs (6 kernels + negative tamper test) & AMS-LaTeX Build White Paper"
+description: "Zero-dependency deterministic 60 Hz fixed-step (720 Hz tick grid) browser flyer (native ES2022 modules, procedural Web Audio, WCAG 2.2 AA, PWA), 68 pure Lean 4.35.0 proofs (6 kernels + negative tamper test) & AMS-LaTeX Build White Paper"
 owner: "Alexander Stephen Donahue (0thernes)"
 year: "2026"
 project_type: research
@@ -45,7 +45,7 @@ items:
   A18: {status: done}  # Issue templates (R4: PR template removed) [recommended]
   A19: {status: done}  # About description and topics (live on github.com/0thernes/glidiebirdie) [core]
   A20: {status: done}  # docs/ folder [recommended]
-  A21: {status: done}  # Architecture Decision Records (docs/adr/0001..0003) [recommended]
+  A21: {status: done}  # Architecture Decision Records (docs/adr/0001..0004) [recommended]
   A22: {status: done}  # CITATION.cff [advanced]
   A23: {status: done}  # Clean history and correct identity [core]
   A24: {status: done}  # No secrets, build output or huge files committed [core]
@@ -61,7 +61,7 @@ items:
   A34: {status: done}  # Observability basics: /healthz JSON endpoint, frame-error rate limit, structured logs [recommended]
   A35: {status: done}  # Data, migrations, backups and offsite repo mirror (docs/operations.md) [recommended]
   A36: {status: done}  # One-command deploy and rollback (justfile) [recommended]
-  A37: {status: done}  # Performance budgets (docs/benchmarks.md: 0.50 us pure step median / 1.90 us p95 vs 16,667 us budget) [advanced]
+  A37: {status: done}  # Performance budgets (docs/benchmarks.md: 0.50 us pure step median / 2.10 us p95 vs 16,667 us budget) [advanced]
   A38: {status: done}  # Accessibility & i18n (WCAG 2.2 AA via axe-core, keyboard/gamepad/SR/reduced-motion/transparency) [core]
   A39: {status: done}  # Third-party licensing and attribution (THIRD_PARTY_NOTICES.md, NOTICE) [recommended]
   A40: {status: n/a, note: "Zero AI SDKs or runtime models shipped (ai: false)."}
@@ -76,25 +76,25 @@ items:
   B04: {status: done}  # CLAIMS.md ledger [core]
   B05: {status: done}  # Falsifiable tests per claim (C1-C8 mapped in CLAIMS.md) [core]
   B06: {status: done}  # Negative tests (NaN/negative radius/inverted bounds/traversal/QuotaExceededError) [core]
-  B07: {status: done}  # Regression test per fixed bug (69 engine tests + 7 Playwright E2E + 8 property/contract suites) [core]
+  B07: {status: done}  # Regression test per fixed bug (81 engine tests + 7 Playwright E2E + 8 property/contract suites) [core]
   B08: {status: done}  # Golden and snapshot tests (mulberry32 32-bit golden outputs + CHECKSUMS.sha256) [recommended]
   B09: {status: done}  # Contract and API tests (static-server /healthz, HTTP 400/403/404/405, security headers) [recommended]
   B10: {status: done}  # Property-based tests (tests/property-and-metamorphic.mjs prop_check 2,500+ trials) [core]
-  B11: {status: done}  # Differential testing (JS mulberry32 vs Lean 4 UInt32 + circleHitsRect vs brute oracle) [recommended]
-  B12: {status: done}  # Reference implementation as test oracle (exact geometry oracle + naive variable-dt Euler) [recommended]
-  B13: {status: done}  # Mutation testing (scripts/mutation-test.mjs: baseline-gated 12/12 = 100.0% mutants killed) [recommended]
+  B11: {status: done}  # Differential testing (JS vs Lean 4 UInt32 + C11 native oracle bit-for-bit parity + brute geometry oracle) [recommended]
+  B12: {status: done}  # Reference implementation as test oracle (native/glidiebirdie_oracle.c C11 + exact geometry oracle + naive variable-dt Euler) [recommended]
+  B13: {status: done}  # Mutation testing (scripts/mutation-test.mjs: baseline-gated 16/16 = 100.0% mutants killed) [recommended]
   B14: {status: done}  # Metamorphic testing (translation and 90-degree axis-swap invariance on circleHitsRect) [advanced]
-  B15: {status: done}  # Fuzzing (tests/fuzz-http-and-inputs.mjs: 2,000 adversarial parser & HTTP static-server cases) [recommended]
-  B16: {status: n/a, note: "Zero native C/C++/asm code (native: false); memory-safe ES2022 browser runtime."}
+  B15: {status: done}  # Fuzzing (tests/fuzz-http-and-inputs.mjs 2,000 JS cases + native C11 oracle 1,000,000 cases) [recommended]
+  B16: {status: n/a, note: "Zero native browser runtime code (native: false); offline C11 test oracle additionally runs under ASan+UBSan in Ubuntu CI."}
   B17: {status: done}  # Static analysis and linters, report-only (eslint + tests/static-checks.mjs + check-citations.mjs) [recommended]
   B18: {status: done}  # Strict type checking (tsc via jsconfig.json + WebWorker check + Lean 4.35.0 type checker) [recommended]
   B19: {status: done}  # Concurrency and race testing (16x concurrent HTTP GETs + drawer focus race guard) [advanced]
   B20: {status: done}  # Numeric and floating-point stability (NaN/Inf guards in collision/timestep/storage/input-queue) [advanced]
   B21: {status: done}  # Failure injection (QuotaExceededError storage throws + malformed JSON + unknown ID injection) [advanced]
-  B22: {status: done}  # Formal specification and proof (lean/: 55 pure Lean 4.35.0 theorems, Palomar Challenge/Solution + live negative kernel test) [advanced]
-  B23: {status: n/a, note: "Finite-state invariants (streak, pool, shield hit outcomes) are proved directly in Lean 4.35.0."}
+  B22: {status: done}  # Formal specification and proof (lean/: 68 pure Lean 4.35.0 theorems, Palomar Challenge/Solution + live negative kernel test) [advanced]
+  B23: {status: n/a, note: "Finite-state invariants (streak, pool, shield hit outcomes, idle scheduler) are proved directly in Lean 4.35.0."}
   B24: {status: n/a, note: "Runtime targets zero-dependency ES2022 browsers; discrete algorithmic specs are proved in Lean 4.35.0."}
-  B25: {status: n/a, note: "Zero native C/C++/Rust runtime (native: false); JS verified via 69 engine + 2,000 fuzz + 12/12 mutation tests."}
+  B25: {status: n/a, note: "Zero native browser runtime (native: false); JS verified via 81 engine + 2,000 JS fuzz + 1M C11 oracle fuzz + 16/16 mutation tests."}
   B26: {status: done}  # Honest benchmarks (docs/benchmarks.md + results/benchmarks.json) [core]
   B27: {status: done}  # Performance tracking over time, report-only (CI benchmark JSON artifact + docs/benchmarks.md) [advanced]
   B28: {status: done}  # Controls and multiple seeds (30 paired seeds: 720 Hz fixed-step vs variable-dt baseline) [core]
