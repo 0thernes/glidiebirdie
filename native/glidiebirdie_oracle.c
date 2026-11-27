@@ -27,6 +27,10 @@
  *      -fsanitize=fuzzer,address,undefined native/glidiebirdie_oracle.c -o build/oracle-fuzz -lm
  */
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <assert.h>
 #include <inttypes.h>
 #include <math.h>
