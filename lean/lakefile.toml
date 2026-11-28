@@ -1,0 +1,12 @@
+name = "GlidieBirdieProofs"
+version = "3.2.0"
+defaultTargets = ["GlidieBirdieProofs", "Solution"]
+
+[[lean_lib]]
+name = "GlidieBirdieProofs"
+
+[[lean_lib]]
+name = "Challenge"
+
+[[lean_lib]]
+name = "Solution"

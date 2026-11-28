@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GlidieBirdie v3.2.0 — Lean 4.35.0 Formal Verification Blueprint</title>
+  <style>
+    :root { --bg: #081120; --panel: #101c33; --border: #243b61; --text: #e2e8f0; --muted: #94a3b8; --ok: #10b981; --accent: #38bdf8; --gold: #facc15; }
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; padding: 2rem 1.25rem; }
+    main { max-width: 980px; margin: 0 auto; }
+    h1, h2 { margin-top: 0; }
+    .meta { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .badge { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; background: rgba(16,185,129,0.16); color: var(--ok); border: 1px solid rgba(16,185,129,0.4); margin-right: 0.4rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .card h3 { margin: 0 0 0.4rem; color: var(--accent); font-size: 1.05rem; }
+    .card p { margin: 0 0 0.6rem; color: var(--muted); font-size: 0.9rem; }
+    ul { margin: 0; padding-left: 1.1rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; }
+    li { margin: 0.2rem 0; }
+    .zero { color: var(--gold); }
+    a { color: var(--accent); }
+    svg { width: 100%; height: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>GlidieBirdie v3.2.0 — Lean 4.35.0 Formal Blueprint</h1>
+    <p class="meta">
+      <span class="badge">68 / 68 Theorems Proved (19 Zero-Axiom)</span>
+      <span class="badge">Zero Mathlib</span>
+      <span class="badge">Zero sorryAx</span>
+      <span class="badge">6-Kernel Comparator + Negative Tamper</span>
+    </p>
+    <p>Author: Alexander Stephen Donahue (Independent Researcher, ORCID <a href="https://orcid.org/0009-0006-8168-9648">0009-0006-8168-9648</a>) · Source: <a href="https://github.com/0thernes/glidiebirdie">github.com/0thernes/glidiebirdie</a> · Play Live: <a href="../index.html">GlidieBirdie</a></p>
+
+    <h2>Module Dependency DAG</h2>
+    <svg viewBox="0 0 860 220" role="img" aria-label="Lean 4 module dependency graph">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+        </marker>
+      </defs>
+      <rect x="330" y="14" width="200" height="36" rx="8" fill="#132a4a" stroke="#10b981" stroke-width="2" />
+      <text x="430" y="37" fill="#e2e8f0" font-size="13" text-anchor="middle" font-family="monospace">Spec.lean (pure defs)</text>
+
+      <rect x="20" y="92" width="150" height="36" rx="8" fill="#132a4a" stroke="#38bdf8" />
+      <text x="95" y="115" fill="#e2e8f0" font-size="12" text-anchor="middle" font-family="monospace">TimestepGrid (13)</text>
+
+      <rect x="188" y="92" width="160" height="36" rx="8" fill="#132a4a" stroke="#38bdf8" />
+      <text x="268" y="115" fill="#e2e8f0" font-size="12" text-anchor="middle" font-family="monospace">CollisionGeom (9)</text>
+
+      <rect x="366" y="92" width="148" height="36" rx="8" fill="#132a4a" stroke="#38bdf8" />
+      <text x="440" y="115" fill="#e2e8f0" font-size="12" text-anchor="middle" font-family="monospace">StorageStreak (8)</text>
+
+      <rect x="532" y="92" width="146" height="36" rx="8" fill="#132a4a" stroke="#38bdf8" />
+      <text x="605" y="115" fill="#e2e8f0" font-size="12" text-anchor="middle" font-family="monospace">PoolAndQueue (13)</text>
+
+      <rect x="696" y="92" width="146" height="36" rx="8" fill="#132a4a" stroke="#38bdf8" />
+      <text x="769" y="115" fill="#e2e8f0" font-size="12" text-anchor="middle" font-family="monospace">PhysicsBounds (11)</text>
+
+      <rect x="70" y="168" width="170" height="36" rx="8" fill="#132a4a" stroke="#facc15" />
+      <text x="155" y="191" fill="#e2e8f0" font-size="12" text-anchor="middle" font-family="monospace">NonVacuity (5)</text>
+
+      <rect x="270" y="168" width="190" height="36" rx="8" fill="#132a4a" stroke="#facc15" />
+      <text x="365" y="191" fill="#e2e8f0" font-size="12" text-anchor="middle" font-family="monospace">Adversarial (9)</text>
+
+      <rect x="500" y="168" width="230" height="36" rx="8" fill="#132a4a" stroke="#10b981" stroke-width="2" />
+      <text x="615" y="191" fill="#e2e8f0" font-size="12" text-anchor="middle" font-family="monospace">Solution.lean (68 thms)</text>
+
+      <line x1="390" y1="50" x2="95" y2="92" stroke="#38bdf8" marker-end="url(#arrow)" />
+      <line x1="410" y1="50" x2="268" y2="92" stroke="#38bdf8" marker-end="url(#arrow)" />
+      <line x1="430" y1="50" x2="440" y2="92" stroke="#38bdf8" marker-end="url(#arrow)" />
+      <line x1="450" y1="50" x2="605" y2="92" stroke="#38bdf8" marker-end="url(#arrow)" />
+      <line x1="470" y1="50" x2="769" y2="92" stroke="#38bdf8" marker-end="url(#arrow)" />
+
+      <line x1="95" y1="128" x2="260" y2="168" stroke="#facc15" marker-end="url(#arrow)" />
+      <line x1="268" y1="128" x2="295" y2="168" stroke="#facc15" marker-end="url(#arrow)" />
+      <line x1="440" y1="128" x2="330" y2="168" stroke="#facc15" marker-end="url(#arrow)" />
+      <line x1="605" y1="128" x2="565" y2="168" stroke="#10b981" marker-end="url(#arrow)" />
+      <line x1="769" y1="128" x2="615" y2="168" stroke="#10b981" marker-end="url(#arrow)" />
+      <line x1="390" y1="186" x2="470" y2="186" stroke="#10b981" marker-end="url(#arrow)" />
+    </svg>
+
+    <h2>Audited Theorems by Module (Gold = 0 Axioms)</h2>
+    <div class="grid">
+      <section class="card">
+        <h3>1. TimestepGrid (13)</h3>
+        <p><code>src/timestep.js</code>, <code>src/loop.js</code></p>
+        <ul>
+          <li class="zero">lcm_60_144_eq_720</li>
+          <li class="zero">standard_rates_divide_720</li>
+          <li class="zero">ticks_per_step_eq_12</li>
+          <li>hz60_hz144_lcm_cycle_step_parity</li>
+          <li>steps_executed_bounded</li>
+          <li>steps_executed_monotone</li>
+          <li>steps_executed_zero_when_nonadvancing</li>
+          <li>interp_alpha_bounded</li>
+          <li>steps_executed_no_drop_under_60_ticks</li>
+          <li>interp_alpha_pos</li>
+          <li class="zero">afterglow_terminates_252_steps</li>
+          <li>idle_scheduler_never_sleeps_during_active_play</li>
+          <li>idle_scheduler_sleeps_when_hidden_or_static_pause</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h3>2. CollisionGeometry (9)</h3>
+        <p><code>src/collision.js</code>, <code>src/config.js</code></p>
+        <ul>
+          <li>clampInt_bounds</li>
+          <li>clampInt_minimizes_sq_dist</li>
+          <li>distSqPointRect_nonneg</li>
+          <li>distSqPointRect_minimality</li>
+          <li>interior_point_distSq_zero</li>
+          <li>circleHitsRect_false_nonpos_radius_or_rect</li>
+          <li>circleHitsRect_interior_hits</li>
+          <li>centered_bird_clears_every_valid_pipe</li>
+          <li>circleHitsRect_monotone_radius</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h3>3. StorageStreak (8)</h3>
+        <p><code>src/storage.js</code>, <code>src/rng.js</code></p>
+        <ul>
+          <li>nextDayStreak_same_day</li>
+          <li>nextDayStreak_consecutive_day</li>
+          <li>nextDayStreak_gap_resets</li>
+          <li>nextDayStreak_positive_after_play</li>
+          <li>dateSeedNat_injective</li>
+          <li>clampIntBounds_range</li>
+          <li>clampIntBounds_idempotent</li>
+          <li>clampIntBounds_inverted_returns_fallback</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h3>4. PoolAndQueue (13)</h3>
+        <p><code>src/physics.js</code>, <code>src/input-queue.js</code></p>
+        <ul>
+          <li>poolInit_conserves</li>
+          <li>poolSpawn_conserves</li>
+          <li>poolReclaim_conserves</li>
+          <li>poolClearAll_conserves_and_empties</li>
+          <li>pool_active_le_cap</li>
+          <li class="zero">glidiebirdie_pool_capacities_exact</li>
+          <li>queuePushCap_bounded</li>
+          <li>queuePushMany_bounded</li>
+          <li>listPoolInit_valid</li>
+          <li>listPoolSpawn_valid</li>
+          <li>listPoolReclaim_valid</li>
+          <li>listPoolClearAll_valid_and_restores</li>
+          <li>fifoPush_length_bounded</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h3>5. PhysicsBounds (11)</h3>
+        <p><code>src/physics.js</code>, <code>src/rng.js</code></p>
+        <ul>
+          <li class="zero">speedMult100_initial</li>
+          <li>speedMult100_bounded</li>
+          <li>speedMult100_monotone</li>
+          <li class="zero">speedMult100_six_point_ramp</li>
+          <li>speedMult100_saturates_at_36</li>
+          <li>resolvePipeHit_shield_never_gameover</li>
+          <li>resolvePipeHit_invincible_never_gameover</li>
+          <li class="zero">resolvePipeHit_unprotected_gameover</li>
+          <li>mulberry32_golden_20261125</li>
+          <li>eye_gaze_clamp_within_sclera</li>
+          <li>moving_pipe_lerp_within_bounds</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h3>6. NonVacuity (5)</h3>
+        <p>Concrete realizability witnesses</p>
+        <ul>
+          <li class="zero">nonvacuous_60_144_parity_witness</li>
+          <li class="zero">nonvacuous_pipe_clearance_and_hit_witness</li>
+          <li>nonvacuous_weather_pool_churn_and_clear_witness</li>
+          <li class="zero">nonvacuous_iron_calm_3day_streak_witness</li>
+          <li>nonvacuous_concrete_list_pool_witness</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h3>7. AdversarialTests (9)</h3>
+        <p>Constructive false-variant refutations</p>
+        <ul>
+          <li class="zero">adversarial_unguarded_neg_radius_false_hit</li>
+          <li class="zero">adversarial_hitch_100ms_drops_one_step</li>
+          <li class="zero">adversarial_corrupted_ticks_per_step_10_breaks_180</li>
+          <li class="zero">adversarial_zero_prev_same_day_returns_zero</li>
+          <li>adversarial_leaked_weather_clear_violates_conservation</li>
+          <li class="zero">adversarial_off_by_one_queue_exceeds_cap</li>
+          <li class="zero">adversarial_unclamped_speed_exceeds_cap</li>
+          <li class="zero">adversarial_nonpos_rect_never_hits_interior</li>
+          <li class="zero">adversarial_detached_pupil_18_escapes_sclera</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

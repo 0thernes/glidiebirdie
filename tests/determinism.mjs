@@ -91,8 +91,8 @@ function run(hz) {
 
 const a = run(60);
 const b = run(144);
-if (a.length === 0) {
-  console.error('Determinism test recorded no simulation steps');
+if (a.length !== 180 || b.length !== 180) {
+  console.error(`Determinism test expected exactly 180 steps in 3.0s, got 60Hz=${a.length} 144Hz=${b.length}`);
   process.exit(1);
 }
 if (a.length !== b.length || a.some((row, i) => row !== b[i])) {

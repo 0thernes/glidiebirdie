@@ -1,10 +1,12 @@
 # GlidieBirdie
 
 [![CI](https://github.com/0thernes/glidiebirdie/actions/workflows/ci.yml/badge.svg)](https://github.com/0thernes/glidiebirdie/actions/workflows/ci.yml)
+[![Pages Deploy](https://github.com/0thernes/glidiebirdie/actions/workflows/pages.yml/badge.svg)](https://0thernes.github.io/glidiebirdie/)
+[![Canary](https://github.com/0thernes/glidiebirdie/actions/workflows/post-deploy-canary.yml/badge.svg)](https://github.com/0thernes/glidiebirdie/actions/workflows/post-deploy-canary.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2f855a)](LICENSE.txt)
-[![Vanilla JS](https://img.shields.io/badge/stack-vanilla%20JS-f7df1e)](game.js)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-0f766e)](package.json)
-[![Accessible Arcade](https://img.shields.io/badge/accessibility-first-2563eb)](README.md#accessibility)
+[![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
+**Status:** Active (`v3.2.0`) · **Build Standard:** `v1.2.0` (`repo.yaml`) · **Epistemic Scope:** Verified browser-game engineering build (not peer reviewed; retires `0 / 1,900` open problems in `0thernes/unsolved-problems-mega-atlas`).
 
 A browser-first, one-tap arcade flyer tuned for comfort instead of punishment.
 
@@ -17,7 +19,11 @@ Serve it from any static host and glide.
 [![Serene meadow golden-hour scene — the bird gliding peacefully between generous pipes in GlidieBirdie.](docs/assets/hero-calm-meadow.jpg)](https://0thernes.github.io/glidiebirdie/)
 
 [Play the live demo](https://0thernes.github.io/glidiebirdie/) ·
-[Architecture guide](docs/architecture_master_blueprint.md) ·
+[Build White Paper (PDF)](dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf) ·
+[Lean 4 Blueprint](blueprint/index.html) ·
+[Claims Ledger](CLAIMS.md) ·
+[Limitations](LIMITATIONS.md) ·
+[Replication](REPLICATION.md) ·
 [Contributing](CONTRIBUTING.md) ·
 [Support](SUPPORT.md)
 
@@ -95,6 +101,56 @@ npm run test:browser
 
 A separate `npm run typecheck` runs ephemeral TypeScript over the `checkJs`-clean engine.
 
+## Usage & Examples
+
+### Run the deterministic simulation example
+
+```bash
+node examples/determinism_demo.mjs
+```
+
+### Run fuzzing, mutation testing, benchmarks, and Build Standard self-audit
+
+```bash
+npm run fuzz        # 2,000 adversarial parser & HTTP static-server fuzz cases
+npm run test:native # C11 differential oracle (bit-for-bit parity + 1,000,000 fuzz cases)
+npm run mutate      # baseline-gated 16/16 surgical mutants killed (100.0%)
+npm run benchmark   # 30 counterbalanced paired seeds + 5,400 pure steps -> results/benchmarks.json
+npm run audit       # Build Standard v1.2.0 audit via scripts/Audit-Repo.ps1
+```
+
+### Formal Verification — Exact Lean 4.35.0 Axiom Audit (5-Second Proof)
+
+All **68 theorems** in [`lean/`](lean/README.md) (59 core + 9 constructive adversarial refutations; 19 zero-axiom) compile with zero Mathlib, zero `sorryAx`, zero `native_decide`, and zero custom axioms (`cd lean && lake build && lake build Challenge && lake env lean VerifyAxioms.lean && lake env leanchecker-paranoid --fresh Solution`). Headline outputs from `VerifyAxioms.lean`:
+
+```text
+'GlidieBirdie.Timestep.lcm_60_144_eq_720' does not depend on any axioms
+'GlidieBirdie.Timestep.steps_executed_no_drop_under_60_ticks' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Timestep.idle_scheduler_sleeps_when_hidden_or_static_pause' depends on axioms: [propext]
+'GlidieBirdie.Collision.distSqPointRect_minimality' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Collision.circleHitsRect_monotone_radius' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Storage.dateSeedNat_injective' depends on axioms: [propext, Classical.choice, Quot.sound]
+'GlidieBirdie.Pools.listPoolClearAll_valid_and_restores' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Pools.fifoPush_length_bounded' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Physics.mulberry32_golden_20261125' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Physics.moving_pipe_lerp_within_bounds' depends on axioms: [propext, Quot.sound]
+'GlidieBirdie.Adversarial.adversarial_detached_pupil_18_escapes_sclera' does not depend on any axioms
+```
+
+See the [Build White Paper](dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf), [Interactive Blueprint](blueprint/index.html), [`CLAIMS.md`](CLAIMS.md), [`LIMITATIONS.md`](LIMITATIONS.md), and [`REPLICATION.md`](REPLICATION.md) for the complete statement-fidelity audit, 30-seed benchmarks, and clean-clone instructions.
+
+## Limitations & Literal vs. Metaphor
+
+See [`LIMITATIONS.md`](LIMITATIONS.md) for full details. In summary, GlidieBirdie retires **0 / 1,900** open problems in `0thernes/unsolved-problems-mega-atlas`, is not peer reviewed, and separates literal engineering claims from creative/flavor terminology:
+
+| Term in UI / Prose | Literal Reality |
+| --- | --- |
+| "60 Hz fixed-step on 720 Hz tick grid" | **Literal** — verified by Lean 4 (`TimestepGrid.lean`) and 30-seed paired benchmarks (`0.000 px` max hitch-free drift). |
+| "68 Lean 4.35.0 proofs across 6 kernels" | **Literal (discrete specs)** — machine-checked over exact integer/`UInt32`/concrete `ListPool` models, not IEEE-754 float64 canvas rendering or Web Audio DSP. |
+| "Automated WCAG 2.2 AA" | **Literal (automated scope)** — `0` axe-core violations across 4 interactive views; complements rather than replaces manual assistive-technology audits. |
+| "Five living themes" / "Expressive bird emotions" | **Metaphor / visual design** — procedural Canvas 2D palettes, particle presets, and deterministic state-driven sprite expressions (`calm`/`happy`/`scared`/`determined`/`dizzy`), not AI or biology. |
+| "Feather Shield" / "Serene Postcard" | **Metaphor / gameplay feature** — a boolean collision-absorption pickup and a paused canvas PNG export mode. |
+
 ## Controls
 
 | Input | Action |
@@ -154,37 +210,51 @@ For the deeper runtime walkthrough, read [docs/architecture_master_blueprint.md]
 | `tests/brand-guard.mjs` | Ensures retired trademarked terms never reappear |
 | `tests/link-guard.mjs` | Verifies every local HTML/manifest asset reference resolves |
 | `tests/license-guard.mjs` | Enforces MIT license consistency across `LICENSE.txt` and `package.json` |
-| `tests/engine-test.mjs` | Headless engine behavioral tests importing `src/` |
-| `tests/determinism.mjs` | Verifies identical 60 Hz and 144 Hz trajectories on fixed steps |
+| `tests/engine-test.mjs` | 81 headless engine behavioral tests importing `src/` |
+| `tests/property-and-metamorphic.mjs` | 8 property-based, metamorphic, failure-injection, differential & HTTP contract suites (2,500+ trials) |
+| `tests/determinism.mjs` | Verifies 180 identical 60 Hz and 144 Hz steps on the 720 Hz fixed tick grid |
 | `tests/smoke-test.mjs` | Syntax and surface-area smoke checks |
-| `tests/e2e/smoke.spec.js` | Playwright browser and WCAG 2.2 AA axe-core checks |
+| `tests/e2e/smoke.spec.js` | 7 Playwright browser tests + 4-view WCAG 2.2 AA axe-core checks |
+| `tests/fuzz-http-and-inputs.mjs` | 2,000-case structured adversarial parser & HTTP static-server fuzzer (`B15`) |
+| `tests/native-differential.mjs` & `native/` | Offline C11 differential oracle (`glidiebirdie_oracle.c`, 1M fuzz cases + ASan/UBSan in CI) & Zig/WASM microbenchmark (`oracle.zig`) |
+| `lean/` | 68 pure Lean 4.35.0 formal theorems (zero Mathlib, Palomar `Challenge`/`Solution`, 6-kernel comparator + negative tamper test) |
+| `paper/` & `dist/` | Zero-warning AMS-LaTeX Build White Paper PDF and clean-room `arxiv_submission.tar.gz` |
+| `blueprint/index.html` | Interactive Lean 4 Proof Blueprint & Claims Dependency Map |
+| `scripts/` | Baseline-gated 16-mutant harness (`mutation-test.mjs`), 30-seed counterbalanced benchmarks (`benchmark.mjs`), browser/native profilers, citation verifier (`check-citations.mjs`), Build Standard v1.2.0 audit scripts |
+| `examples/` | Runnable zero-dependency example (`determinism_demo.mjs`) |
 | `tools/` | Zero-dependency dev helpers (`static-server.mjs`, `generate-icons.mjs`) |
-| `RELEASING.md` | Manual tag and GitHub Release process |
+| `VERSION`, `repo.yaml`, `justfile` | Single version source (`3.2.0`), Build Standard v1.2.0 manifest, one-word task runner |
+| `CLAIMS.md`, `LIMITATIONS.md`, `REPLICATION.md` | Falsifiable claims ledger, honest epistemic scope (`0/1,900` Mega-Atlas), clean-clone replication |
+| `CITATION.cff`, `CITATION.bib`, `.zenodo.json` | Machine-readable scholarly citation & archival metadata |
+| `CHECKSUMS.sha256`, `data/MANIFEST.sha256` | Deterministic SHA-256 checksums for browser shell, benchmarks, PDF, and arXiv tarball |
+| `RELEASING.md`, `UPGRADING.md` | Release checklist and version upgrade guide |
 | `docs/architecture_master_blueprint.md` | Calm, humble philosophy & technical architecture reference |
 | `docs/ARCHITECTURE.md` | System + engine architecture with diagrams (frame loop, rendering, audio, boot, invariants) |
+| `docs/adr/` | Architecture Decision Records (`0001`–`0004`) |
+| `docs/benchmarks.md`, `docs/preregistration.md` | 30-seed paired benchmarks & pre-registered hypotheses |
+| `docs/threat-model.md`, `docs/operations.md` | Security boundary analysis, `/healthz`, backups, offsite mirror, and rollback |
+| `docs/configuration.md`, `docs/faq.md`, `docs/glossary.md` | Environment variables, FAQ, and canonical glossary |
+| `docs/run-log.md`, `docs/reviews/` | Chronological hardening audit trail and 10-class red-team review register |
 | `docs/DATA-MODEL.md` | ERM/ERD of the `gb:` storage layer, key schema, and legacy→`gb:` migration |
 | `docs/COMPLEXITY.md` | Time/space (Big-O) of every subsystem + the shipped DSA upgrades |
 | `docs/INSPECTION-500.md` | 500-point inspection (25 sections × 20), scored |
 | `docs/ROADMAP.md` | Kanban board (Done / Next / Backlog), cadence, definition of done |
 | `docs/README.md` | Documentation index |
-| `docs/assets/` | Cinematic hero + social preview images |
+| `docs/assets/`, `docs/media/` | Cinematic hero and OpenGraph social preview images |
 | `AUDIT-250.md` | Canonical 250-point quality audit ledger |
 | `CHANGELOG.md` | Version history |
-| `AGENTS.md` | Cross-tool AI assistant guidance + the protected merge flow |
-| `CLAUDE.md` | Claude-specific project context |
-| `CODE_OF_CONDUCT.md` | Calm, welcoming community guidelines tuned to this project's spirit |
-| `CONTRIBUTING.md` | Contributor workflow and change boundaries |
-| `SUPPORT.md` | Troubleshooting and where to get help |
-| `.github/` | CI workflow, Dependabot, `SECURITY.md`, issue templates, and Copilot guidance |
+| `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `llms.txt` | Canonical AI-assistant guidance (`CLAUDE.md`/`GEMINI.md` point to `AGENTS.md`) & LLM context bundles |
+| `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SUPPORT.md` | Community guidelines, contributor workflow, and troubleshooting |
+| `THIRD_PARTY_NOTICES.md`, `NOTICE`, `LICENSE.txt` | MIT license, CC BY 4.0 white-paper terms, and third-party dev-tool attributions |
+| `.github/` | Cross-platform CI, 6-kernel Lean CI, Tectonic paper CI, Pages deploy, release workflow, `SECURITY.md`, issue forms, and finding-class labels |
 | `.memory/` | Project notes for future maintainers and assistant sessions |
-| `LICENSE.txt` | MIT license text |
 
 ## New Here? Read In This Order
 
 1. `README.md` — the product and workflow overview.
 2. `docs/architecture_master_blueprint.md` — the runtime layout.
 3. `CONTRIBUTING.md` — change boundaries and review expectations.
-4. `AGENTS.md` / `CLAUDE.md` — AI-assistant guardrails and the protected merge flow.
+4. `AGENTS.md` / `CLAUDE.md` — AI-assistant rules and Build Standard v1.2.0 conventions.
 
 ## Browser Support
 

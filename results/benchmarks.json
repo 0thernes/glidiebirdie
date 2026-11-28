@@ -1,0 +1,646 @@
+{
+  "version": "3.2.0",
+  "generated_utc": "2026-11-26T23:38:18.129Z",
+  "command": "node scripts/benchmark.mjs",
+  "environment": {
+    "cpu_model": "Intel(R) Core(TM) Ultra 9 275HX",
+    "cpu_cores": 24,
+    "platform": "win32",
+    "os_release": "10.0.29704",
+    "arch": "x64",
+    "node_version": "v25.8.2",
+    "node_flags": "none (default V8 flags)"
+  },
+  "design": {
+    "warmup_seeds": 5,
+    "paired_seeds": 30,
+    "steps_per_seed": 180,
+    "total_individual_sim_steps": 5400,
+    "counterbalancing": "alternating 60_then_144 (even seeds) vs 144_then_60 (odd seeds)",
+    "simulation_hz": 60,
+    "tick_grid_hz": 720,
+    "refresh_rates_hz": [
+      60,
+      144
+    ],
+    "pool_churn_repetitions": 5,
+    "pool_churn_cycles_per_rep": 10000,
+    "baseline": "naive variable-dt Euler (identical gravity/drag/flap constants)"
+  },
+  "determinism_comparison": {
+    "fixed_step_60hz_on_720hz_grid_max_drift_px": {
+      "max": 0,
+      "median": 0,
+      "mean": 0,
+      "sd": 0,
+      "ci95": [
+        0,
+        0
+      ]
+    },
+    "variable_dt_baseline_max_drift_px": {
+      "max": 4.782547,
+      "median": 3.855386,
+      "mean": 3.9440297976647374,
+      "sd": 0.34783687548942643,
+      "ci95": [
+        3.81955797034679,
+        4.068501624982685
+      ]
+    },
+    "paired_wins_fixed_over_variable": 30,
+    "paired_losses": 0,
+    "exact_sign_test_p": 1.862645149230957e-9,
+    "holm_bonferroni_p": 3.725290298461914e-9
+  },
+  "pure_simulation_step_latency_us": {
+    "sample_count": 5400,
+    "median": 0.5,
+    "p95": 2.1,
+    "p99": 5.3,
+    "max": 316.4,
+    "mean": 1.008,
+    "ci95": [
+      0.818,
+      1.199
+    ],
+    "budget_us_at_60hz": 16666.67,
+    "budget_us_at_144hz": 6944.44,
+    "individual_step_budget_violations_60hz": 0,
+    "seeds_all_steps_under_60hz_budget": 30,
+    "holm_bonferroni_p_under_budget": 3.725290298461914e-9
+  },
+  "amortized_whole_loop_us_per_step": {
+    "note": "Includes input polling and headless present()/draw() calls at display refresh rate; quantiles are across 30 per-seed run averages.",
+    "hz60_run_averages": {
+      "median": 3.92,
+      "p95": 10.15,
+      "max": 11.17
+    },
+    "hz144_run_averages": {
+      "median": 10.31,
+      "p95": 13.14,
+      "max": 29.93
+    }
+  },
+  "pool_churn_10k_cycles": {
+    "repetitions": 5,
+    "raw_elapsed_ms": [
+      14.8,
+      17.02,
+      20.63,
+      19.22,
+      16.04
+    ],
+    "median_elapsed_ms": 17.02,
+    "mean_elapsed_ms": 17.54,
+    "ci95_elapsed_ms": [
+      15.47,
+      19.62
+    ],
+    "median_us_per_cycle": 1.7,
+    "conservation_violations": 0
+  },
+  "raw_seed_observations": [
+    {
+      "seed": 20261101,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        517,
+        1007,
+        1503,
+        1886,
+        2385
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.964827,
+      "pure_sim_step_median_us": 0.8,
+      "pure_sim_step_p95_us": 4.2,
+      "pure_sim_step_max_us": 8.2,
+      "whole_loop_60hz_mean_us_per_step": 5.203,
+      "whole_loop_144hz_mean_us_per_step": 14.957
+    },
+    {
+      "seed": 20261102,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        408,
+        1018,
+        1511,
+        1905,
+        2399
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.410518,
+      "pure_sim_step_median_us": 0.7,
+      "pure_sim_step_p95_us": 3.5,
+      "pure_sim_step_max_us": 316.4,
+      "whole_loop_60hz_mean_us_per_step": 7.012,
+      "whole_loop_144hz_mean_us_per_step": 10.232
+    },
+    {
+      "seed": 20261103,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        526,
+        995,
+        1493,
+        1967,
+        2491
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.669863,
+      "pure_sim_step_median_us": 0.6,
+      "pure_sim_step_p95_us": 2.7,
+      "pure_sim_step_max_us": 28.4,
+      "whole_loop_60hz_mean_us_per_step": 9.045,
+      "whole_loop_144hz_mean_us_per_step": 13.139
+    },
+    {
+      "seed": 20261104,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        371,
+        884,
+        1477,
+        1905,
+        2452
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.271986,
+      "pure_sim_step_median_us": 0.7,
+      "pure_sim_step_p95_us": 2.6,
+      "pure_sim_step_max_us": 6.8,
+      "whole_loop_60hz_mean_us_per_step": 4.672,
+      "whole_loop_144hz_mean_us_per_step": 10.421
+    },
+    {
+      "seed": 20261105,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        379,
+        894,
+        1442,
+        2014,
+        2476
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.848575,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.7,
+      "pure_sim_step_max_us": 205.4,
+      "whole_loop_60hz_mean_us_per_step": 3.531,
+      "whole_loop_144hz_mean_us_per_step": 7.051
+    },
+    {
+      "seed": 20261106,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        481,
+        1022,
+        1423,
+        1900,
+        2500
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.706548,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.3,
+      "pure_sim_step_max_us": 3.2,
+      "whole_loop_60hz_mean_us_per_step": 2.935,
+      "whole_loop_144hz_mean_us_per_step": 6.899
+    },
+    {
+      "seed": 20261107,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        423,
+        999,
+        1397,
+        1933,
+        2422
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.264265,
+      "pure_sim_step_median_us": 0.4,
+      "pure_sim_step_p95_us": 0.9,
+      "pure_sim_step_max_us": 2.9,
+      "whole_loop_60hz_mean_us_per_step": 2.903,
+      "whole_loop_144hz_mean_us_per_step": 6.914
+    },
+    {
+      "seed": 20261108,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        411,
+        891,
+        1434,
+        1926,
+        2467
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.826679,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.4,
+      "pure_sim_step_max_us": 8.5,
+      "whole_loop_60hz_mean_us_per_step": 11.171,
+      "whole_loop_144hz_mean_us_per_step": 29.925
+    },
+    {
+      "seed": 20261109,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        417,
+        978,
+        1456,
+        2023,
+        2392
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.555928,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.6,
+      "pure_sim_step_max_us": 4.5,
+      "whole_loop_60hz_mean_us_per_step": 4.219,
+      "whole_loop_144hz_mean_us_per_step": 9.554
+    },
+    {
+      "seed": 20261110,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        473,
+        947,
+        1414,
+        1882,
+        2523
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.557273,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.3,
+      "pure_sim_step_max_us": 5.3,
+      "whole_loop_60hz_mean_us_per_step": 4.641,
+      "whole_loop_144hz_mean_us_per_step": 6.914
+    },
+    {
+      "seed": 20261111,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        416,
+        1001,
+        1388,
+        1938,
+        2421
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.257683,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 0.9,
+      "pure_sim_step_max_us": 3.1,
+      "whole_loop_60hz_mean_us_per_step": 2.912,
+      "whole_loop_144hz_mean_us_per_step": 7.3
+    },
+    {
+      "seed": 20261112,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        389,
+        948,
+        1404,
+        1906,
+        2371
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.380665,
+      "pure_sim_step_median_us": 0.55,
+      "pure_sim_step_p95_us": 2.6,
+      "pure_sim_step_max_us": 7.1,
+      "whole_loop_60hz_mean_us_per_step": 2.789,
+      "whole_loop_144hz_mean_us_per_step": 5.608
+    },
+    {
+      "seed": 20261113,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        376,
+        1006,
+        1476,
+        2003,
+        2413
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.14922,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.8,
+      "pure_sim_step_max_us": 4.9,
+      "whole_loop_60hz_mean_us_per_step": 3.247,
+      "whole_loop_144hz_mean_us_per_step": 7.664
+    },
+    {
+      "seed": 20261114,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        485,
+        1018,
+        1514,
+        1914,
+        2457
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.87152,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.5,
+      "pure_sim_step_max_us": 5.8,
+      "whole_loop_60hz_mean_us_per_step": 3.185,
+      "whole_loop_144hz_mean_us_per_step": 8.152
+    },
+    {
+      "seed": 20261115,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        511,
+        898,
+        1439,
+        1903,
+        2379
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.699972,
+      "pure_sim_step_median_us": 0.7,
+      "pure_sim_step_p95_us": 1.9,
+      "pure_sim_step_max_us": 7.9,
+      "whole_loop_60hz_mean_us_per_step": 3.388,
+      "whole_loop_144hz_mean_us_per_step": 12.023
+    },
+    {
+      "seed": 20261116,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        405,
+        939,
+        1436,
+        1923,
+        2479
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.068568,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.6,
+      "pure_sim_step_max_us": 244.8,
+      "whole_loop_60hz_mean_us_per_step": 3.159,
+      "whole_loop_144hz_mean_us_per_step": 10.641
+    },
+    {
+      "seed": 20261117,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        389,
+        942,
+        1438,
+        1908,
+        2379
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.363755,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.2,
+      "pure_sim_step_max_us": 4.2,
+      "whole_loop_60hz_mean_us_per_step": 3.344,
+      "whole_loop_144hz_mean_us_per_step": 10.507
+    },
+    {
+      "seed": 20261118,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        491,
+        976,
+        1417,
+        1954,
+        2395
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.799763,
+      "pure_sim_step_median_us": 0.6,
+      "pure_sim_step_p95_us": 2.4,
+      "pure_sim_step_max_us": 8.9,
+      "whole_loop_60hz_mean_us_per_step": 3.102,
+      "whole_loop_144hz_mean_us_per_step": 7.837
+    },
+    {
+      "seed": 20261119,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        423,
+        1029,
+        1506,
+        1890,
+        2453
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.420136,
+      "pure_sim_step_median_us": 0.7,
+      "pure_sim_step_p95_us": 2.6,
+      "pure_sim_step_max_us": 6.5,
+      "whole_loop_60hz_mean_us_per_step": 3.757,
+      "whole_loop_144hz_mean_us_per_step": 10.952
+    },
+    {
+      "seed": 20261120,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        472,
+        871,
+        1385,
+        1883,
+        2514
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.699897,
+      "pure_sim_step_median_us": 0.6,
+      "pure_sim_step_p95_us": 2.5,
+      "pure_sim_step_max_us": 5,
+      "whole_loop_60hz_mean_us_per_step": 7.027,
+      "whole_loop_144hz_mean_us_per_step": 11.04
+    },
+    {
+      "seed": 20261121,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        525,
+        1000,
+        1404,
+        2003,
+        2388
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.136025,
+      "pure_sim_step_median_us": 0.6,
+      "pure_sim_step_p95_us": 1.9,
+      "pure_sim_step_max_us": 5.6,
+      "whole_loop_60hz_mean_us_per_step": 7.131,
+      "whole_loop_144hz_mean_us_per_step": 9.915
+    },
+    {
+      "seed": 20261122,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        400,
+        921,
+        1506,
+        1942,
+        2530
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.726752,
+      "pure_sim_step_median_us": 0.6,
+      "pure_sim_step_p95_us": 2.4,
+      "pure_sim_step_max_us": 11.4,
+      "whole_loop_60hz_mean_us_per_step": 4.384,
+      "whole_loop_144hz_mean_us_per_step": 12.583
+    },
+    {
+      "seed": 20261123,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        470,
+        988,
+        1401,
+        1924,
+        2483
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.862197,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.8,
+      "pure_sim_step_max_us": 10.4,
+      "whole_loop_60hz_mean_us_per_step": 10.152,
+      "whole_loop_144hz_mean_us_per_step": 10.532
+    },
+    {
+      "seed": 20261124,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        522,
+        999,
+        1483,
+        1942,
+        2393
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.665219,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 1.4,
+      "pure_sim_step_max_us": 6.6,
+      "whole_loop_60hz_mean_us_per_step": 3.736,
+      "whole_loop_144hz_mean_us_per_step": 11.653
+    },
+    {
+      "seed": 20261125,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        382,
+        994,
+        1468,
+        1917,
+        2510
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.191251,
+      "pure_sim_step_median_us": 0.9,
+      "pure_sim_step_p95_us": 3.2,
+      "pure_sim_step_max_us": 18.1,
+      "whole_loop_60hz_mean_us_per_step": 10.358,
+      "whole_loop_144hz_mean_us_per_step": 8.688
+    },
+    {
+      "seed": 20261126,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        373,
+        994,
+        1503,
+        1957,
+        2527
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.782547,
+      "pure_sim_step_median_us": 0.5,
+      "pure_sim_step_p95_us": 2.4,
+      "pure_sim_step_max_us": 39.2,
+      "whole_loop_60hz_mean_us_per_step": 4.082,
+      "whole_loop_144hz_mean_us_per_step": 11.313
+    },
+    {
+      "seed": 20261127,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        486,
+        943,
+        1511,
+        1912,
+        2412
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.551109,
+      "pure_sim_step_median_us": 0.4,
+      "pure_sim_step_p95_us": 1.4,
+      "pure_sim_step_max_us": 7.8,
+      "whole_loop_60hz_mean_us_per_step": 5.515,
+      "whole_loop_144hz_mean_us_per_step": 8.698
+    },
+    {
+      "seed": 20261128,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        375,
+        939,
+        1388,
+        1874,
+        2512
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.843291,
+      "pure_sim_step_median_us": 0.4,
+      "pure_sim_step_p95_us": 0.6,
+      "pure_sim_step_max_us": 3.3,
+      "whole_loop_60hz_mean_us_per_step": 3.392,
+      "whole_loop_144hz_mean_us_per_step": 10.477
+    },
+    {
+      "seed": 20261129,
+      "execution_order": "60_then_144",
+      "flap_ms": [
+        478,
+        930,
+        1494,
+        1917,
+        2438
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 4.025099,
+      "pure_sim_step_median_us": 0.3,
+      "pure_sim_step_p95_us": 0.6,
+      "pure_sim_step_max_us": 11,
+      "whole_loop_60hz_mean_us_per_step": 5.921,
+      "whole_loop_144hz_mean_us_per_step": 9.993
+    },
+    {
+      "seed": 20261130,
+      "execution_order": "144_then_60",
+      "flap_ms": [
+        468,
+        895,
+        1400,
+        1918,
+        2467
+      ],
+      "fixed_max_drift_px": 0,
+      "variable_dt_max_drift_px": 3.749762,
+      "pure_sim_step_median_us": 0.3,
+      "pure_sim_step_p95_us": 0.6,
+      "pure_sim_step_max_us": 5.6,
+      "whole_loop_60hz_mean_us_per_step": 3.735,
+      "whole_loop_144hz_mean_us_per_step": 10.397
+    }
+  ]
+}

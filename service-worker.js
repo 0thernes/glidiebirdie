@@ -8,7 +8,7 @@ const sw = /** @type {any} */ (self);
 // Cache version is tied to package.json `version` and verified in CI
 // (tests/smoke-test.mjs). Bumping the release always invalidates the offline
 // shell, so a returning player can never be pinned to a stale build.
-const CACHE_NAME = 'glidiebirdie-v3.1.0';
+const CACHE_NAME = 'glidiebirdie-v3.2.0';
 const APP_SHELL = Object.freeze([
   './',
   './index.html',

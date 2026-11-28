@@ -16,13 +16,15 @@ Desktop.ini
 
 # Dependency and build output
 node_modules/
-dist/
 build/
 coverage/
 test-results/
 playwright-report/
 .parcel-cache/
 .vite/
+lean/.lake/
+paper/build/
+_site/
 
 # Logs and runtime dumps
 *.log

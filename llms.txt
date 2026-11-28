@@ -1,0 +1,14 @@
+# GlidieBirdie v3.2.0
+
+> Zero-runtime-dependency, no-bundler deterministic 60 Hz fixed-step (720 Hz tick grid) browser flyer (20 native ES2022 modules, procedural Web Audio with idle power-gating, demand-driven 0 FPS sleep, automated WCAG 2.2 AA across 4 views, PWA) with 68 pure Lean 4.35.0 proofs across 6 kernels (plus live negative kernel tamper test), a C11 differential oracle (1M fuzz cases), 16/16 surgical mutation tests, and an AMS-LaTeX Build White Paper.
+
+- Canonical agent rules: [AGENTS.md](AGENTS.md)
+- Full LLM bundle: [llms-full.txt](llms-full.txt)
+- Claims & falsification ledger: [CLAIMS.md](CLAIMS.md)
+- Honest limitations: [LIMITATIONS.md](LIMITATIONS.md)
+- Replication protocol: [REPLICATION.md](REPLICATION.md)
+- Build Standard v1.2.0 manifest: [repo.yaml](repo.yaml)
+- Formal Lean 4.35.0 core (68 theorems): [lean/README.md](lean/README.md)
+- Build White Paper PDF: [dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf](dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf)
+- Live browser deployment: https://0thernes.github.io/glidiebirdie/
+- Source repository: https://github.com/0thernes/glidiebirdie

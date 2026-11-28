@@ -1,5 +1,5 @@
 /** Guarded localStorage. All persistence goes through these helpers. */
-import { SETTING_LEVELS, THEMES } from './config.js';
+import { ACHIEVEMENT_IDS, SETTING_LEVELS, THEMES } from './config.js';
 
 export const STORAGE_SCHEMA = '3';
 export const SK = Object.freeze({
@@ -72,8 +72,9 @@ export function migrateLegacyStorage() {
  * @param {number} prevStreak @param {number} lastDay @param {number} today @param {number} yesterday
  */
 export function nextDayStreak(prevStreak, lastDay, today, yesterday) {
-  if (lastDay === today) return prevStreak;
-  if (lastDay === yesterday) return prevStreak + 1;
+  const safePrev = Number.isFinite(prevStreak) && prevStreak >= 0 ? Math.floor(prevStreak) : 0;
+  if (lastDay === today) return safePrev;
+  if (lastDay === yesterday) return safePrev + 1;
   return 1;
 }
 
@@ -90,7 +91,9 @@ export function readStoredChoice(key, choices, fallback) {
 /** @param {number} value @param {number} fallback @param {number} min @param {number} max */
 export function clampNumber(value, fallback, min = -Infinity, max = Infinity) {
   if (!Number.isFinite(value)) return fallback;
-  return Math.min(max, Math.max(min, value));
+  if (Number.isNaN(min) || Number.isNaN(max) || min > max) return fallback;
+  const clamped = Math.min(max, Math.max(min, value));
+  return Number.isFinite(clamped) ? clamped : fallback;
 }
 
 export function readStoredNumber(key, fallback, min = -Infinity, max = Infinity) {
@@ -142,7 +145,9 @@ export function readScoreHistory() {
 export function readUnlockedAchievements() {
   try {
     const parsed = JSON.parse(localStorage.getItem(SK.unlocked) || '[]');
-    return Array.isArray(parsed) ? new Set(parsed.filter((s) => typeof s === 'string')) : new Set();
+    return Array.isArray(parsed)
+      ? new Set(parsed.filter((s) => typeof s === 'string' && ACHIEVEMENT_IDS.includes(s)))
+      : new Set();
   } catch {
     return new Set();
   }

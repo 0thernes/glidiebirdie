@@ -18,10 +18,20 @@ const textFiles = {
   serviceWorker: await readFile('service-worker.js', 'utf8'),
   workflow: await readFile('.github/workflows/ci.yml', 'utf8'),
   changelog: await readFile('CHANGELOG.md', 'utf8'),
+  agentsMd: await readFile('AGENTS.md', 'utf8'),
   claudeMd: await readFile('CLAUDE.md', 'utf8'),
+  versionFile: (await readFile('VERSION', 'utf8')).trim(),
+  citationCff: await readFile('CITATION.cff', 'utf8'),
 };
 
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+assert.equal(textFiles.versionFile, pkg.version, 'VERSION file must match package.json version');
+const escapedVer = pkg.version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+assert.match(
+  textFiles.citationCff,
+  new RegExp(`^version:\\s*(?:"${escapedVer}"|'${escapedVer}'|${escapedVer})\\s*(?:#.*)?$`, 'm'),
+  'CITATION.cff version must match package.json version exactly',
+);
 
 // Syntax check
 const syntax = spawnSync(process.execPath, ['--check', 'game.js'], { encoding: 'utf8' });
@@ -30,6 +40,10 @@ const swSyntax = spawnSync(process.execPath, ['--check', 'service-worker.js'], {
   encoding: 'utf8',
 });
 assert.equal(swSyntax.status, 0, swSyntax.stderr || swSyntax.stdout);
+const serverSyntax = spawnSync(process.execPath, ['--check', 'tools/static-server.mjs'], {
+  encoding: 'utf8',
+});
+assert.equal(serverSyntax.status, 0, serverSyntax.stderr || serverSyntax.stdout);
 await assert.rejects(
   access('.github/.memory'),
   { code: 'ENOENT' },
@@ -79,10 +93,18 @@ assert.match(
 );
 // Dynamic: the service-worker cache version must track package.json so a release
 // bump always invalidates the offline shell (no stale-cache after an update).
-assert.match(
-  textFiles.serviceWorker,
-  new RegExp(`CACHE_NAME\\s*=\\s*["']glidiebirdie-v${pkg.version.replace(/\./g, '\\.')}["']`),
+const cacheNameMatch = textFiles.serviceWorker.match(/CACHE_NAME\s*=\s*["']([^"']+)["']/);
+assert.equal(
+  cacheNameMatch?.[1],
+  `glidiebirdie-v${pkg.version}`,
   `service worker cache version must match package.json version (${pkg.version})`,
+);
+const appShellMatch = textFiles.serviceWorker.match(
+  /const\s+APP_SHELL\s*=\s*(?:Object\.freeze\s*\(\s*)?\[([\s\S]*?)\]\s*\)?;/,
+);
+assert.ok(appShellMatch, 'service worker APP_SHELL array missing');
+const appShellEntries = new Set(
+  Array.from(appShellMatch[1].matchAll(/['"]([^'"]+)['"]/g), (m) => m[1]),
 );
 for (const shellFile of [
   './',
@@ -90,14 +112,19 @@ for (const shellFile of [
   './style.css',
   './game.js',
   './manifest.webmanifest',
+  './docs/assets/icon-180.png',
+  './docs/assets/icon-192.png',
+  './docs/assets/icon-512.png',
   ...srcNames.map((name) => `./src/${name}`),
 ]) {
-  assert.match(
-    textFiles.serviceWorker,
-    new RegExp(shellFile.replace(/[./]/g, '\\$&')),
-    `service worker shell missing ${shellFile}`,
-  );
+  assert.ok(appShellEntries.has(shellFile), `service worker APP_SHELL missing ${shellFile}`);
 }
+const lastLayerIdx = textFiles.css.lastIndexOf('@layer ');
+const reducedTranspIdx = textFiles.css.indexOf('@media (prefers-reduced-transparency: reduce)');
+assert.ok(
+  reducedTranspIdx > lastLayerIdx,
+  'prefers-reduced-transparency rule must sit unlayered after @layer blocks',
+);
 
 // Tutorial + fullscreen + daily seed + reset stats + audio test
 assert.match(textFiles.html, /id="tutorialOverlay"/, 'tutorial overlay missing');
@@ -196,11 +223,12 @@ for (const marker of forbiddenSecretMarkers) {
   );
 }
 
-// README + CHANGELOG + CLAUDE.md sanity
+// README + CHANGELOG + AGENTS.md + CLAUDE.md sanity
 assert.match(textFiles.readme, /Customizer/i, 'README should mention the customizer');
 assert.match(textFiles.readme, /Feather Shield/i, 'README should mention the shield');
 assert.match(textFiles.changelog, /2\.0\.0/, 'CHANGELOG should include v2.0.0');
-assert.match(textFiles.claudeMd, /Hard rules/, 'CLAUDE.md should declare hard rules');
+assert.match(textFiles.agentsMd, /Hard Rules/i, 'AGENTS.md should declare hard rules');
+assert.match(textFiles.claudeMd, /@AGENTS\.md/, 'CLAUDE.md must import @AGENTS.md (Build Standard A32)');
 assert.match(textFiles.workflow, /npm run check/, 'CI must run npm run check');
 // Pin-agnostic: matches a version tag (@v4) or a SHA pin (@<40 hex>) so Dependabot bumps don't break this.
 assert.match(textFiles.workflow, /actions\/setup-node@\S+/, 'CI must configure Node.js');

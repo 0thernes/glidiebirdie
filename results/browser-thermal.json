@@ -1,0 +1,69 @@
+{
+  "targetDir": ".",
+  "viewport": "1280x860@2x",
+  "cssAudit": {
+    "backdropFilterElements": 1,
+    "bodyBeforeAnimation": "none",
+    "canvasWillChange": "auto"
+  },
+  "idleStart": {
+    "label": "idle_start_2.5s",
+    "durationMs": 2500,
+    "frames": 152,
+    "fps": 60.8,
+    "taskMs": 960.3,
+    "scriptMs": 51.49,
+    "recalcStyleMs": 0,
+    "layoutMs": 0,
+    "taskMsPerFrame": 6.318,
+    "scriptMsPerFrame": 0.339,
+    "recalcStyleCount": 0,
+    "layoutCount": 0,
+    "jsHeapMB": 1.4
+  },
+  "idlePaused": {
+    "label": "idle_paused_2.5s",
+    "durationMs": 2500,
+    "frames": 0,
+    "fps": 0,
+    "taskMs": 1.4,
+    "scriptMs": 0.96,
+    "recalcStyleMs": 0,
+    "layoutMs": 0,
+    "taskMsPerFrame": 0,
+    "scriptMsPerFrame": 0,
+    "recalcStyleCount": 0,
+    "layoutCount": 0,
+    "jsHeapMB": 2.39
+  },
+  "activeRain": {
+    "label": "active_rain_2.5s",
+    "durationMs": 2500,
+    "frames": 158,
+    "fps": 63.2,
+    "taskMs": 1294.47,
+    "scriptMs": 102.35,
+    "recalcStyleMs": 0.35,
+    "layoutMs": 2.76,
+    "taskMsPerFrame": 8.193,
+    "scriptMsPerFrame": 0.648,
+    "recalcStyleCount": 3,
+    "layoutCount": 3,
+    "jsHeapMB": 2.59
+  },
+  "activeMeadow": {
+    "label": "active_meadow_2.5s",
+    "durationMs": 2500,
+    "frames": 157,
+    "fps": 62.8,
+    "taskMs": 1847.71,
+    "scriptMs": 85.18,
+    "recalcStyleMs": 0.23,
+    "layoutMs": 1.43,
+    "taskMsPerFrame": 11.769,
+    "scriptMsPerFrame": 0.543,
+    "recalcStyleCount": 3,
+    "layoutCount": 3,
+    "jsHeapMB": 2.9
+  }
+}

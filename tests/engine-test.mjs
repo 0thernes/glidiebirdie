@@ -10,12 +10,21 @@ const {
   CONFIG,
   LEGACY_KEY_MAP,
   SK,
+  SPRITE_CACHE,
   activeParticles,
+  activeWeather,
   bird,
   checkAchievements,
   circleHitsRect,
+  clearWeatherPool,
+  configureCanvasForDPR,
+  control,
   dateSeed,
   doFlap,
+  dom,
+  drawPostcard,
+  ensureAudio,
+  freeWeather,
   gameOver,
   ground,
   initObjectPools,
@@ -23,23 +32,37 @@ const {
   loop,
   mulberry32,
   nextDayStreak,
+  padDown,
   pipes,
+  playToneAt,
+  pollGamepad,
   readPlayedThemes,
   readScoreHistory,
   readStoredNumber,
   readUnlockedAchievements,
+  rebuildBirdCache,
+  rebuildSkyCache,
+  resetGame,
+  resetStats,
   setSeededRNG,
   setUnseededRNG,
+  shouldContinueLoop,
   sim,
   spawnParticles,
   spawnPipe,
+  spawnWeatherParticle,
   spawnWeatherParticles,
   startGame,
   state,
+  stepSimulation,
+  toggleMute,
+  togglePause,
+  togglePostcard,
   updateBird,
   updateEmotion,
   updatePipes,
   updateShieldBubbles,
+  view,
   writeStoredValue,
 } = api;
 
@@ -269,6 +292,305 @@ setUnseededRNG();
 state.reducedMotion = false;
 state.theme = 'sunset';
 pipes.length = 0;
+
+// Weather pool free-list conservation
+{
+  initObjectPools();
+  for (let i = 0; i < 60; i++) spawnWeatherParticle(20, 20, 0, 1, 'rain', 1, 5, 1);
+  expect(
+    'weather pool conserves slots while active',
+    freeWeather.length + activeWeather.length === CONFIG.WEATHER_POOL && activeWeather.length === 60,
+  );
+  clearWeatherPool();
+  expect(
+    'clearWeatherPool recycles all active slots back to freeWeather',
+    activeWeather.length === 0 && freeWeather.length === CONFIG.WEATHER_POOL,
+  );
+}
+
+// Afterglow seconds timer + unconditional gameOver stats persistence + shake/particle decay
+{
+  resetGame();
+  startGame();
+  state.score = 18;
+  state.runSec = 30;
+  state.reducedMotion = false;
+  localStorage.removeItem(SK.scoreHistory);
+  localStorage.removeItem(SK.longest);
+  gameOver();
+  expect('worthy run enters afterglow', state.afterglowActive === true);
+  expect(
+    'gameOver persists scoreHistory and longestSurvival even when entering afterglow',
+    JSON.parse(localStorage.getItem(SK.scoreHistory) || '[]').includes(18) &&
+      Number(localStorage.getItem(SK.longest)) === 30,
+  );
+  const initialTimer = state.afterglowTimer;
+  const p0 = activeParticles[0];
+  const p0Life = p0 ? p0.life : 0;
+  state.clockReady = false;
+  loop(2000);
+  for (let f = 1; f <= 10; f++) loop(2000 + f * (1000 / 60));
+  expect(
+    'afterglowTimer decrements in seconds (still active after 10 frames)',
+    state.afterglowActive === true && state.afterglowTimer > 3.9 && state.afterglowTimer < initialTimer,
+  );
+  for (let f = 11; f <= 80; f++) loop(2000 + f * (1000 / 60));
+  expect('gameOver screen shake decays to 0 instead of shaking indefinitely', state.shakeAmount === 0);
+  expect(
+    'gameOver death/celebration particles advance and decay',
+    !p0 || !p0.active || p0.life < p0Life,
+  );
+}
+
+// Hitch backlog drop never extrapolates view.alpha > 1
+{
+  resetGame();
+  startGame();
+  state.clockReady = false;
+  loop(5000);
+  loop(5500);
+  expect('hitch recovery clamps view.alpha to [0, 1]', view.alpha >= 0 && view.alpha <= 1);
+}
+
+// Postcard pose safety + cleanup on resetGame and gameOver
+{
+  resetGame();
+  startGame();
+  togglePostcard();
+  bird.y = 500;
+  bird.rotation = 0.3;
+  drawPostcard();
+  expect(
+    'drawPostcard leaves bird simulation coordinates intact',
+    bird.x === CONFIG.BIRD_X && bird.y === 500 && bird.rotation === 0.3,
+  );
+  resetGame();
+  expect('resetGame clears postcardMode', state.postcardMode === false);
+  startGame();
+  togglePostcard();
+  state.reducedMotion = true;
+  gameOver();
+  expect('gameOver clears postcardMode', state.postcardMode === false);
+  state.reducedMotion = false;
+}
+
+// Persisted achievements stay visually unlocked on reload + resetStats restores fresh progress
+{
+  resetStats();
+  state.unlockedAchievements = new Set(['ZenMaster']);
+  state.score = 0;
+  checkAchievements();
+  const zenEl = document.getElementById('achZenMaster');
+  expect(
+    'previously unlocked achievements retain .unlocked class after reload',
+    zenEl?.classList.contains('unlocked') === true,
+  );
+  resetStats();
+  expect(
+    'resetStats clears .unlocked class and re-renders fresh progress',
+    zenEl?.classList.contains('unlocked') === false &&
+      zenEl?.querySelector('.achievement-progress')?.textContent === '0/15',
+  );
+}
+
+// Gamepad starts a run from start screen and resumes from pause
+{
+  const prevGetGamepads = navigator.getGamepads;
+  resetGame();
+  padDown.fill(false);
+  navigator.getGamepads = () => [{ buttons: [{ pressed: true }], axes: [0, 0] }];
+  pollGamepad(100);
+  expect('gamepad A starts a run from start phase', state.phase === 'play');
+  togglePause(true);
+  navigator.getGamepads = () => [{ buttons: [{ pressed: false }], axes: [0, 0] }];
+  pollGamepad(120);
+  navigator.getGamepads = () => [{ buttons: [{ pressed: true }], axes: [0, 0] }];
+  pollGamepad(140);
+  expect('gamepad A resumes from pause', state.paused === false);
+  navigator.getGamepads = prevGetGamepads;
+  padDown.fill(false);
+}
+
+// Eye tracking aims at actual shield bubble Y + zero-volume audio guard + scriptBrake reset
+{
+  resetGame();
+  startGame();
+  pipes.length = 0;
+  pipes.push({
+    x: bird.x + 80,
+    topHeight: 40,
+    baseTopHeight: 40,
+    passed: false,
+    isMoving: false,
+    movePhase: 0,
+    color: '#0f0',
+    capColor: '#090',
+    nearMissRecorded: false,
+    shieldBubble: { radius: 16, pulse: 0 },
+  });
+  bird.y = 450;
+  bird.pupilOffsetY = 0;
+  updateBird();
+  expect('bird eye tracking aims vertically toward shield bubble', bird.pupilOffsetY < 0);
+
+  ensureAudio();
+  const origCreateOsc = AudioContext.prototype.createOscillator;
+  let oscCount = 0;
+  AudioContext.prototype.createOscillator = function () {
+    oscCount++;
+    return origCreateOsc.call(this);
+  };
+  try {
+    playToneAt(440, 0.1, 'sine', 0, 0);
+    expect('zero-volume playToneAt skips scheduling an oscillator', oscCount === 0);
+    playToneAt(440, 0.1, 'sine', 0.1, 0);
+    expect('positive-volume playToneAt schedules an oscillator', oscCount === 1);
+  } finally {
+    AudioContext.prototype.createOscillator = origCreateOsc;
+  }
+
+  control.scriptBrake = true;
+  resetGame();
+  expect('resetGame clears stale scriptBrake before syncLocomotion', bird.isBraking === false);
+}
+
+// resetStats after a scoring run does not re-grant milestones, and gameOver freezes time under reducedMotion
+{
+  resetStats();
+  startGame();
+  state.score = 15;
+  state.brakeUseCount = 12;
+  state.diveUseCount = 12;
+  state.runNearMisses = 6;
+  state.reducedMotion = true;
+  gameOver();
+  expect('toast queue stays capped to at most 4 elements', (dom.toastContainer?.children.length ?? 0) <= 4);
+  resetStats();
+  expect(
+    'resetStats after a scoring run clears score and keeps achievements locked',
+    state.score === 0 &&
+      state.unlockedAchievements.has('FirstFlight') === false &&
+      state.unlockedAchievements.has('ZenMaster') === false &&
+      state.unlockedAchievements.has('BrakeMaster') === false,
+  );
+  checkAchievements();
+  expect(
+    'subsequent checkAchievements after resetStats does not re-grant FirstFlight',
+    state.unlockedAchievements.has('FirstFlight') === false,
+  );
+
+  // Mid-run paused resetStats preserves live run score without immediately re-granting milestones.
+  startGame();
+  state.score = 15;
+  state.paused = true;
+  resetStats();
+  expect(
+    'mid-run paused resetStats keeps achievements locked despite non-zero live score',
+    state.score === 15 &&
+      state.unlockedAchievements.has('FirstFlight') === false &&
+      state.unlockedAchievements.has('ZenMaster') === false,
+  );
+
+  startGame();
+  state.reducedMotion = true;
+  gameOver();
+  state.clockReady = true;
+  state.lastTimestamp = 6000;
+  const frozenTime = state.time;
+  loop(6050);
+  expect('gameOver freezes decorative state.time under prefers-reduced-motion', state.time === frozenTime);
+  state.reducedMotion = false;
+  loop(6100);
+  expect('gameOver advances state.time when motion is allowed', state.time > frozenTime);
+}
+
+// Thermal/power-efficiency, DPR resize guard, audio power-gating, detached pupil fix, & 144 Hz pipe interpolation
+{
+  // 1. Demand-driven idle scheduler sleeps on pause and hidden tab, stays active in play and live postcard
+  startGame();
+  state.reducedMotion = false;
+  document.hidden = false;
+  expect('shouldContinueLoop is true during active unpaused play', shouldContinueLoop() === true);
+  togglePause(true);
+  expect('shouldContinueLoop sleeps (false) when paused without postcard', shouldContinueLoop() === false);
+  togglePostcard();
+  expect('shouldContinueLoop stays active for live animated postcard', shouldContinueLoop() === true);
+  state.reducedMotion = true;
+  expect('shouldContinueLoop sleeps for reduced-motion postcard', shouldContinueLoop() === false);
+  togglePostcard();
+  togglePause(false);
+  document.hidden = true;
+  expect('shouldContinueLoop sleeps immediately when document.hidden is true', shouldContinueLoop() === false);
+  document.hidden = false;
+  state.reducedMotion = false;
+
+  // 2. Identical-DPR resize drag skips redundant offscreen cache rebuilds
+  configureCanvasForDPR(true);
+  expect('configureCanvasForDPR returns false on identical-DPR resize', configureCanvasForDPR() === false);
+
+  // 3. Lazy per-theme bird cache pre-warms only the 5 active-theme emotions (not all 25)
+  state.theme = 'sunset';
+  rebuildBirdCache('sunset');
+  expect('lazy rebuildBirdCache builds only active theme emotions (5 sprites)', Object.keys(SPRITE_CACHE.bird).length === 5);
+
+  // 4. Sky cache stays stable across score brackets (no pointless reallocation every 5 points)
+  SPRITE_CACHE.sky = null;
+  SPRITE_CACHE.skyKey = '';
+  state.score = 0;
+  rebuildSkyCache();
+  const sky0 = SPRITE_CACHE.sky;
+  state.score = 15;
+  rebuildSkyCache();
+  expect('rebuildSkyCache does not reallocate sky across score changes', SPRITE_CACHE.sky === sky0);
+
+  // 5. Detached pupil regression (F40): default gaze stays comfortably inside the 8 px sclera
+  resetGame();
+  startGame();
+  pipes.length = 0;
+  sim.nearestPipeCache = null;
+  bird.pupilOffsetX = 0;
+  bird.pupilOffsetY = 0;
+  for (let i = 0; i < 60; i++) updateBird();
+  expect(
+    'bird default gaze stays comfortably inside sclera with zero pipes',
+    bird.pupilOffsetX > 0 && bird.pupilOffsetX <= 2.8 && Math.hypot(bird.pupilOffsetX, bird.pupilOffsetY) <= 3.7,
+    `pupil=(${bird.pupilOffsetX.toFixed(2)}, ${bird.pupilOffsetY.toFixed(2)})`,
+  );
+
+  // 6. Moving pipe vertical interpolation tracks prevTopHeight across stepSimulation (F26)
+  resetGame();
+  startGame();
+  pipes.length = 0;
+  pipes.push({
+    x: 300,
+    prevX: 300,
+    topHeight: 160,
+    prevTopHeight: 160,
+    baseTopHeight: 160,
+    passed: false,
+    isMoving: true,
+    movePhase: 0,
+    color: '#0f0',
+    capColor: '#090',
+    nearMissRecorded: false,
+    shieldBubble: null,
+  });
+  stepSimulation(12);
+  expect(
+    'moving pipe records prevTopHeight before advancing topHeight',
+    pipes[0].prevTopHeight === 160 && pipes[0].topHeight !== 160,
+    `prev=${pipes[0].prevTopHeight}, cur=${pipes[0].topHeight}`,
+  );
+
+  // 7. AudioContext power-gating suspends on mute to stop idle ConvolverNode FFT burn
+  state.audioEnabled = true;
+  ensureAudio();
+  expect('ensureAudio keeps AudioContext running', api.audioCtx?.state === 'running');
+  toggleMute();
+  expect('toggleMute suspends AudioContext to eliminate idle reverb CPU', api.audioCtx?.state === 'suspended');
+  toggleMute();
+  resetGame();
+}
 
 const failed = results.filter((r) => !r.pass);
 for (const r of results) {

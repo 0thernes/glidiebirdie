@@ -1,0 +1,30 @@
+{
+  "title": "GlidieBirdie v3.2.0: Zero-Dependency Fixed-Step 720 Hz Deterministic Browser Architecture & 6-Kernel Lean 4 Formal Core",
+  "description": "Zero-runtime-dependency, no-bundler native ES2022 browser game with exact 60/144 Hz deterministic 60 Hz fixed-step physics on a 720 Hz tick grid, procedural Web Audio, automated 4-view WCAG 2.2 AA accessibility, 68 zero-Mathlib Lean 4.35.0 theorems (6 kernels + negative tamper check), 2,000-case JS + 1,000,000-case C11 differential fuzzing, 16/16 mutation testing, and AMS-LaTeX Build White Paper. Developed with AI engineering assistance under human direction; not peer reviewed.",
+  "upload_type": "software",
+  "license": "mit",
+  "version": "3.2.0",
+  "publication_date": "2026-11-25",
+  "creators": [
+    {
+      "name": "Donahue, Alexander Stephen",
+      "orcid": "0009-0006-8168-9648"
+    }
+  ],
+  "keywords": [
+    "deterministic simulation",
+    "fixed-step game loop",
+    "native ES modules",
+    "Lean 4",
+    "formal verification",
+    "WCAG 2.2 AA",
+    "PWA"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/0thernes/glidiebirdie",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}

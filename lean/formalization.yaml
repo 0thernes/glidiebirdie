@@ -1,0 +1,31 @@
+schema_version: "1.0"
+project_name: "GlidieBirdieProofs"
+repository: "https://github.com/0thernes/glidiebirdie"
+version: "3.2.0"
+lean_toolchain: "leanprover/lean4:v4.35.0"
+dependencies: "none (zero Mathlib, zero external Lake packages)"
+license:
+  code: "MIT"
+  documentation: "CC-BY-4.0"
+authors:
+  - name: "Alexander Stephen Donahue"
+    orcid: "0009-0006-8168-9648"
+    affiliation: "Independent Researcher (0thernes project), Spokane, WA, USA"
+    email: "0_0@0thernes.art"
+origin: "Original software-verification formalization of GlidieBirdie v3.2.0 deterministic browser game engine invariants (no open mathematical conjecture solved; 0/1,900 Mega-Atlas problems retired)."
+automation_methods:
+  - "AI-assisted formalization and engineering under human direction (Antigravity / Gemini, Claude, Codex across v2–v3.2)."
+  - "Correctness of all 68 theorems (59 core + 9 constructive adversarial refutations; 19 zero-axiom) is mechanically certified by the Lean 4.35.0 kernel, independent 6-kernel replay (`lake comparator --config comparator.json --paranoid`), and a live negative kernel tamper test (`lean/scripts/verify-negative-kernel.sh`)."
+verification:
+  theorem_count: 68
+  zero_axiom_count: 19
+  challenge_module: "Challenge"
+  solution_module: "Solution"
+  comparator_config: "comparator.json"
+  negative_kernel_script: "scripts/verify-negative-kernel.sh"
+  permitted_axioms: ["propext", "Classical.choice", "Quot.sound"]
+  forbidden_tokens: ["sorry", "admit", "native_decide", "axiom", "implemented_by", "@[extern"]
+limitations:
+  - "Formalizes exact discrete integer/UInt32 specifications of the runtime algorithms; IEEE-754 floating-point rounding in browser canvas rendering and Web Audio synthesis is tested empirically via Node/Playwright rather than formalized over real/float64 arithmetic."
+  - "Not externally peer reviewed; mechanical kernel verification certifies proof validity relative to `Spec.lean`, not external mathematical novelty."
+review_status: "Self-audited + multi-kernel checked; awaiting independent external replication."

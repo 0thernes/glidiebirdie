@@ -1,8 +1,7 @@
 name: Release
 
-# Publishes a GitHub Release when a version tag is pushed.
-# This workflow does not create tags. A person cuts the tag on purpose:
-# see RELEASING.md.
+# Builds fresh release artifacts from the tagged commit, verifies checksums & SLSA provenance,
+# and publishes the GitHub Release when a version tag (v*) is pushed. See RELEASING.md.
 
 on:
   push:
@@ -10,21 +9,71 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
+    permissions:
+      # Required to publish the GitHub Release and sign SLSA provenance for freshly built assets.
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install tooling & run fresh benchmarks
+        run: |
+          npm ci
+          npm run check
+          npm run benchmark
+
+      - name: Install Tectonic & build fresh PDF and standalone arXiv bundle from tagged source
+        run: |
+          curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+          sudo mv tectonic /usr/local/bin/tectonic
+          mkdir -p /tmp/release-build /tmp/release-stage /tmp/release-assets
+          tectonic -X compile paper/main.tex --outdir /tmp/release-build --keep-intermediates
+          cp /tmp/release-build/main.pdf /tmp/release-assets/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf
+          cp paper/main.tex paper/references.bib /tmp/release-build/main.bbl /tmp/release-stage/
+          tar -czf /tmp/release-assets/arxiv_submission.tar.gz -C /tmp/release-stage main.tex main.bbl references.bib
+          cp results/benchmarks.json /tmp/release-assets/benchmarks.json
+          (
+            cd /tmp/release-assets
+            sha256sum \
+              Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf \
+              arxiv_submission.tar.gz \
+              benchmarks.json > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
+          cat /tmp/release-assets/SHA256SUMS
+
+      - name: Attest build provenance of freshly built release assets (SLSA)
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: |
+            /tmp/release-assets/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf
+            /tmp/release-assets/arxiv_submission.tar.gz
+            /tmp/release-assets/benchmarks.json
+            /tmp/release-assets/SHA256SUMS
 
       - name: Create the release from the tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
+            /tmp/release-assets/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf \
+            /tmp/release-assets/arxiv_submission.tar.gz \
+            /tmp/release-assets/benchmarks.json \
+            /tmp/release-assets/SHA256SUMS \
             --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME" \
             --generate-notes

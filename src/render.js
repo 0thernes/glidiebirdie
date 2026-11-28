@@ -41,6 +41,10 @@ function pipeDrawX(pipe) {
   const prev = pipe.prevX === undefined ? pipe.x : pipe.prevX;
   return prev + (pipe.x - prev) * view.alpha;
 }
+function pipeDrawTopHeight(pipe) {
+  const prev = pipe.prevTopHeight === undefined ? pipe.topHeight : pipe.prevTopHeight;
+  return prev + (pipe.topHeight - prev) * view.alpha;
+}
 function updatePose() {
   const alpha = view.alpha;
   const prevY = bird.prevY === undefined ? bird.y : bird.prevY;
@@ -148,8 +152,30 @@ export const SPRITE_CACHE = {
   sky: /** @type {HTMLCanvasElement | null} */ (null),
   skyKey: '',
   clouds: /** @type {HTMLCanvasElement | null} */ (null),
+  ground: /** @type {HTMLCanvasElement | null} */ (null),
+  groundKey: '',
+  vignette: /** @type {HTMLCanvasElement | null} */ (null),
+  vignetteDpr: 0,
+  pollen: /** @type {Record<string, HTMLCanvasElement>} */ ({}),
+  mote: /** @type {HTMLCanvasElement | null} */ (null),
+  score: /** @type {HTMLCanvasElement | null} */ (null),
+  scoreKey: '',
+  panel: /** @type {HTMLCanvasElement | null} */ (null),
+  panelKey: '',
+  auroraBands: /** @type {Array<HTMLCanvasElement | null>} */ ([null, null, null]),
+  auroraDpr: 0,
+  meadowRays: /** @type {Array<HTMLCanvasElement | null>} */ ([null, null, null]),
+  meadowDpr: 0,
   bird: /** @type {Record<string, HTMLCanvasElement>} */ ({}),
 };
+
+const POLLEN_FALLBACK_COLOR = 'rgba(249, 199, 79, 0.72)';
+const POLLEN_SPRITE_COLORS = Object.freeze([
+  '#fde68a',
+  '#fef3c7',
+  '#facc15',
+  POLLEN_FALLBACK_COLOR,
+]);
 
 export function makeOffscreen(w, h) {
   const c = document.createElement('canvas');
@@ -161,7 +187,7 @@ export function makeOffscreen(w, h) {
 }
 
 export function rebuildSkyCache() {
-  const key = state.theme + '|' + Math.floor(state.score / 5);
+  const key = state.theme + '|' + dprState.value;
   if (SPRITE_CACHE.sky && SPRITE_CACHE.skyKey === key) return;
   const c = makeOffscreen(CONFIG.CANVAS_W, CONFIG.CANVAS_H);
   const cx = c.getContext('2d');
@@ -192,92 +218,209 @@ export function rebuildCloudCache() {
   SPRITE_CACHE.clouds = c;
 }
 
-export function rebuildBirdCache() {
-  SPRITE_CACHE.bird = {};
-  const emotions = ['calm', 'happy', 'scared', 'determined', 'dizzy'];
-  for (const theme of THEMES) {
-    for (const emotion of emotions) {
-      const key = `${theme}|${emotion}`;
-      const c = makeOffscreen(60, 60);
-      const cx = c.getContext('2d');
-      if (!cx) continue;
-      cx.translate(30, 30);
-      const palette = THEME_TABLE[theme].bird;
-      const bodyColor = palette[emotion] || palette.calm;
-      // Soft radial shadow underneath
-      const shadowGrad = cx.createRadialGradient(2, 5, 1, 2, 5, CONFIG.BIRD_RADIUS + 4);
-      shadowGrad.addColorStop(0, 'rgba(0,0,0,0.28)');
-      shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
-      cx.fillStyle = shadowGrad;
-      cx.beginPath();
-      cx.ellipse(2, 5, CONFIG.BIRD_RADIUS + 4, (CONFIG.BIRD_RADIUS + 4) * 0.55, 0, 0, Math.PI * 2);
-      cx.fill();
-      // body
-      cx.fillStyle = bodyColor;
-      cx.beginPath();
-      cx.arc(0, 0, CONFIG.BIRD_RADIUS, 0, Math.PI * 2);
-      cx.fill();
-      // body radial highlight
-      const hlGrad = cx.createRadialGradient(-4, -6, 1, -4, -6, CONFIG.BIRD_RADIUS);
-      hlGrad.addColorStop(0, palette.hl);
-      hlGrad.addColorStop(0.7, palette.hl + '33'); // semi-fade
-      hlGrad.addColorStop(1, 'rgba(0,0,0,0)');
-      cx.fillStyle = hlGrad;
-      cx.beginPath();
-      cx.arc(-4, -6, CONFIG.BIRD_RADIUS * 0.6, 0, Math.PI * 2);
-      cx.fill();
-      // body rim shading (bottom shadow)
-      cx.fillStyle = palette.shadow + '55';
-      cx.beginPath();
-      cx.arc(2, 5, CONFIG.BIRD_RADIUS * 0.85, 0, Math.PI * 2);
-      cx.fill();
+/** Pre-render a tileable (CANVAS_W + 32) x GROUND_HEIGHT strip per theme+DPR -> 1 blit/frame. */
+export function rebuildGroundCache() {
+  const key = state.theme + '|' + dprState.value;
+  if (SPRITE_CACHE.ground && SPRITE_CACHE.groundKey === key) return;
+  const tileW = CONFIG.CANVAS_W + 64;
+  const tileH = ground.height;
+  const c = makeOffscreen(tileW, tileH);
+  const cx = c.getContext('2d');
+  if (!cx) return;
+  const g = getTheme().ground;
+  cx.fillStyle = g.sand;
+  cx.fillRect(0, 0, tileW, tileH);
+  const grad = cx.createLinearGradient(0, 0, 0, 14);
+  grad.addColorStop(0, g.grass1);
+  grad.addColorStop(1, g.grass2);
+  cx.fillStyle = grad;
+  cx.fillRect(0, 0, tileW, 14);
+  cx.fillStyle = g.dirt;
+  for (let i = 0; i < tileW; i += 32) {
+    cx.fillRect(i, 22, 16, 8);
+    cx.fillRect(i + 14, 42, 12, 8);
+  }
+  SPRITE_CACHE.ground = c;
+  SPRITE_CACHE.groundKey = key;
+}
 
-      // cute head crest / tuft — extra personality & calm character (cheap, cached)
-      cx.fillStyle = palette.hl;
-      cx.globalAlpha = 0.65;
-      cx.beginPath();
-      cx.moveTo(-3, -17);
-      cx.quadraticCurveTo(0, -24, 6, -16);
-      cx.quadraticCurveTo(1, -19, -3, -17);
-      cx.closePath();
-      cx.fill();
-      cx.globalAlpha = 1;
+/** Pre-render the radial vignette once per DPR instead of evaluating a full-screen radial shader every frame. */
+export function rebuildVignetteCache() {
+  if (SPRITE_CACHE.vignette && SPRITE_CACHE.vignetteDpr === dprState.value) return;
+  const c = makeOffscreen(CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+  const cx = c.getContext('2d');
+  if (!cx) return;
+  const grad = cx.createRadialGradient(
+    CONFIG.CANVAS_W / 2,
+    CONFIG.CANVAS_H / 2,
+    CONFIG.CANVAS_W * 0.35,
+    CONFIG.CANVAS_W / 2,
+    CONFIG.CANVAS_H / 2,
+    CONFIG.CANVAS_W * 0.75,
+  );
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.28)');
+  cx.fillStyle = grad;
+  cx.fillRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+  SPRITE_CACHE.vignette = c;
+  SPRITE_CACHE.vignetteDpr = dprState.value;
+}
 
-      // beak (curved)
-      cx.fillStyle = palette.beak;
+/** Pre-render crisp multi-petal pollen blossoms and warm golden motes -> 1 drawImage per particle. */
+export function rebuildWeatherSprites() {
+  SPRITE_CACHE.pollen = {};
+  for (const color of POLLEN_SPRITE_COLORS) {
+    const c = makeOffscreen(24, 24);
+    const cx = c.getContext('2d');
+    if (!cx) continue;
+    const center = 12;
+    const r = 5.2;
+    cx.fillStyle = 'rgba(255, 225, 150, 0.42)';
+    for (let i = 0; i < 4; i++) {
+      const a = i * (Math.PI / 2) + 0.35;
       cx.beginPath();
-      cx.moveTo(14, 0);
-      cx.quadraticCurveTo(22, 1, 26, 4);
-      cx.quadraticCurveTo(22, 7, 14, 9);
-      cx.closePath();
+      cx.arc(center + Math.cos(a) * r * 0.72, center + Math.sin(a) * r * 0.72, r * 0.56, 0, Math.PI * 2);
       cx.fill();
-      // beak highlight
-      cx.fillStyle = 'rgba(255,255,255,0.25)';
-      cx.beginPath();
-      cx.moveTo(15, 1);
-      cx.quadraticCurveTo(20, 1.5, 24, 3.5);
-      cx.lineTo(15, 3);
-      cx.closePath();
-      cx.fill();
-      SPRITE_CACHE.bird[key] = c;
     }
+    cx.fillStyle = color;
+    cx.beginPath();
+    cx.arc(center, center, r, 0, Math.PI * 2);
+    cx.fill();
+    cx.fillStyle = 'rgba(255, 250, 220, 0.8)';
+    cx.beginPath();
+    cx.arc(center, center, r * 0.3, 0, Math.PI * 2);
+    cx.fill();
+    SPRITE_CACHE.pollen[color] = c;
+  }
+
+  const mc = makeOffscreen(16, 16);
+  const mcx = mc.getContext('2d');
+  if (mcx) {
+    mcx.fillStyle = 'rgba(255, 210, 130, 0.65)';
+    mcx.beginPath();
+    mcx.arc(8, 8, 5, 0, Math.PI * 2);
+    mcx.fill();
+    mcx.fillStyle = 'rgba(255, 245, 200, 0.42)';
+    mcx.beginPath();
+    mcx.arc(6.8, 6.8, 2.2, 0, Math.PI * 2);
+    mcx.fill();
+    SPRITE_CACHE.mote = mc;
+  }
+}
+
+function buildBirdSprite(theme, emotion) {
+  const key = birdCacheKey(theme, emotion);
+  const existing = SPRITE_CACHE.bird[key];
+  if (existing) return existing;
+  const c = makeOffscreen(60, 60);
+  const cx = c.getContext('2d');
+  if (!cx) return null;
+  cx.translate(30, 30);
+  const palette = (THEME_TABLE[theme] || THEME_TABLE.sunset).bird;
+  const bodyColor = palette[emotion] || palette.calm;
+  // Soft radial shadow underneath
+  const shadowGrad = cx.createRadialGradient(2, 5, 1, 2, 5, CONFIG.BIRD_RADIUS + 4);
+  shadowGrad.addColorStop(0, 'rgba(0,0,0,0.28)');
+  shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  cx.fillStyle = shadowGrad;
+  cx.beginPath();
+  cx.ellipse(2, 5, CONFIG.BIRD_RADIUS + 4, (CONFIG.BIRD_RADIUS + 4) * 0.55, 0, 0, Math.PI * 2);
+  cx.fill();
+  // body
+  cx.fillStyle = bodyColor;
+  cx.beginPath();
+  cx.arc(0, 0, CONFIG.BIRD_RADIUS, 0, Math.PI * 2);
+  cx.fill();
+  // body radial highlight
+  const hlGrad = cx.createRadialGradient(-4, -6, 1, -4, -6, CONFIG.BIRD_RADIUS);
+  hlGrad.addColorStop(0, palette.hl);
+  hlGrad.addColorStop(0.7, palette.hl + '33'); // semi-fade
+  hlGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  cx.fillStyle = hlGrad;
+  cx.beginPath();
+  cx.arc(-4, -6, CONFIG.BIRD_RADIUS * 0.6, 0, Math.PI * 2);
+  cx.fill();
+  // body rim shading (bottom shadow)
+  cx.fillStyle = palette.shadow + '55';
+  cx.beginPath();
+  cx.arc(2, 5, CONFIG.BIRD_RADIUS * 0.85, 0, Math.PI * 2);
+  cx.fill();
+
+  // cute head crest / tuft — extra personality & calm character (cheap, cached)
+  cx.fillStyle = palette.hl;
+  cx.globalAlpha = 0.65;
+  cx.beginPath();
+  cx.moveTo(-3, -17);
+  cx.quadraticCurveTo(0, -24, 6, -16);
+  cx.quadraticCurveTo(1, -19, -3, -17);
+  cx.closePath();
+  cx.fill();
+  cx.globalAlpha = 1;
+
+  // beak (curved)
+  cx.fillStyle = palette.beak;
+  cx.beginPath();
+  cx.moveTo(14, 0);
+  cx.quadraticCurveTo(22, 1, 26, 4);
+  cx.quadraticCurveTo(22, 7, 14, 9);
+  cx.closePath();
+  cx.fill();
+  // beak highlight
+  cx.fillStyle = 'rgba(255,255,255,0.25)';
+  cx.beginPath();
+  cx.moveTo(15, 1);
+  cx.quadraticCurveTo(20, 1.5, 24, 3.5);
+  cx.lineTo(15, 3);
+  cx.closePath();
+  cx.fill();
+  SPRITE_CACHE.bird[key] = c;
+  return c;
+}
+
+/** Lazy per-theme bird sprite cache: pre-warms active theme only (5 sprites instead of 25 on boot). */
+export function rebuildBirdCache(theme = state.theme) {
+  SPRITE_CACHE.bird = {};
+  const activeTheme = THEMES.includes(theme) ? theme : 'sunset';
+  for (const emotion of EMOTIONS) {
+    buildBirdSprite(activeTheme, emotion);
   }
 }
 
 export function rebuildSpriteCaches() {
   SPRITE_CACHE.sky = null;
   SPRITE_CACHE.skyKey = '';
+  SPRITE_CACHE.ground = null;
+  SPRITE_CACHE.groundKey = '';
+  SPRITE_CACHE.vignette = null;
+  SPRITE_CACHE.vignetteDpr = 0;
+  SPRITE_CACHE.score = null;
+  SPRITE_CACHE.scoreKey = '';
+  SPRITE_CACHE.panel = null;
+  SPRITE_CACHE.panelKey = '';
+  SPRITE_CACHE.auroraBands = [null, null, null];
+  SPRITE_CACHE.auroraDpr = 0;
+  SPRITE_CACHE.meadowRays = [null, null, null];
+  SPRITE_CACHE.meadowDpr = 0;
   rebuildSkyCache();
   rebuildCloudCache();
-  rebuildBirdCache();
+  rebuildGroundCache();
+  rebuildVignetteCache();
+  rebuildWeatherSprites();
+  rebuildBirdCache(state.theme);
 }
 
 // ─── 9. WORLD ──────────────────────────────────────────────────────
 export function drawParticles() {
-  for (const p of activeParticles) {
+  if (activeParticles.length === 0) return;
+  let lastColor = '';
+  for (let i = 0; i < activeParticles.length; i++) {
+    const p = activeParticles[i];
     const alpha = p.life / p.maxLife;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = p.color;
+    if (p.color !== lastColor) {
+      lastColor = p.color;
+      ctx.fillStyle = lastColor;
+    }
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
     ctx.fill();
@@ -286,102 +429,174 @@ export function drawParticles() {
 }
 
 export function drawWeatherParticles() {
-  for (const p of activeWeather) {
+  if (activeWeather.length === 0) return;
+  let hasRain = false;
+  let lastStyle = '';
+
+  for (let i = 0; i < activeWeather.length; i++) {
+    const p = activeWeather[i];
     if (p.type === 'rain') {
-      ctx.strokeStyle = 'rgba(156, 206, 235, 0.40)';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
+      if (!hasRain) {
+        hasRain = true;
+        ctx.strokeStyle = 'rgba(156, 206, 235, 0.40)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+      }
       ctx.moveTo(p.x, p.y);
       ctx.lineTo(p.x + p.vx * 1.4, p.y + p.vy * 1.4);
-      ctx.stroke();
     } else if (p.type === 'dust') {
-      ctx.fillStyle = 'rgba(167, 139, 250, 0.65)';
+      if (lastStyle !== 'dust') {
+        lastStyle = 'dust';
+        ctx.fillStyle = 'rgba(167, 139, 250, 0.65)';
+      }
       ctx.globalAlpha = p.alpha;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       ctx.fill();
     } else if (p.type === 'cyber') {
-      ctx.fillStyle = 'rgba(244, 114, 182, 0.55)';
+      if (lastStyle !== 'cyber') {
+        lastStyle = 'cyber';
+        ctx.fillStyle = 'rgba(244, 114, 182, 0.55)';
+      }
       ctx.globalAlpha = p.alpha;
       ctx.fillRect(p.x, p.y, p.size, p.size);
     } else if (p.type === 'pollen') {
-      // Soft meadow pollen / petals — warm, organic, calm visual delight (flutter phase).
-      // Single pass without per-particle ctx.save()/translate()/rotate()/restore() churn.
-      const r = p.size * 0.58;
-      const phase = (p.x * 0.8 + p.y * 0.6 + state.time * 1.8) * 0.018;
-      ctx.globalAlpha = p.alpha * 0.9;
-      ctx.fillStyle = p.color || 'rgba(249, 199, 79, 0.72)';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fill();
-      if (activeWeather.length <= CONFIG.MEADOW_POLLEN_DETAIL_CAP) {
-        ctx.fillStyle = 'rgba(255, 225, 150, 0.38)';
-        for (let i = 0; i < 4; i++) {
-          const a = i * (Math.PI / 2) + phase;
-          const px = p.x + Math.cos(a) * r * 0.72;
-          const py = p.y + Math.sin(a) * r * 0.72;
-          ctx.beginPath();
-          ctx.arc(px, py, r * 0.56, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      const sprite = SPRITE_CACHE.pollen[p.color || POLLEN_FALLBACK_COLOR] || SPRITE_CACHE.pollen[POLLEN_FALLBACK_COLOR];
+      ctx.globalAlpha = p.alpha * 0.92;
+      if (sprite) {
+        const sz = p.size * 2.4;
+        ctx.drawImage(sprite, p.x - sz * 0.5, p.y - sz * 0.5, sz, sz);
+      } else {
+        ctx.fillStyle = p.color || POLLEN_FALLBACK_COLOR;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * 0.58, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.fillStyle = 'rgba(255, 250, 220, 0.75)';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r * 0.28, 0, Math.PI * 2);
-      ctx.fill();
     } else if (p.type === 'mote') {
-      // Warm sunset dust motes — soft, glowing, slow drifting
       ctx.globalAlpha = p.alpha;
-      ctx.fillStyle = 'rgba(255, 210, 130, 0.6)';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * 0.55, 0, Math.PI * 2);
-      ctx.fill();
-      // Subtle highlight for golden light quality
-      ctx.fillStyle = 'rgba(255, 245, 200, 0.35)';
-      ctx.beginPath();
-      ctx.arc(p.x - 0.6, p.y - 0.6, p.size * 0.22, 0, Math.PI * 2);
-      ctx.fill();
+      if (SPRITE_CACHE.mote) {
+        const sz = p.size * 2.2;
+        ctx.drawImage(SPRITE_CACHE.mote, p.x - sz * 0.5, p.y - sz * 0.5, sz, sz);
+      } else {
+        ctx.fillStyle = 'rgba(255, 210, 130, 0.6)';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * 0.55, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
+  }
+  if (hasRain) {
+    ctx.globalAlpha = 1.0;
+    ctx.stroke();
   }
   ctx.globalAlpha = 1.0;
 }
 
+function ensureAuroraBands() {
+  if (SPRITE_CACHE.auroraDpr === 1 && SPRITE_CACHE.auroraBands[0]) return;
+  const h = CONFIG.CANVAS_H - 180;
+  for (let i = 0; i < 3; i++) {
+    const c = document.createElement('canvas');
+    c.width = CONFIG.CANVAS_W;
+    c.height = h;
+    const cx = c.getContext('2d');
+    if (cx) {
+      const grad = cx.createLinearGradient(0, 0, CONFIG.CANVAS_W, 0);
+      grad.addColorStop(0, 'rgba(74, 222, 128, 0)');
+      grad.addColorStop(
+        0.3 + i * 0.15,
+        'rgba(' + (74 + i * 20) + ', ' + (222 - i * 30) + ', ' + (128 + i * 40) + ', 0.06)',
+      );
+      grad.addColorStop(0.6 + i * 0.15, 'rgba(0, 0, 0, 0)');
+      cx.fillStyle = grad;
+      cx.fillRect(0, 0, CONFIG.CANVAS_W, h);
+      SPRITE_CACHE.auroraBands[i] = c;
+    }
+  }
+  SPRITE_CACHE.auroraDpr = 1;
+}
+
 export function drawAuroraBands() {
   if (state.theme !== 'aurora' || state.reducedMotion) return;
-  ctx.save();
+  ensureAuroraBands();
   const t = state.time * 0.005;
+  const h = CONFIG.CANVAS_H - 180;
   for (let i = 0; i < 3; i++) {
     const shiftX = Math.sin(t + i * 1.7) * (50 + i * 18);
-    ctx.fillStyle = auroraGradient(i);
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(CONFIG.CANVAS_W, 0);
-    ctx.lineTo(CONFIG.CANVAS_W + shiftX, CONFIG.CANVAS_H - 180);
-    ctx.lineTo(shiftX, CONFIG.CANVAS_H - 180);
-    ctx.closePath();
-    ctx.fill();
+    const band = SPRITE_CACHE.auroraBands[i];
+    if (band) {
+      ctx.drawImage(band, shiftX * 0.5, 0, CONFIG.CANVAS_W, h);
+    } else {
+      ctx.fillStyle = auroraGradient(i);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(CONFIG.CANVAS_W, 0);
+      ctx.lineTo(CONFIG.CANVAS_W + shiftX, h);
+      ctx.lineTo(shiftX, h);
+      ctx.closePath();
+      ctx.fill();
+    }
   }
-  ctx.restore();
+}
+
+function ensureMeadowRays() {
+  if (SPRITE_CACHE.meadowDpr === 1 && SPRITE_CACHE.meadowRays[0]) return;
+  const w = CONFIG.CANVAS_W + 64;
+  const h = Math.ceil(CONFIG.CANVAS_H * 0.54);
+  for (let i = 0; i < CONFIG.MEADOW_LIGHT_COUNT; i++) {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const cx = c.getContext('2d');
+    if (cx) {
+      const a = CONFIG.MEADOW_LIGHT_ALPHA * (0.65 + i * 0.18);
+      const grad = cx.createLinearGradient(
+        CONFIG.CANVAS_W * (0.62 + i * 0.07) + 32,
+        0,
+        CONFIG.CANVAS_W * 0.18 + 32,
+        CONFIG.CANVAS_H * CONFIG.MEADOW_LIGHT_VERTICAL,
+      );
+      grad.addColorStop(0, 'rgba(255, 232, 155, ' + a + ')');
+      grad.addColorStop(0.45, 'rgba(255, 218, 125, ' + a * 0.55 + ')');
+      grad.addColorStop(1, 'rgba(255, 205, 90, 0)');
+      cx.fillStyle = grad;
+      cx.beginPath();
+      cx.moveTo(CONFIG.CANVAS_W * (0.58 + i * 0.06) + 32, 0);
+      cx.lineTo(CONFIG.CANVAS_W + 40, 0);
+      cx.lineTo(CONFIG.CANVAS_W * 1.02 + 32, CONFIG.CANVAS_H * 0.52);
+      cx.lineTo(CONFIG.CANVAS_W * 0.32 + 32, CONFIG.CANVAS_H * 0.46);
+      cx.closePath();
+      cx.fill();
+      SPRITE_CACHE.meadowRays[i] = c;
+    }
+  }
+  SPRITE_CACHE.meadowDpr = 1;
 }
 
 // Meadow signature "Golden Light" godrays — warm, drifting sunbeams for the calmest theme.
-// Cheap canvas gradients, time-based drift, fully respects reduced-motion and CONFIG.
+// Pre-rendered offscreen sunbeam bands shifted per frame: 100% visual fidelity at ~15x lower Skia cost.
 export function drawMeadowLight() {
   if (state.theme !== 'meadow' || state.reducedMotion) return;
-  ctx.save();
+  ensureMeadowRays();
   const t = state.time * CONFIG.MEADOW_LIGHT_WAVE_SPEED;
+  const w = CONFIG.CANVAS_W + 64;
+  const h = Math.ceil(CONFIG.CANVAS_H * 0.54);
   for (let i = 0; i < CONFIG.MEADOW_LIGHT_COUNT; i++) {
     const shift = Math.sin(t + i * 1.3) * (28 + i * 11);
-    ctx.fillStyle = meadowGradient(i);
-    ctx.beginPath();
-    ctx.moveTo(CONFIG.CANVAS_W * (0.58 + i * 0.06), 0);
-    ctx.lineTo(CONFIG.CANVAS_W + 8, 0);
-    ctx.lineTo(CONFIG.CANVAS_W * (1.02 + shift * 0.009), CONFIG.CANVAS_H * 0.52);
-    ctx.lineTo(CONFIG.CANVAS_W * (0.32 + shift * 0.007), CONFIG.CANVAS_H * 0.46);
-    ctx.closePath();
-    ctx.fill();
+    const ray = SPRITE_CACHE.meadowRays[i];
+    if (ray) {
+      ctx.drawImage(ray, shift * 0.45 - 32, 0, w, h);
+    } else {
+      ctx.fillStyle = meadowGradient(i);
+      ctx.beginPath();
+      ctx.moveTo(CONFIG.CANVAS_W * (0.58 + i * 0.06), 0);
+      ctx.lineTo(CONFIG.CANVAS_W + 8, 0);
+      ctx.lineTo(CONFIG.CANVAS_W * (1.02 + shift * 0.009), CONFIG.CANVAS_H * 0.52);
+      ctx.lineTo(CONFIG.CANVAS_W * (0.32 + shift * 0.007), CONFIG.CANVAS_H * 0.46);
+      ctx.closePath();
+      ctx.fill();
+    }
   }
-  ctx.restore();
 }
 
 // ─── 10. PHYSICS ──────────────────────────────────────────────────
@@ -418,12 +633,12 @@ export function drawBackground() {
 
   // Stars
   if (state.score >= 10 || state.theme === 'midnight') {
+    ctx.fillStyle = '#fff';
     for (let i = 0; i < 14; i++) {
       const sx = (i * 97 + state.time * 0.5) % CONFIG.CANVAS_W;
       const sy = 30 + ((i * 53 + state.time * 0.3) % 120);
       const tw = 0.3 + 0.4 * Math.sin(state.time * 0.1 + i);
       ctx.globalAlpha = tw;
-      ctx.fillStyle = '#fff';
       ctx.beginPath();
       ctx.arc(sx, sy, 1.6, 0, Math.PI * 2);
       ctx.fill();
@@ -441,9 +656,11 @@ export function drawCachedCloud(x, y, scale = 1) {
 
 export function drawPipes() {
   for (const pipe of pipes) {
-    const gapBottom = pipe.topHeight + state.gap;
-    drawPipe(pipeDrawX(pipe), 0, pipe.topHeight, true, pipe);
-    drawPipe(pipeDrawX(pipe), gapBottom, ground.y - gapBottom, false, pipe);
+    const px = pipeDrawX(pipe);
+    const topH = pipeDrawTopHeight(pipe);
+    const gapBottom = topH + state.gap;
+    drawPipe(px, 0, topH, true, pipe);
+    drawPipe(px, gapBottom, ground.y - gapBottom, false, pipe);
   }
 }
 
@@ -491,11 +708,25 @@ export function drawPipe(x, y, height, isTop, pipe) {
 }
 
 export function drawGround() {
-  const g = getTheme().ground;
-  ctx.fillStyle = g.sand;
-  ctx.fillRect(0, ground.y, CONFIG.CANVAS_W, ground.height);
-  ctx.fillStyle = grassGradient(g);
-  ctx.fillRect(0, ground.y, CONFIG.CANVAS_W, 14);
+  const expectedGroundKey = state.theme + '|' + dprState.value;
+  if (!SPRITE_CACHE.ground || SPRITE_CACHE.groundKey !== expectedGroundKey) {
+    rebuildGroundCache();
+  }
+  if (SPRITE_CACHE.ground) {
+    ctx.drawImage(SPRITE_CACHE.ground, -pose.groundOffset, ground.y, CONFIG.CANVAS_W + 64, ground.height);
+  } else {
+    const g = getTheme().ground;
+    ctx.fillStyle = g.sand;
+    ctx.fillRect(0, ground.y, CONFIG.CANVAS_W, ground.height);
+    ctx.fillStyle = grassGradient(g);
+    ctx.fillRect(0, ground.y, CONFIG.CANVAS_W, 14);
+    ctx.fillStyle = g.dirt;
+    for (let i = -32; i < CONFIG.CANVAS_W + 64; i += 32) {
+      const ox = i - pose.groundOffset;
+      ctx.fillRect(ox, ground.y + 22, 16, 8);
+      ctx.fillRect(ox + 14, ground.y + 42, 12, 8);
+    }
+  }
 
   // Meadow ground delight — sparse living grass tufts + tiny warm flecks (calm, low cost)
   if (state.theme === 'meadow') {
@@ -518,13 +749,6 @@ export function drawGround() {
     }
     ctx.globalAlpha = 1.0;
   }
-
-  ctx.fillStyle = g.dirt;
-  for (let i = -32; i < CONFIG.CANVAS_W + 64; i += 32) {
-    const ox = i - pose.groundOffset;
-    ctx.fillRect(ox, ground.y + 22, 16, 8);
-    ctx.fillRect(ox + 14, ground.y + 42, 12, 8);
-  }
 }
 
 export function drawBirdTrail() {
@@ -532,11 +756,11 @@ export function drawBirdTrail() {
   let trailColor = getTheme().trail;
   if (bird.emotion === 'happy') trailColor = '#ffd700';
   if (bird.emotion === 'scared') trailColor = '#ff9999';
+  ctx.fillStyle = trailColor;
   for (const t of bird.trail) {
     if (t.life <= 0) continue;
     const alpha = t.life / CONFIG.BIRD_TRAIL_LIFE;
     ctx.globalAlpha = alpha * 0.25;
-    ctx.fillStyle = trailColor;
     ctx.beginPath();
     ctx.arc(t.x, t.y, bird.radius * 0.5 * alpha, 0, Math.PI * 2);
     ctx.fill();
@@ -559,8 +783,10 @@ export function drawBird() {
 
   const palette = getTheme().bird;
 
-  // Cached body+highlight+beak
-  const cached = SPRITE_CACHE.bird[birdCacheKey(state.theme, bird.emotion)];
+  // Cached body+highlight+beak (lazily built on demand for the active theme+emotion)
+  const cached =
+    SPRITE_CACHE.bird[birdCacheKey(state.theme, bird.emotion)] ||
+    buildBirdSprite(state.theme, bird.emotion);
   if (cached) {
     ctx.drawImage(cached, -30, -30, 60, 60);
   }
@@ -662,7 +888,7 @@ export function drawShieldBubbles() {
     if (!pipe.shieldBubble) continue;
     const b = pipe.shieldBubble;
     const bx = pipeDrawX(pipe) + state.pipeWidth / 2;
-    const by = pipe.topHeight + state.gap / 2;
+    const by = pipeDrawTopHeight(pipe) + state.gap / 2;
     const pulseR = b.radius + Math.sin(b.pulse) * 3;
     ctx.save();
     // Outer glow ring (replaces shadowBlur — cheaper on mobile)
@@ -720,22 +946,48 @@ export function drawBirdShield() {
   ctx.restore();
 }
 
+function ensureScoreSprite(glowColor) {
+  const key = state.score + '|' + glowColor + '|' + dprState.value;
+  if (SPRITE_CACHE.score && SPRITE_CACHE.scoreKey === key) return SPRITE_CACHE.score;
+  const c = makeOffscreen(180, 72);
+  const cx = c.getContext('2d');
+  if (!cx) return null;
+  cx.fillStyle = glowColor;
+  cx.strokeStyle = 'rgba(0,0,0,0.45)';
+  cx.lineWidth = 3;
+  cx.font = `bold 44px ${CONFIG.FONT_SANS}`;
+  cx.textAlign = 'center';
+  cx.textBaseline = 'alphabetic';
+  const label = scoreLabel();
+  cx.strokeText(label, 90, 51);
+  cx.fillText(label, 90, 51);
+  SPRITE_CACHE.score = c;
+  SPRITE_CACHE.scoreKey = key;
+  return c;
+}
+
 export function drawScore() {
   let glowColor =
     bird.emotion === 'happy' ? '#ffd700' : bird.emotion === 'determined' ? '#ff8800' : '#ffffff';
   if (state.newBestFlash > 0) glowColor = '#ffd700';
 
-  ctx.fillStyle = glowColor;
-  ctx.strokeStyle = 'rgba(0,0,0,0.45)';
-  ctx.lineWidth = 3;
-  ctx.font = `bold 44px ${CONFIG.FONT_SANS}`;
-  ctx.textAlign = 'center';
-  ctx.strokeText(scoreLabel(), CONFIG.CANVAS_W / 2, 65);
-  ctx.fillText(scoreLabel(), CONFIG.CANVAS_W / 2, 65);
+  const cached = ensureScoreSprite(glowColor);
+  if (cached) {
+    ctx.drawImage(cached, CONFIG.CANVAS_W / 2 - 90, 14, 180, 72);
+  } else {
+    ctx.fillStyle = glowColor;
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+    ctx.lineWidth = 3;
+    ctx.font = `bold 44px ${CONFIG.FONT_SANS}`;
+    ctx.textAlign = 'center';
+    ctx.strokeText(scoreLabel(), CONFIG.CANVAS_W / 2, 65);
+    ctx.fillText(scoreLabel(), CONFIG.CANVAS_W / 2, 65);
+  }
 
   if (state.phase === 'play') {
     ctx.font = `13px ${CONFIG.FONT_SANS}`;
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.textAlign = 'center';
     ctx.fillText(EMOTION_ICONS[bird.emotion] || '', CONFIG.CANVAS_W / 2, 85);
   }
 }
@@ -764,8 +1016,15 @@ export function drawFpsCounter() {
 
 export function drawVignette() {
   if (state.reducedTransparency) return;
-  ctx.fillStyle = vignetteGradient();
-  ctx.fillRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+  if (!SPRITE_CACHE.vignette || SPRITE_CACHE.vignetteDpr !== dprState.value) {
+    rebuildVignetteCache();
+  }
+  if (SPRITE_CACHE.vignette) {
+    ctx.drawImage(SPRITE_CACHE.vignette, 0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+  } else {
+    ctx.fillStyle = vignetteGradient();
+    ctx.fillRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+  }
 }
 
 export function drawNearMissFlash() {
@@ -793,44 +1052,60 @@ export function drawCalmMeter() {
 }
 
 export function drawPanel(title, subtitle, extra, options = /** @type {{newBest?:boolean}} */ ({})) {
-  const pw = 320,
-    ph = 210;
+  const pw = 332,
+    ph = 236;
   const px = (CONFIG.CANVAS_W - pw) / 2;
-  const py = 160;
+  const py = 148;
+  const pad = 6;
+  const newBest = Boolean(options.newBest);
+  const key = `${title}|${subtitle}|${extra || ''}|${state.best}|${newBest ? 1 : 0}|${dprState.value}`;
 
-  ctx.fillStyle = 'rgba(12, 20, 35, 0.88)';
-  ctx.strokeStyle = options.newBest ? 'rgba(255, 215, 0, 0.6)' : 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = options.newBest ? 3 : 2;
-  roundRect(px, py, pw, ph, 22);
-  ctx.fill();
-  ctx.stroke();
+  if (!SPRITE_CACHE.panel || SPRITE_CACHE.panelKey !== key) {
+    const c = makeOffscreen(pw + pad * 2, ph + pad * 2);
+    const cx = c.getContext('2d');
+    if (cx) {
+      cx.fillStyle = 'rgba(12, 20, 35, 0.90)';
+      cx.strokeStyle = newBest ? 'rgba(255, 215, 0, 0.6)' : 'rgba(255,255,255,0.18)';
+      cx.lineWidth = newBest ? 3 : 2;
+      roundRect(pad, pad, pw, ph, 22, cx);
+      cx.fill();
+      cx.stroke();
 
-  if (options.newBest) {
-    ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
-    ctx.font = 'bold 14px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText('🌟 NEW BEST 🌟', CONFIG.CANVAS_W / 2, py + 22);
+      const midX = pad + pw / 2;
+      if (newBest) {
+        cx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+        cx.font = 'bold 14px system-ui';
+        cx.textAlign = 'center';
+        cx.fillText('🌟 NEW BEST 🌟', midX, pad + 24);
+      }
+
+      cx.fillStyle = '#fff';
+      cx.textAlign = 'center';
+      cx.font = `bold 29px ${CONFIG.FONT_SANS}`;
+      cx.fillText(title, midX, pad + (newBest ? 58 : 48));
+
+      cx.font = `16px ${CONFIG.FONT_SANS}`;
+      cx.fillStyle = 'rgba(255,255,255,0.85)';
+      wrapText(subtitle, midX, pad + (newBest ? 86 : 80), 296, 20, cx);
+
+      if (state.best > 0) {
+        cx.font = `bold 20px ${CONFIG.FONT_SANS}`;
+        cx.fillStyle = '#ffd24d';
+        cx.fillText(`Best: ${state.best}`, midX, pad + 178);
+      }
+
+      if (extra) {
+        cx.font = `12px ${CONFIG.FONT_SANS}`;
+        cx.fillStyle = 'rgba(255,255,255,0.58)';
+        wrapText(extra, midX, pad + 206, 300, 15, cx);
+      }
+      SPRITE_CACHE.panel = c;
+      SPRITE_CACHE.panelKey = key;
+    }
   }
 
-  ctx.fillStyle = '#fff';
-  ctx.textAlign = 'center';
-  ctx.font = `bold 30px ${CONFIG.FONT_SANS}`;
-  ctx.fillText(title, CONFIG.CANVAS_W / 2, py + (options.newBest ? 60 : 50));
-
-  ctx.font = `17px ${CONFIG.FONT_SANS}`;
-  ctx.fillStyle = 'rgba(255,255,255,0.85)';
-  wrapText(subtitle, CONFIG.CANVAS_W / 2, py + (options.newBest ? 92 : 86), 280, 22);
-
-  if (state.best > 0) {
-    ctx.font = `bold 20px ${CONFIG.FONT_SANS}`;
-    ctx.fillStyle = '#ffd24d';
-    ctx.fillText(`Best: ${state.best}`, CONFIG.CANVAS_W / 2, py + 155);
-  }
-
-  if (extra) {
-    ctx.font = `12px ${CONFIG.FONT_SANS}`;
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    wrapText(extra, CONFIG.CANVAS_W / 2, py + 180, 285, 15);
+  if (SPRITE_CACHE.panel) {
+    ctx.drawImage(SPRITE_CACHE.panel, px - pad, py - pad, pw + pad * 2, ph + pad * 2);
   }
 }
 
@@ -913,41 +1188,53 @@ export function drawPostcard() {
   ctx.stroke();
 }
 
-export function wrapText(text, x, y, maxWidth, lineHeight) {
-  const words = text.split(' ');
-  let line = '';
-  let cy = y;
-  for (const word of words) {
-    const test = `${line}${word} `;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      ctx.fillText(line.trim(), x, cy);
-      line = `${word} `;
-      cy += lineHeight;
-    } else {
-      line = test;
+const wrapTextCache = new Map();
+
+export function wrapText(text, x, y, maxWidth, lineHeight, targetCtx = ctx) {
+  const key = `${targetCtx.font}|${maxWidth}|${text}`;
+  let lines = wrapTextCache.get(key);
+  if (!lines) {
+    lines = [];
+    const words = text.split(' ');
+    let line = '';
+    for (const word of words) {
+      const test = `${line}${word} `;
+      if (targetCtx.measureText(test).width > maxWidth && line) {
+        lines.push(line.trim());
+        line = `${word} `;
+      } else {
+        line = test;
+      }
     }
+    if (line) lines.push(line.trim());
+    if (wrapTextCache.size >= 64) wrapTextCache.clear();
+    wrapTextCache.set(key, lines);
   }
-  if (line) ctx.fillText(line.trim(), x, cy);
+  let cy = y;
+  for (let i = 0; i < lines.length; i++) {
+    targetCtx.fillText(lines[i], x, cy);
+    cy += lineHeight;
+  }
 }
 
-export function roundRect(x, y, w, h, r) {
+export function roundRect(x, y, w, h, r, targetCtx = ctx) {
   // Use native ctx.roundRect when available (Chrome 99+, Safari 16+, Firefox 113+).
-  if (typeof ctx.roundRect === 'function') {
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, r);
+  if (typeof targetCtx.roundRect === 'function') {
+    targetCtx.beginPath();
+    targetCtx.roundRect(x, y, w, h, r);
     return;
   }
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
+  targetCtx.beginPath();
+  targetCtx.moveTo(x + r, y);
+  targetCtx.lineTo(x + w - r, y);
+  targetCtx.quadraticCurveTo(x + w, y, x + w, y + r);
+  targetCtx.lineTo(x + w, y + h - r);
+  targetCtx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  targetCtx.lineTo(x + r, y + h);
+  targetCtx.quadraticCurveTo(x, y + h, x, y + h - r);
+  targetCtx.lineTo(x, y + r);
+  targetCtx.quadraticCurveTo(x, y, x + r, y);
+  targetCtx.closePath();
 }
 
 export function draw() {

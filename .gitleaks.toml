@@ -1,0 +1,19 @@
+title = "GlidieBirdie gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Exclude generated build directories and documented secret-detection regex syntax only"
+paths = [
+  '''^lean/\.lake/''',
+  '''^paper/build/''',
+  '''^_site/'''
+]
+regexes = [
+  '''AKIA\[0-9A-Z\]\{16\}''',
+  '''ghp_\[A-Za-z0-9\]\{36\}''',
+  '''github_pat_\[A-Za-z0-9_\]\{40,\}''',
+  '''sk-\[A-Za-z0-9_-\]\{32,\}''',
+  '''xox\[baprs\]-\[A-Za-z0-9-\]\{10,\}'''
+]

@@ -53,9 +53,10 @@ export const CONFIG = Object.freeze({
   VISIBILITY_SYNC_INTERVAL_MS: 250,
   SCORE_ANNOUNCE_EVERY: 5,
 
-  // Particle pools
+  // Particle pools & input buffer
   PARTICLE_POOL: 220,
   WEATHER_POOL: 140,
+  INPUT_QUEUE_CAP: 64,
 
   // Object lookups (level → physics)
   GRAVITY_MAP: { 1: 0.038, 2: 0.052, 3: 0.066, 4: 0.082 },
@@ -97,6 +98,20 @@ export const CONFIG = Object.freeze({
 });
 
 export const THEMES = Object.freeze(['sunset', 'midnight', 'rain', 'aurora', 'meadow']);
+export const ACHIEVEMENT_IDS = Object.freeze([
+  'FirstFlight',
+  'ZenMaster',
+  'ShieldSavior',
+  'ThemeExplorer',
+  'CalmMarathon',
+  'Featherweight',
+  'Featherlight',
+  'StreakKeeper',
+  'BrakeMaster',
+  'Diver',
+  'IronCalm',
+  'LongHaul',
+]);
 export const SETTING_LEVELS = Object.freeze([1, 2, 3, 4]);
 export const GRAVITY_LABELS = Object.freeze({ 1: 'Ultra-Light', 2: 'Calm', 3: 'Normal', 4: 'Heavy' });
 export const SPEED_LABELS = Object.freeze({ 1: 'Breeze', 2: 'Chill', 3: 'Cruise', 4: 'Swift' });

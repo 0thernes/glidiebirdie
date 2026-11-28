@@ -1,2 +1,11 @@
 .markdownlintignore
 LICENSE.txt
+CLAUDE.md
+GEMINI.md
+docs/build-standard.md
+node_modules/**
+test-results/**
+playwright-report/**
+lean/.lake/**
+paper/build/**
+_site/**

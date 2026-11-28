@@ -85,19 +85,17 @@ flowchart LR
 | 2 | Visual-regression check | Screenshot diff — agents are "blind" to visual breakage |
 | 3 | Activity ledger + daily digest | Needs the cron/daemon harness to participate |
 | 4 | Budget / loop / oscillation governors | Orchestrator-side runaway protection |
-| 5 | Non-admin bot identity | So the `guardrail-approved` label can't be self-applied (full enforcement) |
+| 5 | Independent external replication (`B44`) | Clean-clone verification by a second human operator |
 | 6 | Save export/import | "Copy my save" affordance |
 
 ## Release cadence
 
-- **Patch** (`x.y.Z`): bug fixes, polish, docs — auto-merge once CI is green.
+- **Patch** (`x.y.Z`): bug fixes, polish, docs — commit directly to `main` (Build Standard v1.2.0 R1–R3) with informational CI verification.
 - **Minor** (`x.Y.0`): new themes/features that don't break saves.
 - **Major** (`X.0.0`): breaking changes (rename, relicense, storage schema) — deliberate, migrated.
 
 ## Definition of done (for any change)
 
-1. Branch → PR (never direct to `main`).
-2. `npm run check` + typecheck + brand/license/link guards green.
-3. Guardrail-path changes carry the human `guardrail-approved` label.
-4. Docs updated in the same change set if behavior changed.
-5. Auto-merge on green; post-deploy canary confirms the live site.
+1. `npm run check`, `npm run fuzz`, `npm run mutate`, `npm run typecheck`, `npm run lint`, and Lean 4 checks pass cleanly.
+2. Docs and `CHECKSUMS.sha256` updated in the same change set when behavior or frozen artifacts change.
+3. Push straight to `main` (informational CI verifies cross-platform, 6-kernel Lean, Tectonic PDF, and post-deploy Pages canary).

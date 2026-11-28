@@ -2,6 +2,17 @@
 import { bird, ground, state } from './state.js';
 
 export function circleHitsRect(cx, cy, cr, rx, ry, rw, rh) {
+  if (
+    !(cr > 0) ||
+    !(rw > 0) ||
+    !(rh > 0) ||
+    !Number.isFinite(cx) ||
+    !Number.isFinite(cy) ||
+    !Number.isFinite(rx) ||
+    !Number.isFinite(ry)
+  ) {
+    return false;
+  }
   const closestX = Math.max(rx, Math.min(cx, rx + rw));
   const closestY = Math.max(ry, Math.min(cy, ry + rh));
   const dx = cx - closestX;

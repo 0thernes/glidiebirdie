@@ -1,8 +1,8 @@
 @layer base, layout, components, utilities;
 
-@property --bg-1 { syntax: '<color>'; initial-value: #081120; inherits: false; }
-@property --bg-2 { syntax: '<color>'; initial-value: #10223d; inherits: false; }
-@property --bg-3 { syntax: '<color>'; initial-value: #17355f; inherits: false; }
+@property --bg-1 { syntax: '<color>'; initial-value: #081120; inherits: true; }
+@property --bg-2 { syntax: '<color>'; initial-value: #10223d; inherits: true; }
+@property --bg-3 { syntax: '<color>'; initial-value: #17355f; inherits: true; }
 
 :root {
   color-scheme: dark;
@@ -73,14 +73,11 @@
   body::before {
     content: "";
     position: fixed;
-    inset: -30%;
+    inset: 0;
     z-index: -2;
     background:
-      radial-gradient(circle at top, rgba(125, 211, 252, 0.15), transparent 35%),
+      radial-gradient(circle at top, rgba(125, 211, 252, 0.16), transparent 42%),
       linear-gradient(145deg, var(--bg-1), var(--bg-2) 48%, var(--bg-3));
-    background-size: 100% 100%, 200% 200%;
-    will-change: transform;
-    animation: bgShift 22s ease-in-out infinite;
     pointer-events: none;
   }
 
@@ -149,11 +146,6 @@
     --surface-stroke: rgba(190, 242, 100, 0.18);
   }
 
-  @keyframes bgShift {
-    0%, 100% { transform: translate3d(0, 0, 0) scale(1.0); }
-    50% { transform: translate3d(2%, 2%, 0) scale(1.03); }
-  }
-
   .sr-only {
     position: absolute;
     width: 1px;
@@ -201,21 +193,11 @@
 
   .panel {
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 35%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 32%),
       linear-gradient(180deg, var(--surface-1), var(--surface-2));
     border: 1px solid var(--surface-stroke);
     border-radius: var(--radius-panel);
     box-shadow: var(--shadow-1), var(--shadow-2);
-    -webkit-backdrop-filter: blur(18px) saturate(1.05);
-    backdrop-filter: blur(18px) saturate(1.05);
-  }
-
-  @supports not (backdrop-filter: blur(1px)) {
-    .panel {
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 35%),
-        linear-gradient(180deg, rgba(9, 18, 35, 0.95), rgba(18, 30, 54, 0.98));
-    }
   }
 
   .hero,
@@ -392,7 +374,6 @@
     user-select: none;
     -webkit-touch-callout: none;
     contain: strict;
-    will-change: contents;
     transition: box-shadow 180ms ease;
   }
   canvas:active {
@@ -643,8 +624,6 @@
     background: linear-gradient(180deg, var(--surface-1), var(--surface-2));
     border-left: 1px solid var(--surface-stroke);
     box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
-    -webkit-backdrop-filter: blur(25px) saturate(1.1);
-    backdrop-filter: blur(25px) saturate(1.1);
     transform: translateX(100%);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
@@ -652,11 +631,12 @@
     padding: var(--space-4);
     overflow-y: auto;
     visibility: hidden;
-    will-change: transform;
   }
   .customizer-drawer.open {
     transform: translateX(0);
     visibility: visible;
+    -webkit-backdrop-filter: blur(14px) saturate(1.08);
+    backdrop-filter: blur(14px) saturate(1.08);
   }
   .customizer-drawer:not(.open) {
     width: 0;
@@ -1084,6 +1064,7 @@
 @media (prefers-reduced-transparency: reduce) {
   .panel,
   .customizer-drawer,
+  .customizer-drawer.open,
   .tutorial-overlay,
   .mobile-controls,
   .toast {

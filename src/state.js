@@ -284,7 +284,7 @@ export const ground = {
   prevOffset: 0,
 };
 
-/** @type {Array<{x:number,prevX?:number,topHeight:number,baseTopHeight:number,passed:boolean,isMoving:boolean,movePhase:number,color:string,capColor:string,nearMissRecorded:boolean,shieldBubble?:{radius:number,pulse:number}|null,_hue?:number,_grad?:CanvasGradient}>} */
+/** @type {Array<{x:number,prevX?:number,topHeight:number,prevTopHeight?:number,baseTopHeight:number,passed:boolean,isMoving:boolean,movePhase:number,color:string,capColor:string,nearMissRecorded:boolean,shieldBubble?:{radius:number,pulse:number}|null,_hue?:number,_grad?:CanvasGradient}>} */
 export const pipes = [];
 
 

@@ -1,0 +1,8 @@
+GlidieBirdie
+Copyright (c) 2026 Alexander Stephen Donahue (Independent Researcher, 0thernes project, ORCID 0009-0006-8168-9648)
+
+Dual Licensing:
+- Source code (`game.js`, `src/`, `index.html`, `style.css`, `service-worker.js`, `lean/`, `tests/`, `scripts/`, `tools/`, `.github/`): MIT License (see `LICENSE.txt`).
+- Technical white paper, PDFs, diagrams, and documentation (`paper/`, `dist/`, `docs/`, `README.md`): Creative Commons Attribution 4.0 International (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/).
+
+See `THIRD_PARTY_NOTICES.md` for offline dev/CI tooling attributions (zero runtime dependencies are shipped).

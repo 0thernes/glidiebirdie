@@ -4,7 +4,7 @@ import { scheduleInput } from './input-queue.js';
 import { canvas, configureCanvasForDPR, dom } from './dom.js';
 import { bird, control, heldKeys, state, syncLocomotion } from './state.js';
 import { clearWeatherPool } from './physics.js';
-import { ensureAudio } from './audio.js';
+import { ensureAudio, suspendAudio } from './audio.js';
 import { syncStatsAndAchievements } from './achievements.js';
 import { hooks } from './hooks.js';
 import {
@@ -223,14 +223,16 @@ export let lastVisibilitySync = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     pauseForPageLifecycle();
+    suspendAudio(0);
     const now = Date.now();
     if (now - lastVisibilitySync > CONFIG.VISIBILITY_SYNC_INTERVAL_MS) {
       syncStatsAndAchievements(true);
       lastVisibilitySync = now;
     }
   } else {
-    // Re-arm audio context (iOS suspends it on tab hide)
-    if (state.audioEnabled) ensureAudio();
+    // Re-arm audio context only if actively playing unpaused; otherwise keep audio asleep until interaction.
+    if (state.audioEnabled && state.phase === 'play' && !state.paused) ensureAudio();
+    hooks.requestRender();
   }
 });
 
@@ -243,6 +245,7 @@ export function onResize() {
 }
 window.addEventListener('resize', onResize);
 window.addEventListener('orientationchange', onResize);
+window.addEventListener('gamepadconnected', () => hooks.requestRender());
 document.addEventListener('fullscreenchange', () => {
   onResize();
   syncUiState();
@@ -255,11 +258,13 @@ if (typeof reducedMotionQuery.addEventListener === 'function') {
       state.shakeAmount = 0;
       clearWeatherPool();
     }
+    hooks.requestRender();
   });
 }
 if (reducedTransparencyQuery && typeof reducedTransparencyQuery.addEventListener === 'function') {
   reducedTransparencyQuery.addEventListener('change', (e) => {
     state.reducedTransparency = e.matches;
+    hooks.requestRender();
   });
 }
 

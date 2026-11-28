@@ -10,6 +10,7 @@ export const MAX_FRAME_STEPS = 5;
 
 /** @param {number} ms */
 export function msToTicks(ms) {
+  if (!Number.isFinite(ms)) return 0;
   return Math.round((ms * 18) / 25);
 }
 

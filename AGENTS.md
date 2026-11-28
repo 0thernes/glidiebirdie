@@ -1,89 +1,73 @@
-# Project Context For AI Assistants
+# GlidieBirdie — Canonical Project Context For AI Assistants
 
-This file is for Codex, Cursor, Copilot, Continue, and similar tools.
-
-Read this first before making changes in the repo.
+Read this file first before modifying the repository. `CLAUDE.md`, `GEMINI.md`, and `.cursor/rules/build-standard.mdc` all point here.
 
 ## Read Order
 
-1. `README.md`
-2. `docs/architecture_master_blueprint.md`
-3. `CONTRIBUTING.md`
-4. `tests/smoke-test.mjs`
-5. `.memory/security.md` before touching storage, network, or DOM injection
+1. `README.md` — player features, quickstart, and 5-second axiom proof
+2. `CLAIMS.md` & `LIMITATIONS.md` — falsifiable claims and honest boundaries
+3. `docs/ARCHITECTURE.md` & `docs/architecture_master_blueprint.md` — acyclic 20-module ES2022 layout
+4. `docs/build-standard.md` & `repo.yaml` — Build Standard v1.2.0 manifest
+5. `lean/README.md` — 68 zero-Mathlib Lean 4.35.0 proofs (Palomar `Challenge`/`Solution` + 9 adversarial refutations)
+6. `.memory/security.md` & `docs/threat-model.md` — storage, CSP, and HTTP server boundaries
 
 ## What This Project Is
 
-A solo-built, browser-first GlidieBirdie variant tuned for comfort and clarity.
+GlidieBirdie (`v3.2.0`) is a solo-built, browser-first, zero-runtime-dependency calm arcade flyer engineered with:
 
-The runtime is intentionally simple:
+- one semantic HTML shell (`index.html`)
+- one layered stylesheet (`style.css`)
+- 20 native ES2022 modules under `src/` (`src/main.js`, 18 runtime modules, and `src/index.js` headless barrel) loaded by `game.js` (zero bundler, zero runtime npm deps)
+- one compact offline app-shell service worker (`service-worker.js`)
+- 68 machine-checked pure Lean 4.35.0 theorems (`lean/`, zero Mathlib, Palomar `Challenge.lean`/`Solution.lean`, 6 kernels + live negative tamper test)
+- an offline C11 differential oracle & 1,000,000-case fuzzer (`native/glidiebirdie_oracle.c`, `tests/native-differential.mjs`) plus Zig/WASM microbenchmark companion (`native/oracle.zig`)
+- an AMS-LaTeX Build White Paper (`paper/main.tex` -> `dist/Donahue_2026_glidiebirdie_deterministic_browser_architecture.pdf`)
 
-- one HTML shell
-- one CSS file
-- one game engine file
-- one small service worker
-- no build step
-- no runtime dependencies
-- no backend
+## Hard Rules
 
-## Hard rules
-
-- Do not add a build step.
-- Do not add runtime dependencies.
+- Do not add a build step or bundler for the browser game.
+- Do not add runtime dependencies (`package.json` `dependencies` stays absent; dev-only tooling runs offline/CI).
 - Do not add remote assets, hosted fonts, analytics, or CDN imports.
 - Do not add a backend or network data flow for gameplay state.
-- Do not add a bundler. The engine is native ES modules under `src/`, loaded by `game.js`.
 - Do not split `style.css` into multiple files.
-- Keep the service worker tiny and app-shell-focused.
-
-## Change And Merge Flow (required — enforced by branch protection)
-
-`main` is protected; direct pushes are rejected. Every change — human or agent — follows the same path:
-
-1. Create a branch.
-2. Commit there.
-3. Open a pull request.
-4. CI (`Smoke check`) must pass: static-checks, engine tests, typecheck, smoke.
-5. The PR merges automatically once green — no human approval is required. Patch and minor Dependabot PRs auto-merge the same way; **major** Dependabot bumps are held for human review.
-
-**Guardrail changes are the exception.** A PR that touches the project's own safety machinery — anything under `.github/`, `tests/`, `AGENTS.md`, `CLAUDE.md`, `CODEOWNERS`, or `package.json` — will NOT auto-merge. The `Guardrail check` blocks it until a human reviews the change and applies the `guardrail-approved` label. Agents must never apply that label themselves; leave guardrail changes for the human.
-
-Do not attempt to push to `main` directly; it will be rejected. Keep PRs small and single-purpose so the gate stays fast and merge collisions stay rare.
+- Keep `service-worker.js` tiny and app-shell-focused; keep `CACHE_NAME` locked to `VERSION` and `package.json`.
+- `.gitignore` policy: ignore only OS/editor junk, `node_modules/`, Playwright test output, and Build Standard / toolchain build directories (`lean/.lake/`, `paper/build/`, `_site/`). Never ignore `dist/` (frozen PDF and arXiv bundle are tracked).
+- Never fabricate test results, axiom lines, benchmarks, peer review, DOIs, or LLC affiliation (`Alexander Stephen Donahue`, Independent Researcher, ORCID `0009-0006-8168-9648`).
+- Classify every audit finding as exactly one of: `bug`, `error`, `issue`, `problem`, `concern`, `dilemma`, `conflict`, `gap`, `hole`, `blindspot`.
 
 ## Runtime Rules
 
-- Put tunable constants in `CONFIG`.
-- Respect `state.dt` or `state.dtSec` for time-based behavior.
-- Route persistence through the guarded storage helpers only.
-- Keep mobile controls functional when gameplay changes.
-- Preserve keyboard access, live announcements, and reduced-motion handling.
-- Prefer extending the current structure over inventing a parallel one.
+- Put tunable constants in `CONFIG` (`src/config.js`).
+- Advance gameplay strictly via the 60 Hz fixed-step integrator quantized on the 720 Hz integer tick grid (`src/timestep.js`, `src/loop.js`).
+- Route all persistence through guarded helpers in `src/storage.js` under the `gb:` namespace.
+- Keep keyboard, pointer, mobile touch bar, and gamepad controls at parity.
+- Preserve automated WCAG 2.2 AA accessibility across all interactive views, live screen-reader announcements, `prefers-reduced-motion`, and unlayered `prefers-reduced-transparency`.
+- Build Standard v1.2.0 R1–R4: commit and push straight to `main` once owner disables legacy branch protection; CI is strictly informational, never a merge gate, and no Dependabot/CodeRabbit/Copilot/PR-template/guardrail-gate workflows are used. Never defeat or bypass active GitHub branch protection if still enabled on the remote.
 
-## Documentation Rules
+## Verification Commands
 
-If you change the public shape of the project, update the matching docs in the same change set.
+```bash
+npm run check          # syntax, static, brand, link, license, 12/12 citations, 81 engine, 8 property/contract, determinism, smoke
+npm run fuzz           # 2,000-case adversarial parser & HTTP static-server fuzzer
+npm run test:native    # C11 differential oracle (bit-for-bit parity + 1,000,000 fuzz cases)
+npm run mutate         # baseline-gated 16/16 surgical mutation testing
+npm run benchmark      # 30-seed counterbalanced 60/144 Hz + 5,400 pure-step + 5x10k pool benchmark -> results/benchmarks.json
+npm run lint           # ESLint across src/, tests/, tools/, scripts/, examples/
+npm run typecheck      # tsc via jsconfig.json + WebWorker service-worker.js
+npm run test:browser   # 7 Playwright + 4-view axe-core WCAG 2.2 AA E2E tests
+(cd lean && lake build && lake build Challenge && lake env lean VerifyAxioms.lean)
+pwsh scripts/Audit-Repo.ps1 -Path .
+```
 
-- `README.md` for player-facing features and workflow
-- `docs/architecture_master_blueprint.md` for runtime structure
-- `CONTRIBUTING.md` for contributor workflow
-- `SUPPORT.md` for troubleshooting changes
+## Repository Map
 
-## Important Files
-
-| File | Purpose |
+| Path | Purpose |
 | --- | --- |
-| `game.js` | Browser entry. Imports `src/main.js` |
-| `src/` | Engine modules: physics, collision, input, audio, render, storage, UI |
-| `index.html` | Semantic shell, canvas host, controls, tutorial, PWA metadata |
-| `style.css` | Layout, components, themes, accessibility styling |
-| `service-worker.js` | Minimal offline shell caching |
-| `manifest.webmanifest` | Install metadata |
-| `tests/smoke-test.mjs` | Lightweight repo safety checks |
-| `.memory/` | Canonical project notes and constraints |
-
-## When In Doubt
-
-- Prefer a smaller change.
-- Preserve the current runtime shape.
-- Check the architecture guide before refactoring.
-- Run `npm run check` before closing the task.
+| `game.js`, `src/*.js` | Native ES2022 browser engine (20 files: `main.js`, 18 runtime modules, `index.js` headless barrel) |
+| `index.html`, `style.css`, `service-worker.js`, `manifest.webmanifest` | PWA shell, CSS Cascade Layers, offline cache |
+| `lean/` | 68 pure Lean 4.35.0 theorems (`module`, zero Mathlib, Palomar `Challenge`/`Solution`, `comparator.json`, negative kernel tamper script) |
+| `native/` | Offline C11 differential reference oracle + 1M fuzzer (`glidiebirdie_oracle.c`) & Zig/WASM benchmark (`oracle.zig`) |
+| `paper/`, `dist/` | AMS-LaTeX Build White Paper, frozen PDF, standalone `arxiv_submission.tar.gz` |
+| `tests/`, `scripts/` | Engine (81), determinism, property/metamorphic/HTTP contract, 2,000-case JS fuzzer, C11 oracle test, Playwright/axe, 16/16 mutation, benchmarks, citations, audit |
+| `tools/` | Zero-dep `static-server.mjs` (strict public allowlist, IPv6-safe, `/healthz`, traversal/symlink defense) & `generate-icons.mjs` |
+| `docs/`, `.memory/` | Architecture, ADRs, threat model, benchmarks, preregistration, reviews, run-log |
